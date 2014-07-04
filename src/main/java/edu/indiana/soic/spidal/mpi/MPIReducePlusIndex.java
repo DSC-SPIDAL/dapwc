@@ -1,4 +1,4 @@
-package salsa.mpi;
+package edu.indiana.soic.spidal.mpi;
 
 import mpi.Datatype;
 import mpi.MPI;

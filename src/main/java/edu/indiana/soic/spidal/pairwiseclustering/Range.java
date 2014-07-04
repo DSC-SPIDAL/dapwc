@@ -1,4 +1,4 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 import java.io.Serializable;
 

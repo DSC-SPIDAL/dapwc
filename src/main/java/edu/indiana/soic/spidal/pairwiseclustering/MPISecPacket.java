@@ -1,10 +1,9 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 import mpi.MPI;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class MPISecPacket implements Serializable
 {

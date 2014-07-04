@@ -1,4 +1,4 @@
-package salsa.general;
+package edu.indiana.soic.spidal.general;
 
 /**
  * The {@code Box} class represents a container, which allows

@@ -1,4 +1,4 @@
-package salsa.configuration.sections;
+package edu.indiana.soic.spidal.configuration.sections;
 
 import java.io.FileInputStream;
 import java.io.IOException;

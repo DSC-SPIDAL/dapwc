@@ -1,8 +1,8 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 import mpi.MPI;
 import mpi.MPIException;
-import salsa.mpi.MpiOps;
+import edu.indiana.soic.spidal.mpi.MpiOps;
 
 import static edu.rice.hj.HJ.finalizeHabanero;
 import static edu.rice.hj.HJ.initializeHabanero;

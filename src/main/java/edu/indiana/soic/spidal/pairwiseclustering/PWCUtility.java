@@ -1,10 +1,10 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import mpi.Intracomm;
 import mpi.MPIException;
-import salsa.mpi.MpiOps;
+import edu.indiana.soic.spidal.mpi.MpiOps;
 
 import java.io.IOException;
 import java.io.PrintWriter;

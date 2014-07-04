@@ -1,4 +1,4 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 public class Constants {
     static final String PROGRAM_NAME = "PairwiseClustering";

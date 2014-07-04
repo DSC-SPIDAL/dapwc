@@ -1,9 +1,9 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 import mpi.MPI;
 import mpi.MPIException;
-import salsa.mpi.MPIReducePlusIndex;
-import salsa.general.Box;
+import edu.indiana.soic.spidal.mpi.MPIReducePlusIndex;
+import edu.indiana.soic.spidal.general.Box;
 
 import static edu.rice.hj.HJ.forallChunked;
 

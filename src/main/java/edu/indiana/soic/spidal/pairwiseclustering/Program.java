@@ -1,4 +1,4 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
@@ -6,9 +6,9 @@ import com.google.common.io.Files;
 import mpi.MPI;
 import mpi.MPIException;
 import org.apache.commons.cli.*;
-import salsa.configuration.ConfigurationMgr;
-import salsa.configuration.sections.PairwiseClusteringSection;
-import salsa.general.IntArray;
+import edu.indiana.soic.spidal.configuration.ConfigurationMgr;
+import edu.indiana.soic.spidal.configuration.sections.PairwiseClusteringSection;
+import edu.indiana.soic.spidal.general.IntArray;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -287,7 +287,7 @@ public class Program
 		{ // Find centers of Previously determined Clusters
 
 			int NumberofClusters = 0;
-			salsa.general.Box<Integer> boxNumberofClusters = new salsa.general.Box<Integer>(NumberofClusters);
+			edu.indiana.soic.spidal.Boxspidal.general.Box<Integer> boxNumberofClusters = new edu.indiana.soic.spidal.Boxspidal.general.Box<Integer>(NumberofClusters);
 			Program.ReadClusterNumbers(PWCUtility.ClusterNumberfile, boxNumberofClusters, Program.ClusterAssignments, 0, PWCUtility.PointCount_Global);
 			NumberofClusters = boxNumberofClusters.content;
 

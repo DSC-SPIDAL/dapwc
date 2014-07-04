@@ -1,4 +1,4 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 public final class RangePartitioner {
     public static Range[] Partition(int length, int numPartitions) {

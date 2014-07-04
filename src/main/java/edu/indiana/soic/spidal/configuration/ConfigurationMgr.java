@@ -1,6 +1,6 @@
-package salsa.configuration;
+package edu.indiana.soic.spidal.configuration;
 
-import salsa.configuration.sections.PairwiseClusteringSection;
+import edu.indiana.soic.spidal.configuration.sections.PairwiseClusteringSection;
 
 public class ConfigurationMgr {
     private String configurationFilePath;

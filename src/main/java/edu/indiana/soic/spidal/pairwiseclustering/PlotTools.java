@@ -1,4 +1,4 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 public class PlotTools
 {
@@ -41,8 +41,8 @@ public class PlotTools
 		*//* Maximum number of clusters that points are mapped to in the points file*//*
 		int maxcnum = 0;
 
-		salsa.general.Box<Integer> boxmaxpnum = new salsa.general.Box<Integer>(maxpnum);
-		salsa.general.Box<Integer> boxmaxcnum = new salsa.general.Box<Integer>(maxcnum);
+		edu.indiana.soic.spidal.Boxspidal.general.Box<Integer> boxmaxpnum = new edu.indiana.soic.spidal.Boxspidal.general.Box<Integer>(maxpnum);
+		edu.indiana.soic.spidal.generaloic.spidal.Box<Integer> boxmaxcnum = new edu.indiana.soic.spidal.Boxspidal.general.Box<Integer>(maxcnum);
 		ProcessPointsFile(pointsFile, clusterNumberFile, clustersElement, pointsElement, boxmaxpnum, boxmaxcnum, existingPointsTable, matlab50Colors);
 		maxpnum = boxmaxpnum.content;
 		maxcnum = boxmaxcnum.content;
@@ -101,7 +101,7 @@ public class PlotTools
 
 
 
-	private static void ProcessPointsFile(String pointsFile, String clusterNumberFile, XElement clusters, XElement points, salsa.general.Box<Integer> maxpnum, salsa.general.Box<Integer> maxcnum, java.util.Hashtable pointsTable, java.util.ArrayList<Color> matlab50Colors)
+	private static void ProcessPointsFile(String pointsFile, String clusterNumberFile, XElement clusters, XElement points, edu.indiana.soic.spidal.generaloic.spidal.Box<Integer> maxpnum, edu.indiana.soic.spidal.generaloic.spidal.Box<Integer> maxcnum, java.util.Hashtable pointsTable, java.util.ArrayList<Color> matlab50Colors)
 	{
 //C# TO JAVA CONVERTER NOTE: The following 'using' block is replaced by its Java equivalent:
 //		using (StreamReader preader = new StreamReader(pointsFile), creader = new StreamReader(clusterNumberFile))

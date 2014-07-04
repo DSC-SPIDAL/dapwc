@@ -1,4 +1,4 @@
-package salsa.pairwiseclustering;
+package edu.indiana.soic.spidal.pairwiseclustering;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;

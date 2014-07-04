@@ -1,15 +1,12 @@
-package salsa.mpi;
+package edu.indiana.soic.spidal.mpi;
 
-import com.google.common.base.Joiner;
 import mpi.Intracomm;
 import mpi.MPI;
 import mpi.MPIException;
 import mpi.Op;
-import salsa.pairwiseclustering.MPIPacket;
-import salsa.pairwiseclustering.MPISecPacket;
-import salsa.pairwiseclustering.PWCUtility;
+import edu.indiana.soic.spidal.pairwiseclustering.MPIPacket;
+import edu.indiana.soic.spidal.pairwiseclustering.MPISecPacket;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
