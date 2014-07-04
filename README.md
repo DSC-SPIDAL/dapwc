@@ -12,7 +12,7 @@ Prerequisites
     *  Ubuntu 12.10
   * This may work in Windows systems depending on the ability to setup OpenMPI properly, however, this has not been tested and we recommend choosing a Linux based operating system instead.
  
-2. Java 1.8
+2. Java
   * Download Oracle JDK 8 from http://www.oracle.com/technetwork/java/javase/downloads/index.html
   * Extract the archive to a folder named `jdk1.8.0`
   * Set the following environment variables.
@@ -56,6 +56,9 @@ Prerequisites
     ./configure --prefix=$BUILD --enable-mpi-java
     make;make install
   ```
+  * If everything goes well `mpirun --version` will show `mpirun (Open MPI) 1.8.1`. Few examples are available in `$OMPI_181/examples` 
+  * Please use `mpijavac` with other parameters similar to `javac` command to compile OpenMPI Java programs. Once compiled `mpirun [options] java -cp <classpath> class-name arguments` command with proper values set as arguments will run the program. 
+
 Publications
 -----
 Fox, G. C. Deterministic annealing and robust scalable data mining for the
