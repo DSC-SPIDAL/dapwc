@@ -34,14 +34,6 @@
         </dependency>
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>OMPIRepo</id>
-            <name>OMPIRepo</name>
-            <url>file://${env.OMPI_181}/m2repo</url>
-        </repository>
-    </repositories>
-
     <build>
         <plugins>
             <plugin>

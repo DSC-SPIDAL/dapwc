@@ -2,6 +2,7 @@ package edu.indiana.soic.spidal.pairwiseclustering;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import edu.rice.hj.api.SuspendableException;
 import mpi.MPIException;
 
 import java.io.BufferedReader;
@@ -13,7 +14,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-import static edu.rice.hj.HJ.forallChunked;
+import static edu.rice.hj.Module1.forallChunked;
 
 public class FindCenters
 {
@@ -200,43 +201,47 @@ public class FindCenters
         //  Loop over points GlobalPointIndex1 to find MDS means which are needed for next step
         if (PWCUtility.addMDS > 0) {
             // Note - parallel for
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-                int indexlen = PWCUtility.PointsperThread[threadIndex];
-                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                for (int index = beginpoint; index < indexlen + beginpoint; index++) {
-                    int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
-                    int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
-                    if ((group1 < 0) || (group1 >= NumberofGroups)) {
-                        PWCUtility.printAndThrowRuntimeException(
-                                " Illegal group number " + (new Integer(group1)).toString() + " Point " +
-                                        (new Integer(GlobalPointIndex1)).toString());
-                    }
-                    if (GroupCount[group1] <= 0) {
-                        continue;
-                    }
-                    for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global;
-                         GlobalPointIndex2++) {
-                        if (GlobalPointIndex1 == GlobalPointIndex2) {
-                            continue;
-                        }
-                        int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
-                        if ((group2 < 0) || (group2 >= NumberofGroups)) {
+            try {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    int indexlen = PWCUtility.PointsperThread[threadIndex];
+                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                    for (int index = beginpoint; index < indexlen + beginpoint; index++) {
+                        int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
+                        int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
+                        if ((group1 < 0) || (group1 >= NumberofGroups)) {
                             PWCUtility.printAndThrowRuntimeException(
-                                    " Illegal group number " + (new Integer(group2)).toString() + " Point " +
-                                            (new Integer(GlobalPointIndex2)).toString());
+                                    " Illegal group number " + (new Integer(group1)).toString() + " Point " +
+                                            (new Integer(GlobalPointIndex1)).toString());
                         }
-                        if (group1 != group2) {
+                        if (GroupCount[group1] <= 0) {
                             continue;
                         }
-                        double tmp = getMDSDistanceValue(GlobalPointIndex1, GlobalPointIndex2);
-                        FindGroupMDSMeansigma[group1].addapoint(threadIndex, tmp);
+                        for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global;
+                             GlobalPointIndex2++) {
+                            if (GlobalPointIndex1 == GlobalPointIndex2) {
+                                continue;
+                            }
+                            int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
+                            if ((group2 < 0) || (group2 >= NumberofGroups)) {
+                                PWCUtility.printAndThrowRuntimeException(
+                                        " Illegal group number " + (new Integer(group2)).toString() + " Point " +
+                                                (new Integer(GlobalPointIndex2)).toString());
+                            }
+                            if (group1 != group2) {
+                                continue;
+                            }
+                            double tmp = getMDSDistanceValue(GlobalPointIndex1, GlobalPointIndex2);
+                            FindGroupMDSMeansigma[group1].addapoint(threadIndex, tmp);
+                        }
+                        for (int MDSindex = 0; MDSindex < 3; MDSindex++) {
+                            FindGroupMDSCoG[group1][MDSindex]
+                                    .addapoint(threadIndex, MDSvalues[GlobalPointIndex1][MDSindex]);
+                        }
                     }
-                    for (int MDSindex = 0; MDSindex < 3; MDSindex++) {
-                        FindGroupMDSCoG[group1][MDSindex]
-                                .addapoint(threadIndex, MDSvalues[GlobalPointIndex1][MDSindex]);
-                    }
-                }
-            });
+                });
+            } catch (SuspendableException e) {
+                PWCUtility.printAndThrowRuntimeException(e.getMessage());
+            }
 
             for (int group = 0; group < NumberofGroups; group++) {
                 if (GroupCount[group] == 0) {
@@ -254,67 +259,71 @@ public class FindCenters
 
         //  Loop over points GlobalPointIndex1
         // Note - parallel for
-        forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-            int indexlen = PWCUtility.PointsperThread[threadIndex];
-            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-            for (int index = beginpoint; index < indexlen + beginpoint; index++) {
-                int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
-                int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
-                if ((group1 < 0) || (group1 >= NumberofGroups)) {
-                    PWCUtility.printAndThrowRuntimeException(
-                            " Illegal group number " + (new Integer(group1)).toString() + " Point " +
-                                    (new Integer(GlobalPointIndex1)).toString());
-                }
-                if (GroupCount[group1] <= 0) {
-                    continue;
-                }
-                int LinkCutUsed = PWCUtility.LinkCountinCenterFinding;
-                LinkCutUsed = Math.min(LinkCutUsed, GroupCount[group1] - 20);
-                LinkCutUsed = Math.max(LinkCutUsed, 1);
-                double thispointmean = 0.0;
-                double thispointMDSmean = 0.0;
-                int Countlinks = 0;
-                for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global; GlobalPointIndex2++) {
-                    if (GlobalPointIndex1 == GlobalPointIndex2) {
-                        continue;
-                    }
-                    int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
-                    if ((group2 < 0) || (group2 >= NumberofGroups)) {
+        try {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                for (int index = beginpoint; index < indexlen + beginpoint; index++) {
+                    int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
+                    int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
+                    if ((group1 < 0) || (group1 >= NumberofGroups)) {
                         PWCUtility.printAndThrowRuntimeException(
-                                " Illegal group number " + (new Integer(group2)).toString() + " Point " +
-                                        (new Integer(GlobalPointIndex2)).toString());
+                                " Illegal group number " + (new Integer(group1)).toString() + " Point " +
+                                        (new Integer(GlobalPointIndex1)).toString());
                     }
-                    if (group1 != group2) {
+                    if (GroupCount[group1] <= 0) {
                         continue;
                     }
-                    double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
-                    if (tmp > PWCUtility.MinimumDistanceCut) {
-                        if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
-                            ++Countlinks;
-                            thispointmean += tmp;
-                            FindGroupMax[group1].addapoint(threadIndex, tmp);
-                            FindGroupMeansigma[group1].addapoint(threadIndex, tmp);
+                    int LinkCutUsed = PWCUtility.LinkCountinCenterFinding;
+                    LinkCutUsed = Math.min(LinkCutUsed, GroupCount[group1] - 20);
+                    LinkCutUsed = Math.max(LinkCutUsed, 1);
+                    double thispointmean = 0.0;
+                    double thispointMDSmean = 0.0;
+                    int Countlinks = 0;
+                    for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global; GlobalPointIndex2++) {
+                        if (GlobalPointIndex1 == GlobalPointIndex2) {
+                            continue;
+                        }
+                        int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
+                        if ((group2 < 0) || (group2 >= NumberofGroups)) {
+                            PWCUtility.printAndThrowRuntimeException(
+                                    " Illegal group number " + (new Integer(group2)).toString() + " Point " +
+                                            (new Integer(GlobalPointIndex2)).toString());
+                        }
+                        if (group1 != group2) {
+                            continue;
+                        }
+                        double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
+                        if (tmp > PWCUtility.MinimumDistanceCut) {
+                            if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
+                                ++Countlinks;
+                                thispointmean += tmp;
+                                FindGroupMax[group1].addapoint(threadIndex, tmp);
+                                FindGroupMeansigma[group1].addapoint(threadIndex, tmp);
+                            }
+                        }
+                        if (PWCUtility.addMDS > 0) {
+                            tmp = getMDSDistanceValue(GlobalPointIndex1, GlobalPointIndex2);
+                            thispointMDSmean += tmp;
                         }
                     }
+                    if (Countlinks >= LinkCutUsed) {
+                        FindGroupOriginalDataCenters_mean[group1]
+                                .addAPoint(threadIndex, GlobalPointIndex1, thispointmean / Countlinks);
+                    }
                     if (PWCUtility.addMDS > 0) {
-                        tmp = getMDSDistanceValue(GlobalPointIndex1, GlobalPointIndex2);
-                        thispointMDSmean += tmp;
+                        double MDSmeandistance = getMDSDistancefromPoint(GlobalPointIndex1, GroupMDSCoG[group1]);
+                        FindGroupMDSCenters_CoG[group1].addAPoint(threadIndex, GlobalPointIndex1, MDSmeandistance);
+                        if (Countlinks > 0) {
+                            FindGroupMDSCenters_mean[group1]
+                                    .addAPoint(threadIndex, GlobalPointIndex1, thispointMDSmean / Countlinks);
+                        }
                     }
                 }
-                if (Countlinks >= LinkCutUsed) {
-                    FindGroupOriginalDataCenters_mean[group1]
-                            .addAPoint(threadIndex, GlobalPointIndex1, thispointmean / Countlinks);
-                }
-                if (PWCUtility.addMDS > 0) {
-                    double MDSmeandistance = getMDSDistancefromPoint(GlobalPointIndex1, GroupMDSCoG[group1]);
-                    FindGroupMDSCenters_CoG[group1].addAPoint(threadIndex, GlobalPointIndex1, MDSmeandistance);
-                    if (Countlinks > 0) {
-                        FindGroupMDSCenters_mean[group1]
-                                .addAPoint(threadIndex, GlobalPointIndex1, thispointMDSmean / Countlinks);
-                    }
-                }
-            }
-        });
+            });
+        } catch (SuspendableException e) {
+            PWCUtility.printAndThrowRuntimeException(e.getMessage());
+        }
 
         // Finishup finding centers from sequence distance means and MDS CoG and means
         for (int group = 0; group < NumberofGroups; group++) {
@@ -744,38 +753,42 @@ public class FindCenters
                 //  Loop over points selecting those in this group
                 // Note - parallel for
                 final int groupLoopVar = group;
-                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    DistanceHistogramBinCounts.startthread(threadIndex);
-                    for (int index = beginpoint; index < indexlen + beginpoint; index++) {
-                        int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
-                        int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
-                        if (group1 != groupLoopVar) {
-                            continue;
-                        }
-                        for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global;
-                             GlobalPointIndex2++) {
-                            if (GlobalPointIndex1 == GlobalPointIndex2) {
+                try {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        DistanceHistogramBinCounts.startthread(threadIndex);
+                        for (int index = beginpoint; index < indexlen + beginpoint; index++) {
+                            int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
+                            int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
+                            if (group1 != groupLoopVar) {
                                 continue;
                             }
-                            int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
-                            if (group2 != groupLoopVar) {
-                                continue;
-                            }
-                            double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
-                            if (tmp > PWCUtility.MinimumDistanceCut) {
-                                if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
-                                    int itmp = (int) Math.floor(tmp * fudge);
-                                    if (itmp >= NumberofBins) {
-                                        itmp = NumberofBins - 1;
+                            for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global;
+                                 GlobalPointIndex2++) {
+                                if (GlobalPointIndex1 == GlobalPointIndex2) {
+                                    continue;
+                                }
+                                int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
+                                if (group2 != groupLoopVar) {
+                                    continue;
+                                }
+                                double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
+                                if (tmp > PWCUtility.MinimumDistanceCut) {
+                                    if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
+                                        int itmp = (int) Math.floor(tmp * fudge);
+                                        if (itmp >= NumberofBins) {
+                                            itmp = NumberofBins - 1;
+                                        }
+                                        DistanceHistogramBinCounts.addapoint(threadIndex, itmp);
                                     }
-                                    DistanceHistogramBinCounts.addapoint(threadIndex, itmp);
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                } catch (SuspendableException e) {
+                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
+                }
 
                 DistanceHistogramBinCounts.sumoverthreadsandmpi();
                 double NumberinHistogram = DistanceHistogramBinCounts.TotalNumberofPoints;
@@ -803,48 +816,52 @@ public class FindCenters
 
                 //  Loop over points
                 // Note - parallel for
-                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int index = beginpoint; index < indexlen + beginpoint; index++) {
-                        int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
-                        int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
-                        if (groupLoopVar != group1) {
-                            continue;
-                        }
-                        double[] BucketCounts = new double[PWCUtility.NumberofBuckets];
-                        for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
-                            BucketCounts[BucketIndex] = 0.0;
-                        }
-                        for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global;
-                             GlobalPointIndex2++) {
-                            if (GlobalPointIndex1 == GlobalPointIndex2) {
+                try {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        for (int index = beginpoint; index < indexlen + beginpoint; index++) {
+                            int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
+                            int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
+                            if (groupLoopVar != group1) {
                                 continue;
                             }
-                            int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
-                            if (groupLoopVar != group2) {
-                                continue;
+                            double[] BucketCounts = new double[PWCUtility.NumberofBuckets];
+                            for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
+                                BucketCounts[BucketIndex] = 0.0;
                             }
-                            double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
-                            if (tmp > PWCUtility.MinimumDistanceCut) {
-                                if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
-                                    for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
-                                        if (tmp <= BucketRadii[BucketIndex]) {
-                                            BucketCounts[BucketIndex] += 1.0;
+                            for (int GlobalPointIndex2 = 0; GlobalPointIndex2 < PWCUtility.PointCount_Global;
+                                 GlobalPointIndex2++) {
+                                if (GlobalPointIndex1 == GlobalPointIndex2) {
+                                    continue;
+                                }
+                                int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
+                                if (groupLoopVar != group2) {
+                                    continue;
+                                }
+                                double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
+                                if (tmp > PWCUtility.MinimumDistanceCut) {
+                                    if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
+                                        for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
+                                            if (tmp <= BucketRadii[BucketIndex]) {
+                                                BucketCounts[BucketIndex] += 1.0;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                        for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
-                            if (BucketCounts[BucketIndex] < 0.5) {
-                                continue;
+                            for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
+                                if (BucketCounts[BucketIndex] < 0.5) {
+                                    continue;
+                                }
+                                double tmp = (double) GroupCount[groupLoopVar] - BucketCounts[BucketIndex];
+                                FindCentersbybuckets[BucketIndex].addAPoint(threadIndex, GlobalPointIndex1, tmp);
                             }
-                            double tmp = (double) GroupCount[groupLoopVar] - BucketCounts[BucketIndex];
-                            FindCentersbybuckets[BucketIndex].addAPoint(threadIndex, GlobalPointIndex1, tmp);
                         }
-                    }
-                });
+                    });
+                } catch (SuspendableException e) {
+                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
+                }
 
                 for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
                     FindCentersbybuckets[BucketIndex].sumOverThreadsAndMPI();

@@ -1,18 +1,16 @@
 package edu.indiana.soic.spidal.pairwiseclustering;
 
+import edu.rice.hj.runtime.config.HjConfiguration;
 import mpi.MPI;
 import mpi.MPIException;
 import edu.indiana.soic.spidal.mpi.MpiOps;
-
-import static edu.rice.hj.HJ.finalizeHabanero;
-import static edu.rice.hj.HJ.initializeHabanero;
 
 public class PWCParallelism
 {
 	public static void SetupParallelism(String[] args) throws MPIException
 	{
         // Set up threads
-        initializeHabanero();
+        HjConfiguration.initializeRuntime();
 
 		//  Set up MPI
         MPI.Init(args);
@@ -42,7 +40,7 @@ public class PWCParallelism
 
 	public static void TearDownParallelism() throws MPIException {
         // Finalize threads
-        finalizeHabanero();
+        HjConfiguration.finalizeRuntime();
 
         // End MPI
         MPI.Finalize();

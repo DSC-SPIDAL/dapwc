@@ -1,7 +1,5 @@
 package edu.indiana.soic.spidal.pairwiseclustering;
 
-import static edu.rice.hj.HJ.forallChunked;
-
 //	Class Dist **********************************************************
 // ------------------------------------------------------------------------------
 //	getDist controls complete pairwise computation
@@ -113,6 +111,10 @@ import static edu.rice.hj.HJ.forallChunked;
 
 // Calculate Pairwise Algorithm
 
+import edu.rice.hj.api.SuspendableException;
+
+import static edu.rice.hj.Module1.forallChunked;
+
 public class ClusteringSolution
 {
 	public double[][] Old_Epsilonalpha_k_; // Previous value of Epsilon
@@ -173,25 +175,29 @@ public class ClusteringSolution
         Saved_oldAx = new double[NumberofPointsinProcess][];
 
         // Note - parallel for
-        forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-            int indexlen = PWCUtility.PointsperThread[threadIndex];
-            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
-                Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                Old_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                Best_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                Master_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                Malpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                Previous_Malpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                Balpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                Saved_Ax[ProcessPointIndex] = new double[MaximumNumberClusters + cachelinesize];
-                Saved_oldAx[ProcessPointIndex] = new double[MaximumNumberClusters + cachelinesize];
-                for (int ClusterIndex = 0; ClusterIndex < Program.maxNcent; ClusterIndex++) {
-                    Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = 0.0;
-                    Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = 0.0;
+        try {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                    Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Old_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Best_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Master_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Malpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Previous_Malpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Balpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Saved_Ax[ProcessPointIndex] = new double[MaximumNumberClusters + cachelinesize];
+                    Saved_oldAx[ProcessPointIndex] = new double[MaximumNumberClusters + cachelinesize];
+                    for (int ClusterIndex = 0; ClusterIndex < Program.maxNcent; ClusterIndex++) {
+                        Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = 0.0;
+                        Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = 0.0;
+                    }
                 }
-            }
-        });
+            });
+        } catch (SuspendableException e) {
+            PWCUtility.printAndThrowRuntimeException(e.getMessage());
+        }
 
         C_k_ = new double[MaximumNumberClusters + cachelinesize]; // Final value of C(k)
         A_k_ = new double[MaximumNumberClusters + cachelinesize];
@@ -226,31 +232,35 @@ public class ClusteringSolution
         }
 
         // Note - parallel for
-        forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-            int indexlen = PWCUtility.PointsperThread[threadIndex];
-            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
-                for (int ClusterIndex = 0; ClusterIndex < NumberClusters; ClusterIndex++) {
-                    To.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            From.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                    To.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            From.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                    To.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            From.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                    To.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            From.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                    To.Malpha_k_[ProcessPointIndex][ClusterIndex] = From.Malpha_k_[ProcessPointIndex][ClusterIndex];
-                    To.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex] =
-                            From.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex];
-                    To.Balpha_k_[ProcessPointIndex][ClusterIndex] = From.Balpha_k_[ProcessPointIndex][ClusterIndex];
-                    if (From.Axset) {
-                        To.Saved_Ax[ProcessPointIndex][ClusterIndex] = From.Saved_Ax[ProcessPointIndex][ClusterIndex];
-                        To.Saved_oldAx[ProcessPointIndex][ClusterIndex] =
-                                From.Saved_oldAx[ProcessPointIndex][ClusterIndex];
+        try {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                    for (int ClusterIndex = 0; ClusterIndex < NumberClusters; ClusterIndex++) {
+                        To.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                From.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                        To.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                From.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                        To.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                From.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                        To.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                From.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                        To.Malpha_k_[ProcessPointIndex][ClusterIndex] = From.Malpha_k_[ProcessPointIndex][ClusterIndex];
+                        To.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex] =
+                                From.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex];
+                        To.Balpha_k_[ProcessPointIndex][ClusterIndex] = From.Balpha_k_[ProcessPointIndex][ClusterIndex];
+                        if (From.Axset) {
+                            To.Saved_Ax[ProcessPointIndex][ClusterIndex] = From.Saved_Ax[ProcessPointIndex][ClusterIndex];
+                            To.Saved_oldAx[ProcessPointIndex][ClusterIndex] =
+                                    From.Saved_oldAx[ProcessPointIndex][ClusterIndex];
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (SuspendableException e) {
+            PWCUtility.printAndThrowRuntimeException(e.getMessage());
+        }
     } // End CopySolution
 
     public static void RemoveCluster(ClusteringSolution Changing, int RemovedIndex) {
@@ -269,34 +279,38 @@ public class ClusteringSolution
         }
 
         // Note - parallel for
-        forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-            int indexlen = PWCUtility.PointsperThread[threadIndex];
-            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
-                for (int ClusterIndex = 0; ClusterIndex < Changing.Ncent; ClusterIndex++) {
-                    Changing.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            Changing.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] + 1;
-                    Changing.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            Changing.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                    Changing.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            Changing.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                    Changing.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                            Changing.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                    Changing.Malpha_k_[ProcessPointIndex][ClusterIndex] =
-                            Changing.Malpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                    Changing.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex] =
-                            Changing.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                    Changing.Balpha_k_[ProcessPointIndex][ClusterIndex] =
-                            Changing.Balpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                    if (Changing.Axset) {
-                        Changing.Saved_Ax[ProcessPointIndex][ClusterIndex] =
-                                Changing.Saved_Ax[ProcessPointIndex][ClusterIndex + 1];
-                        Changing.Saved_oldAx[ProcessPointIndex][ClusterIndex] =
-                                Changing.Saved_oldAx[ProcessPointIndex][ClusterIndex + 1];
+        try {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                    for (int ClusterIndex = 0; ClusterIndex < Changing.Ncent; ClusterIndex++) {
+                        Changing.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                Changing.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] + 1;
+                        Changing.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                Changing.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
+                        Changing.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                Changing.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
+                        Changing.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
+                                Changing.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
+                        Changing.Malpha_k_[ProcessPointIndex][ClusterIndex] =
+                                Changing.Malpha_k_[ProcessPointIndex][ClusterIndex + 1];
+                        Changing.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex] =
+                                Changing.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex + 1];
+                        Changing.Balpha_k_[ProcessPointIndex][ClusterIndex] =
+                                Changing.Balpha_k_[ProcessPointIndex][ClusterIndex + 1];
+                        if (Changing.Axset) {
+                            Changing.Saved_Ax[ProcessPointIndex][ClusterIndex] =
+                                    Changing.Saved_Ax[ProcessPointIndex][ClusterIndex + 1];
+                            Changing.Saved_oldAx[ProcessPointIndex][ClusterIndex] =
+                                    Changing.Saved_oldAx[ProcessPointIndex][ClusterIndex + 1];
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (SuspendableException e) {
+            PWCUtility.printAndThrowRuntimeException(e.getMessage());
+        }
     } // End RemoveCluster
 
     public static void SetAxinSolution(ClusteringSolution Solution) {
@@ -304,18 +318,22 @@ public class ClusteringSolution
         int NumberClusters = Solution.Ncent;
 
         // Note - parallel for
-        forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-            int indexlen = PWCUtility.PointsperThread[threadIndex];
-            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
-                for (int ClusterIndex = 0; ClusterIndex < NumberClusters; ClusterIndex++) {
-                    Solution.Saved_Ax[ProcessPointIndex][ClusterIndex] =
-                            vectorclass.Ax[ProcessPointIndex][ClusterIndex];
-                    Solution.Saved_oldAx[ProcessPointIndex][ClusterIndex] =
-                            vectorclass.oldAx[ProcessPointIndex][ClusterIndex];
+        try {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                    for (int ClusterIndex = 0; ClusterIndex < NumberClusters; ClusterIndex++) {
+                        Solution.Saved_Ax[ProcessPointIndex][ClusterIndex] =
+                                vectorclass.Ax[ProcessPointIndex][ClusterIndex];
+                        Solution.Saved_oldAx[ProcessPointIndex][ClusterIndex] =
+                                vectorclass.oldAx[ProcessPointIndex][ClusterIndex];
+                    }
                 }
-            }
-        });
+            });
+        } catch (SuspendableException e) {
+            PWCUtility.printAndThrowRuntimeException(e.getMessage());
+        }
     }
 
     public static void RestoreAxfromSolution(ClusteringSolution Solution) {
@@ -326,18 +344,22 @@ public class ClusteringSolution
         int NumberClusters = Solution.Ncent;
 
         // Note - parallel for
-        forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-            int indexlen = PWCUtility.PointsperThread[threadIndex];
-            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
-                for (int ClusterIndex = 0; ClusterIndex < NumberClusters; ClusterIndex++) {
-                    vectorclass.Ax[ProcessPointIndex][ClusterIndex] =
-                            Solution.Saved_Ax[ProcessPointIndex][ClusterIndex];
-                    vectorclass.oldAx[ProcessPointIndex][ClusterIndex] =
-                            Solution.Saved_oldAx[ProcessPointIndex][ClusterIndex];
+        try {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                    for (int ClusterIndex = 0; ClusterIndex < NumberClusters; ClusterIndex++) {
+                        vectorclass.Ax[ProcessPointIndex][ClusterIndex] =
+                                Solution.Saved_Ax[ProcessPointIndex][ClusterIndex];
+                        vectorclass.oldAx[ProcessPointIndex][ClusterIndex] =
+                                Solution.Saved_oldAx[ProcessPointIndex][ClusterIndex];
+                    }
                 }
-            }
-        });
+            });
+        } catch (SuspendableException e) {
+            PWCUtility.printAndThrowRuntimeException(e.getMessage());
+        }
     }
 
 } // End ClusteringSolution

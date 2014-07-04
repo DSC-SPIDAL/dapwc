@@ -1,11 +1,12 @@
 package edu.indiana.soic.spidal.pairwiseclustering;
 
+import edu.rice.hj.api.SuspendableException;
 import mpi.MPI;
 import mpi.MPIException;
 import edu.indiana.soic.spidal.mpi.MPIReducePlusIndex;
 import edu.indiana.soic.spidal.general.Box;
 
-import static edu.rice.hj.HJ.forallChunked;
+import static edu.rice.hj.Module1.forallChunked;
 
 public class GlobalReductions {
 
@@ -594,16 +595,20 @@ public class GlobalReductions {
 
         public final void sumOverThreadsAndMPI() throws MPIException {
             // Note - parallel for
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-                int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
-                int indexlength = ParallelArrayRanges[threadIndex].getLength();
-                for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
-                    TotalVectorSum[ArrayLoop] = 0.0;
-                    for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                        TotalVectorSum[ArrayLoop] += VectorSum[ThreadNo][ArrayLoop];
+            try {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
+                    int indexlength = ParallelArrayRanges[threadIndex].getLength();
+                    for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
+                        TotalVectorSum[ArrayLoop] = 0.0;
+                        for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+                            TotalVectorSum[ArrayLoop] += VectorSum[ThreadNo][ArrayLoop];
+                        }
                     }
-                }
-            });
+                });
+            } catch (SuspendableException e) {
+                PWCUtility.printAndThrowRuntimeException(e.getMessage());
+            }
 
             if (PWCUtility.MPI_Size > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
@@ -665,17 +670,21 @@ public class GlobalReductions {
         public final void sumOverThreadsAndMPI() throws MPIException {
             PWCUtility.StartSubTimer(PWCUtility.ThreadTiming);
             // Note - parallel for
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-                int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
-                int indexlength = ParallelArrayRanges[threadIndex].getLength();
-                for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
-                    double tmp = 0.0;
-                    for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                        tmp += VectorSum[ThreadNo][ArrayLoop];
+            try {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
+                    int indexlength = ParallelArrayRanges[threadIndex].getLength();
+                    for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
+                        double tmp = 0.0;
+                        for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+                            tmp += VectorSum[ThreadNo][ArrayLoop];
+                        }
+                        TotalVectorSum[ArrayLoop] = tmp;
                     }
-                    TotalVectorSum[ArrayLoop] = tmp;
-                }
-            });
+                });
+            } catch (SuspendableException e) {
+                PWCUtility.printAndThrowRuntimeException(e.getMessage());
+            }
             PWCUtility.StopSubTimer(PWCUtility.ThreadTiming);
 
             if (PWCUtility.MPI_Size > 1) {
@@ -752,16 +761,20 @@ public class GlobalReductions {
             }
 
             // Note - parallel for
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
-                int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
-                int indexlength = ParallelArrayRanges[threadIndex].getLength();
-                for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
-                    TotalVectorSum[ArrayLoop] = 0.0;
-                    for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                        TotalVectorSum[ArrayLoop] += VectorSum[ThreadNo][ArrayLoop];
+            try {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
+                    int indexlength = ParallelArrayRanges[threadIndex].getLength();
+                    for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
+                        TotalVectorSum[ArrayLoop] = 0.0;
+                        for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+                            TotalVectorSum[ArrayLoop] += VectorSum[ThreadNo][ArrayLoop];
+                        }
                     }
-                }
-            });
+                });
+            } catch (SuspendableException e) {
+                PWCUtility.printAndThrowRuntimeException(e.getMessage());
+            }
 
             if (PWCUtility.MPI_Size > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);

@@ -3,6 +3,7 @@ package edu.indiana.soic.spidal.pairwiseclustering;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
+import edu.rice.hj.api.SuspendableException;
 import mpi.MPI;
 import mpi.MPIException;
 import org.apache.commons.cli.*;
@@ -26,7 +27,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import static edu.rice.hj.HJ.forallChunked;
+import static edu.rice.hj.Module1.forallChunked;
 
 /**
  * The {@code Program} class
@@ -534,31 +535,35 @@ public class Program
 
 		//  Parallel Section setting cluster labels
         // Note - parallel for
-        forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-		{
-            Arrays.fill(partialsum_OccupationCounts[threadIndex], 0, Dist.RunningPWC.Ncent, 0);
-			int indexlen = PWCUtility.PointsperThread[threadIndex];
-			int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-			for (int index = beginpoint; index < indexlen + beginpoint; index++)
-			{
-				double distmin = 9999999999999.0;
-				int knear = 0;
-				for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
-				{
-					if (Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex] < distmin)
-					{
-						distmin = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
-						knear = ClusterIndex;
-					}
-				}
-				labels[index] = knear + Program.FirstClusterNumber;
-				partialsum_OccupationCounts[threadIndex][knear]++;
-			}
-		}
-	   );
+        try {
+            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+            {
+                Arrays.fill(partialsum_OccupationCounts[threadIndex], 0, Dist.RunningPWC.Ncent, 0);
+                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                for (int index = beginpoint; index < indexlen + beginpoint; index++)
+                {
+                    double distmin = 9999999999999.0;
+                    int knear = 0;
+                    for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
+                    {
+                        if (Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex] < distmin)
+                        {
+                            distmin = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
+                            knear = ClusterIndex;
+                        }
+                    }
+                    labels[index] = knear + Program.FirstClusterNumber;
+                    partialsum_OccupationCounts[threadIndex][knear]++;
+                }
+            }
+           );
+        } catch (SuspendableException e) {
+            PWCUtility.printAndThrowRuntimeException(e.getMessage());
+        }
 
 
-		int[] LocalOccupationCounts = new int[Dist.RunningPWC.Ncent];
+        int[] LocalOccupationCounts = new int[Dist.RunningPWC.Ncent];
 		Arrays.fill(LocalOccupationCounts, 0, Dist.RunningPWC.Ncent, 0);
 		for (int ThreadNo = 0; ThreadNo < PWCUtility.ThreadCount; ThreadNo++)
 		{
@@ -600,18 +605,22 @@ public class Program
 			WriteClusterFile(ClusternumberFileName, labels, PWCUtility.PointCount_Process, PWCUtility.PointStart_Process, false);
 
             // Note - parallel for
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-			{
-				int indexlen = PWCUtility.PointsperThread[threadIndex];
-				int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-				for (int index = beginpoint; index < indexlen + beginpoint; index++)
-				{
-					Program.ClusterAssignments[index + PWCUtility.PointStart_Process] = labels[index] - Program.FirstClusterNumber;
-				}
-			}
-		   );
+            try {
+                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                {
+                    int indexlen = PWCUtility.PointsperThread[threadIndex];
+                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                    for (int index = beginpoint; index < indexlen + beginpoint; index++)
+                    {
+                        Program.ClusterAssignments[index + PWCUtility.PointStart_Process] = labels[index] - Program.FirstClusterNumber;
+                    }
+                }
+               );
+            } catch (SuspendableException e) {
+                PWCUtility.printAndThrowRuntimeException(e.getMessage());
+            }
 
-			for (int MPISource = 1; MPISource < PWCUtility.MPI_Size; MPISource++)
+            for (int MPISource = 1; MPISource < PWCUtility.MPI_Size; MPISource++)
 			{
                 // Note - MPI Call - Receive - MPIPacket
 				MPIPacket fromsource = PWCUtility.mpiOps.receive(MPISource, MPItag, MPIPacket.Type.Integer);
