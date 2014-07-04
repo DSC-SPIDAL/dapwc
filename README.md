@@ -10,12 +10,15 @@ Prerequisites
     *  Red Hat Enterprise Linux Server release 5.10 (Tikanga)
     *  Ubuntu 12.04.3 LTS
     *  Ubuntu 12.10
-  * This may work in Windows systems depending on the ability to setup OpenMPI properly, however, this has not been tested and we recommend choosing a Linux based operating system.
+  * This may work in Windows systems depending on the ability to setup OpenMPI properly, however, this has not been tested and we recommend choosing a Linux based operating system instead.
  
 2. Java 1.8
   * Download Oracle JDK 8 from http://www.oracle.com/technetwork/java/javase/downloads/index.html
   * Extract the archive to a folder named jdk1.8.0
-  * Se
+  * Set the following environment variables
+  ```
+    JAVA_HOME=path-to-jdk1.8.0-directory
+  ```
 
 Publications
 -----
