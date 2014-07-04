@@ -62,6 +62,14 @@ Prerequisites
   ```
   * Few examples are available in `$OMPI_181/examples`. Please use `mpijavac` with other parameters similar to `javac` command to compile OpenMPI Java programs. Once compiled `mpirun [options] java -cp <classpath> class-name arguments` command with proper values set as arguments will run the program. 
 
+Building dapwc
+-----
+Once all the prerequisites are met, building dapwc requires only one command, `mvn install`, issued within the directory that contains the `pom.xml` of dapwc.
+
+Running dapwc
+-----
+
+
 Publications
 -----
 Fox, G. C. Deterministic annealing and robust scalable data mining for the
