@@ -1,7 +1,19 @@
 dapwc
 =====
 
-Deterministic Annealing Pairwise Clustering
+Deterministic Annealing Pairwise Clustering (dapwc) is a scalable and parallel clustering program that operate on non vector space. 
+
+Success Stories
+-----
+* Million Sequence Clustering at http://salsahpc.indiana.edu/millionseq/ 
+* The Fungi Phylogenetic Project at http://salsafungiphy.blogspot.com/
+
+Publications
+-----
+Fox, G. C. Deterministic annealing and robust scalable data mining for the
+data deluge. In Proceedings of the Proceedings of the 2nd international
+workshop on Petascal data analytics: challenges and opportunities (Seattle,
+Washington, USA, 2011). ACM. Available at http://grids.ucs.indiana.edu/ptliupages/publications/pdac24g-fox.pdf
 
 Prerequisites
 -----
@@ -163,13 +175,6 @@ The following table summarizes the parameters used in dapwc.
 | ConsoleDebugOutput | Flag to enable console output. | true | Boolean |
 | DataTypeSize | Indicates the data type size in bytes for the binary distances. | 2 | Integer |
 | IsBigEndian | Indicates the endianness of the binary distance file.  | false | Boolean |
-
-Publications
------
-Fox, G. C. Deterministic annealing and robust scalable data mining for the
-data deluge. In Proceedings of the Proceedings of the 2nd international
-workshop on Petascal data analytics: challenges and opportunities (Seattle,
-Washington, USA, 2011). ACM. Available at http://grids.ucs.indiana.edu/ptliupages/publications/pdac24g-fox.pdf
 
 Acknowledgement
 -----
