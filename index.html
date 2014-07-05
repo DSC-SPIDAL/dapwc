@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Deterministic Annealing Pairwise Clustering (dapwc) : Scalable clustering of non vector data" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Deterministic Annealing Pairwise Clustering (dapwc)</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/DSC-SPIDAL/dapwc">View on GitHub</a>
+
+          <h1 id="project_title">Deterministic Annealing Pairwise Clustering (dapwc)</h1>
+          <h2 id="project_tagline">Scalable clustering of non vector data</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/DSC-SPIDAL/dapwc/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/DSC-SPIDAL/dapwc/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="dapwc" class="anchor" href="#dapwc"><span class="octicon octicon-link"></span></a>DAPWC</h1>
+
+<p>Deterministic Annealing Pairwise Clustering (dapwc) is a scalable and parallel clustering program that operate on non vector space. </p>
+
+<h2>
+<a name="success-stories" class="anchor" href="#success-stories"><span class="octicon octicon-link"></span></a>Success Stories</h2>
+
+<ul>
+<li>Million Sequence Clustering at <a href="http://salsahpc.indiana.edu/millionseq/">http://salsahpc.indiana.edu/millionseq/</a> </li>
+<li>The Fungi Phylogenetic Project at <a href="http://salsafungiphy.blogspot.com/">http://salsafungiphy.blogspot.com/</a>
+</li>
+</ul><h2>
+<a name="publications" class="anchor" href="#publications"><span class="octicon octicon-link"></span></a>Publications</h2>
+
+<p>Fox, G. C. Deterministic annealing and robust scalable data mining for the
+data deluge. In Proceedings of the Proceedings of the 2nd international
+workshop on Petascal data analytics: challenges and opportunities (Seattle,
+Washington, USA, 2011). ACM. Available at <a href="http://grids.ucs.indiana.edu/ptliupages/publications/pdac24g-fox.pdf">http://grids.ucs.indiana.edu/ptliupages/publications/pdac24g-fox.pdf</a></p>
+
+<h2>
+<a name="prerequisites" class="anchor" href="#prerequisites"><span class="octicon octicon-link"></span></a>Prerequisites</h2>
+
+<ol>
+<li>
+<p>Operating System</p>
+
+<ul>
+<li>This program is extensively tested and known to work on,
+
+<ul>
+<li> Red Hat Enterprise Linux Server release 5.10 (Tikanga)</li>
+<li> Ubuntu 12.04.3 LTS</li>
+<li> Ubuntu 12.10</li>
+</ul>
+</li>
+<li>This may work in Windows systems depending on the ability to setup OpenMPI properly, however, this has not been tested and we recommend choosing a Linux based operating system instead.</li>
+</ul>
+</li>
+<li>
+<p>Java</p>
+
+<ul>
+<li>Download Oracle JDK 8 from <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">http://www.oracle.com/technetwork/java/javase/downloads/index.html</a>
+</li>
+<li>Extract the archive to a folder named <code>jdk1.8.0</code>
+</li>
+<li>Set the following environment variables.</li>
+</ul>
+<pre><code>  JAVA_HOME=&lt;path-to-jdk1.8.0-directory&gt;
+  PATH=$JAVA_HOME/bin:$PATH
+  export JAVA_HOME PATH
+</code></pre>
+</li>
+<li>Apache Maven
+
+<ul>
+<li>Download latest Maven release from <a href="http://maven.apache.org/download.cgi">http://maven.apache.org/download.cgi</a>
+</li>
+<li>Extract it to some folder and set the following environment variables.</li>
+</ul>
+<pre><code>  MVN_HOME=&lt;path-to-Maven-folder&gt;
+  $PATH=$MVN_HOME/bin:$PATH
+  export MVN_HOME PATH
+</code></pre>
+</li>
+<li>Habanero Java (HJ) Library
+
+<ul>
+<li>Download HJ-lib jar file from <a href="http://www.cs.rice.edu/%7Evs3/hjlib/habanero-java-lib.jar">http://www.cs.rice.edu/~vs3/hjlib/habanero-java-lib.jar</a>
+</li>
+<li>Execute the following shell command from the directory containing the HJ-lib jar to install it as a Maven artifact</li>
+</ul>
+<div class="highlight highlight-sh"><pre>  mvn install:install-file -DcreateChecksum<span class="o">=</span><span class="nb">true</span> -Dpackaging<span class="o">=</span>jar -Dfile<span class="o">=</span>habanero-java-lib.jar -DgroupId<span class="o">=</span>habanero-java-lib -DartifactId<span class="o">=</span>habanero-java-lib -Dversion<span class="o">=</span>0.1-SNAPSHOT<span class="p">;</span>
+</pre></div>
+
+<ul>
+<li>Find more information about HJ-lib at <a href="https://wiki.rice.edu/confluence/display/PARPROG/Download+and+Set+Up">https://wiki.rice.edu/confluence/display/PARPROG/Download+and+Set+Up</a>
+</li>
+</ul>
+</li>
+<li>OpenMPI
+
+<ul>
+<li>We recommend using <code>OpenMPI 1.8.1</code> although it works with the previous 1.7 versions. The Java binding is not available in versions prior to 1.7, hence are not recommended. Note, if using a version other than 1.8.1 please remember to set Maven dependency appropriately in the <code>pom.xml</code>.</li>
+<li>Download OpenMPI 1.8.1 from <a href="http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.1.tar.gz">http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.1.tar.gz</a>
+</li>
+<li>Extract the archive to a folder named <code>openmpi-1.8.1</code>
+</li>
+<li>Also create a directory named <code>build</code> in some location. We will use this to install OpenMPI</li>
+<li>Set the following environment variables</li>
+</ul>
+<pre><code>  BUILD=&lt;path-to-build-directory&gt;
+  OMPI_181=&lt;path-to-openmpi-1.8.1-directory&gt;
+  PATH=$BUILD/bin:$PATH
+  LD_LIBRARY_PATH=$BUILD/lib:$LD_LIBRARY_PATH
+  export BUILD OMPI_181 PATH LD_LIBRARY_PATH
+</code></pre>
+
+<ul>
+<li>The instructions to build OpenMPI depend on the platform. Therefore, we highly recommend looking into the <code>$OMPI_181/INSTALL</code> file. Platform specific build files are available in <code>$OMPI_181/contrib/platform</code> directory.</li>
+<li>In general, please specify <code>--prefix=$BUILD</code> and <code>--enable-mpi-java</code> as arguments to <code>configure</code> script. If Infiniband is available (highly recommended) specify <code>--with-verbs=&lt;path-to-verbs-installation&gt;</code>. In summary, the following commands will build OpenMPI for a Linux system.</li>
+</ul>
+<pre><code>  cd $OMPI_181
+  ./configure --prefix=$BUILD --enable-mpi-java
+  make;make install
+</code></pre>
+
+<ul>
+<li>If everything goes well <code>mpirun --version</code> will show <code>mpirun (Open MPI) 1.8.1</code>. Execute the following command to instal <code>$OMPI_181/ompi/mpi/java/java/mpi.jar</code> as a Maven artifact.</li>
+</ul>
+<pre><code>  mvn install:install-file -DcreateChecksum=true -Dpackaging=jar -Dfile=$OMPI_181/ompi/mpi/java/java/mpi.jar -DgroupId=ompi -DartifactId=ompijavabinding -Dversion=1.8.1;
+</code></pre>
+
+<ul>
+<li>Few examples are available in <code>$OMPI_181/examples</code>. Please use <code>mpijavac</code> with other parameters similar to <code>javac</code> command to compile OpenMPI Java programs. Once compiled <code>mpirun [options] java -cp &lt;classpath&gt; class-name arguments</code> command with proper values set as arguments will run the program. </li>
+</ul>
+</li>
+</ol><h2>
+<a name="building-dapwc" class="anchor" href="#building-dapwc"><span class="octicon octicon-link"></span></a>Building dapwc</h2>
+
+<ul>
+<li>Check all prerequisites are satisfied before building dapwc</li>
+<li>Clone this git repository from <code>git@github.com:DSC-SPIDAL/dapwc.git</code> Let's call this directory <code>dapwchome</code>
+</li>
+<li>Once above two steps are completed, building dapwc requires only one command, <code>mvn install</code>, issued within <code>dapwchome</code>.</li>
+</ul><h2>
+<a name="running-dapwc" class="anchor" href="#running-dapwc"><span class="octicon octicon-link"></span></a>Running dapwc</h2>
+
+<p>The following shell script may be used with necessary modifications to run the program.</p>
+
+<div class="highlight highlight-sh"><pre><span class="c">#!/bin/bash</span>
+
+<span class="c"># Java classpath. This should include paths to dapwc dependent jar files and the dapwc-1.0-ompi1.8.1.jar</span>
+<span class="c"># The dependent jar files may be obtained by running mvn dependency:build-classpath command within dapwchome</span>
+<span class="nv">cp</span><span class="o">=</span>&lt;classpath&gt;
+
+<span class="c"># Obtain working directory</span>
+<span class="nv">wd</span><span class="o">=</span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>
+<span class="c"># Character x as a variable</span>
+<span class="nv">x</span><span class="o">=</span><span class="s1">'x'</span>
+
+<span class="c"># A text file listing available nodes</span>
+<span class="nv">hosts</span><span class="o">=</span>&lt;path-to-hostfile&gt;
+<span class="c"># Number of nodes</span>
+<span class="nv">nodes</span><span class="o">=</span>&lt;num-nodes&gt;
+<span class="c"># Number of cores per node</span>
+<span class="nv">corespernode</span><span class="o">=</span>8
+
+<span class="c"># Options for Java runtime</span>
+<span class="nv">jopts</span><span class="o">=</span><span class="s2">"-Xms64M -Xmx64M"</span>
+
+<span class="c"># Number of threads to use within one dapwc process</span>
+<span class="nv">tpn</span><span class="o">=</span>&lt;threads-per-process&gt;
+<span class="c"># Number of processes per node</span>
+<span class="nv">ppn</span><span class="o">=</span>&lt;processes-per-node&gt;
+<span class="c"># Total parallelism expressed as a pattern TxPxN</span>
+<span class="c"># where T is number of threads per process, P is processes per node, and N is total nodes</span>
+<span class="nv">pat</span><span class="o">=</span><span class="nv">$tpn$x$ppn$x$nodes</span>
+
+<span class="nb">echo</span> <span class="s2">"Running $pat on `date`"</span> &gt;&gt; status.txt
+<span class="c"># Invoke MPI to run dapwc</span>
+mpirun --report-bindings --mca btl ^tcp --hostfile <span class="nv">$hostfile</span> --map-by node:PE<span class="o">=</span><span class="k">$((</span><span class="nv">$corespernode</span> <span class="o">/</span> <span class="nv">$ppn</span><span class="k">))</span> -np <span class="k">$((</span><span class="nv">$nodes</span><span class="o">*</span><span class="nv">$ppn</span><span class="k">))</span> java <span class="nv">$jopts</span> -cp <span class="nv">$cp</span> edu.indiana.soic.spidal.pairwiseclustering.Program -c config<span class="nv">$pat</span>.properties -n <span class="nv">$nodes</span> -t <span class="nv">$tpn</span> <span class="p">|</span> tee <span class="nv">$pat</span>/pwc-out.txt
+<span class="nb">echo</span> <span class="s2">"Finished $pat on `date`"</span> &gt;&gt; status.txt
+</pre></div>
+
+<p>The arguments listed in the <code>mpirun</code> command fall into three categories.</p>
+
+<ul>
+<li>OpenMPI Runtime Parameters
+
+<ul>
+<li>
+<code>--report-bindings</code> requests OpenMPI runtime to output how processes are mapped to processing elements (cores) in the allocated nodes.</li>
+<li>
+<code>--mca btl ^tcp</code> instructs to enable transports other than tcp, which is useful when running on Infiniband.</li>
+<li>
+<code>--hostfile</code> indicates the file listing available nodes. Each node has to be a in a separate line.</li>
+<li>
+<code>--map-by node:PE=$(($corespernode / $ppn))</code> controls process mapping and binding. This is a topic on its own right, but the specific values in this example requests processes to be mapped by node while binding each to <code>corespernode/ppn</code> number of processing elements. A good set of slides on this topic is available at <a href="http://www.slideshare.net/jsquyres/open-mpi-explorations-in-process-affinity-eurompi13-presentation">http://www.slideshare.net/jsquyres/open-mpi-explorations-in-process-affinity-eurompi13-presentation</a>
+</li>
+<li>
+<code>-np $(($nodes*$ppn))</code> determines the total number of processes to run and in this case it is equal to <code>nodes*ppn</code>
+</li>
+</ul>
+</li>
+<li>Java Runtime Parameters
+
+<ul>
+<li>
+<code>$jopts</code> in this case lists initial and maximum heap sizes for a JVM instance. </li>
+<li>
+<code>-cp</code> indicates paths to find required classes where each entry is separated by a <code>:</code> (in Linux)</li>
+</ul>
+</li>
+<li>Program (dapwc) Parameters
+
+<ul>
+<li>
+<code>-c</code> points to the configuration file. This is a Java properties files listing values for each parameter that dapwc requires. Details on these parameters will follow in a later section.</li>
+<li>
+<code>-n</code> indicates the total number of nodes</li>
+<li>
+<code>-t</code> denotes the number of threads to use within one instance of dapwc</li>
+</ul>
+</li>
+</ul><h2>
+<a name="configuring-dapwc" class="anchor" href="#configuring-dapwc"><span class="octicon octicon-link"></span></a>Configuring dapwc</h2>
+
+<p>The following table summarizes the parameters used in dapwc.</p>
+
+<table>
+<thead><tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Default Value</th>
+<th>Type</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>ClusterFile</td>
+<td>Path to output cluster results.</td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>DistanceMatrixFile</td>
+<td>Path to pairwise distance file.</td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>AddMdsFile</td>
+<td></td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>ClusterNumberFile</td>
+<td></td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>CenterPlotFile</td>
+<td></td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>LabelFile</td>
+<td></td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>TimingFile</td>
+<td>Path to output timing information.</td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>SummaryFile</td>
+<td>Path to output summary file.</td>
+<td>n/a</td>
+<td>String</td>
+</tr>
+<tr>
+<td>NumberDataPoints</td>
+<td>Total number of data points</td>
+<td>n/a</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>ProcessingOption</td>
+<td>Mode of operation.</td>
+<td>0</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>TransformDimension</td>
+<td>Transforms input distances to the given dimension.</td>
+<td>4</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>MaxNcent</td>
+<td>Maximum number of clusters to find.</td>
+<td>n/a</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>SplitOrExpandIt</td>
+<td></td>
+<td>1</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>MPIIOStrategy</td>
+<td></td>
+<td>0</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>TooSmallToSplit</td>
+<td></td>
+<td>5</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>MinEigTest</td>
+<td></td>
+<td>-0.01</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>ConvergeIntermediateClusters</td>
+<td></td>
+<td>false</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>WaitIterations</td>
+<td></td>
+<td>10</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>EpsiMaxChange</td>
+<td></td>
+<td>0.001</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>InitialCoolingFactor</td>
+<td></td>
+<td>0.9</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>FineCoolingFactor</td>
+<td></td>
+<td>0.99</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>EigenValueChange</td>
+<td></td>
+<td>0.001</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>EigenVectorChange</td>
+<td></td>
+<td>0.001</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>IterationAtEnd</td>
+<td></td>
+<td>2000</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>ConvergenceLoopLimit</td>
+<td></td>
+<td>2000</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>FreezingLimit</td>
+<td></td>
+<td>0.002</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>PowerIterationLimit</td>
+<td></td>
+<td>200</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>ContinuousClustering</td>
+<td></td>
+<td>false</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>AddMds</td>
+<td></td>
+<td>1</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>CenterPointsPerCenterTypeInOuput</td>
+<td></td>
+<td>3</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>BucketFractions</td>
+<td></td>
+<td>0.15,0.4,0.75</td>
+<td>String of comma separated double values</td>
+</tr>
+<tr>
+<td>NumberOfCenters</td>
+<td>Maximum number of centers to find for each cluster.</td>
+<td>8</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>DebugPrintOption</td>
+<td></td>
+<td>1</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>ConsoleDebugOutput</td>
+<td>Flag to enable console output.</td>
+<td>true</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>DataTypeSize</td>
+<td>Indicates the data type size in bytes for the binary distances.</td>
+<td>2</td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>IsBigEndian</td>
+<td>Indicates the endianness of the binary distance file.</td>
+<td>false</td>
+<td>Boolean</td>
+</tr>
+</tbody>
+</table><h2>
+<a name="acknowledgement" class="anchor" href="#acknowledgement"><span class="octicon octicon-link"></span></a>Acknowledgement</h2>
+
+<p>We like to express our sincere gratitude to Prof. Vivek Sarkar 
+and his team at Rice University for giving us access and 
+continuous support for HJ library. We are equally thankful to Prof. Guillermo López Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
+thankful to FutureGrid project and its support team for their support with HPC systems. Last but not least OpenMPI community deserves equal recognition for their valuable support.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Deterministic Annealing Pairwise Clustering (dapwc) maintained by <a href="https://github.com/DSC-SPIDAL">DSC-SPIDAL</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
