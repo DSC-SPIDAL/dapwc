@@ -124,6 +124,7 @@ The arguments listed in the `mpirun` command fall into three categories.
 Configuring dapwc
 -----
 The following table summarizes the parameters used in dapwc.
+
 | Parameter | Description | Default Value | Type |
 |----------------------------------|-----------------------------------------------------------------|---------------|-----------------------------------------|
 | ClusterFile | Path to output cluster results. | n/a | String |
