@@ -124,7 +124,44 @@ The arguments listed in the `mpirun` command fall into three categories.
 Configuring dapwc
 -----
 The following table summarizes the parameters used in dapwc.
-
+| Parameter | Description | Default Value | Type |
+|----------------------------------|-----------------------------------------------------------------|---------------|-----------------------------------------|
+| ClusterFile | Path to output cluster results. | n/a | String |
+| DistanceMatrixFile | Path to pairwise distance file. | n/a | String |
+| AddMdsFile |  | n/a | String |
+| ClusterNumberFile |  | n/a | String |
+| CenterPlotFile |  | n/a | String |
+| LabelFile |  | n/a | String |
+| TimingFile | Path to output timing information. | n/a | String |
+| SummaryFile | Path to output summary file. | n/a | String |
+| NumberDataPoints | Total number of data points | n/a | Integer |
+| ProcessingOption  | Mode of operation. | 0 | Integer |
+| TransformDimension | Transforms input distances to the given dimension. | 4 | Integer |
+| MaxNcent  | Maximum number of clusters to find. | n/a | Integer |
+| SplitOrExpandIt |  | 1 | Integer |
+| MPIIOStrategy |  | 0 | Integer |
+| TooSmallToSplit |  | 5 | Integer |
+| MinEigTest |  | -0.01 | Double |
+| ConvergeIntermediateClusters |  | false | Boolean |
+| WaitIterations |  | 10 | Integer |
+| EpsiMaxChange |  | 0.001 | Double |
+| InitialCoolingFactor |  | 0.9 | Double |
+| FineCoolingFactor |  | 0.99 | Double |
+| EigenValueChange |  | 0.001 | Double |
+| EigenVectorChange |  | 0.001 | Double |
+| IterationAtEnd |  | 2000 | Integer |
+| ConvergenceLoopLimit |  | 2000 | Integer |
+| FreezingLimit |  | 0.002 | Double |
+| PowerIterationLimit |  | 200 | Integer |
+| ContinuousClustering |  | false | Boolean |
+| AddMds |  | 1 | Integer |
+| CenterPointsPerCenterTypeInOuput |  | 3 | Integer |
+| BucketFractions |  | 0.15,0.4,0.75 | String of comma separated double values |
+| NumberOfCenters | Maximum number of centers to find for each cluster. | 8 | Integer |
+| DebugPrintOption |  | 1 | Integer |
+| ConsoleDebugOutput | Flag to enable console output. | true | Boolean |
+| DataTypeSize | Indicates the data type size in bytes for the binary distances. | 2 | Integer |
+| IsBigEndian | Indicates the endianness of the binary distance file.  | false | Boolean |
 
 Publications
 -----
