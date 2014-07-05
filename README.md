@@ -108,12 +108,18 @@ echo "Finished $pat on `date`" >> status.txt
 ```
 The arguments listed in the `mpirun` command fall into three categories.
 * OpenMPI Runtime Parameters
-  * `--report-bindings` requests OpenMPI runtime to output how processes are mapped to processing units (cores) in the allocated nodes.
+  * `--report-bindings` requests OpenMPI runtime to output how processes are mapped to processing elements (cores) in the allocated nodes.
   * `--mca btl ^tcp` instructs to enable transports other than tcp, which is useful when running on Infiniband.
   * `--hostfile` indicates the file listing available nodes. Each node has to be a in a separate line.
-  * `--map-by node:PE=$(($corespernode / $ppn))` controls process mapping and binding. This is a topic on its own right 
+  * `--map-by node:PE=$(($corespernode / $ppn))` controls process mapping and binding. This is a topic on its own right, but the specific values in this example requests processes to be mapped by node while binding each to `corespernode/ppn` number of processing elements. A good set of slides on this topic is available at http://www.slideshare.net/jsquyres/open-mpi-explorations-in-process-affinity-eurompi13-presentation
+  * `-np $(($nodes*$ppn))` determines the total number of processes to run and in this case it is equal to `nodes*ppn`
 * Java Runtime Parameters
+  * `$jopts` in this case lists initial and maximum heap sizes for a JVM instance. 
+  * `-cp` indicates paths to find required classes where each entry is separated by a `:` (in Linux)
 * Program (dapwc) Parameters
+  * `-c` points to the configuration file. This is a Java properties files listing values for each parameter that dapwc requires. Details on these parameters will follow in a later section.
+  * `-n` indicates the total number of nodes
+  * `-t` denotes the number of threads to use within one instance of dapwc
 
 Publications
 -----
