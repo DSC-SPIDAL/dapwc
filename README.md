@@ -64,11 +64,56 @@ Prerequisites
 
 Building dapwc
 -----
-Once all the prerequisites are met, building dapwc requires only one command, `mvn install`, issued within the directory that contains the `pom.xml` of dapwc.
+* Check all prerequisites are satisfied before building dapwc
+* Clone this git repository from `git@github.com:DSC-SPIDAL/dapwc.git` Let's call this directory `dapwchome`
+* Once above two steps are completed, building dapwc requires only one command, `mvn install`, issued within `dapwchome`.
 
 Running dapwc
 -----
+The following shell script may be used with necessary modifications to run the program.
+```sh
+#!/bin/bash
 
+# Java classpath. This should include paths to dapwc dependent jar files and the dapwc-1.0-ompi1.8.1.jar
+# The dependent jar files may be obtained by running mvn dependency:build-classpath command within dapwchome
+cp=<classpath>
+
+# Obtain working directory
+wd=`pwd`
+# Character x as a variable
+x='x'
+
+# A text file listing available nodes
+hosts=<path-to-hostfile>
+# Number of nodes
+nodes=<num-nodes>
+# Number of cores per node
+corespernode=8
+
+# Options for Java runtime
+jopts="-Xms64M -Xmx64M"
+
+# Number of threads to use within one dapwc process
+tpn=<threads-per-process>
+# Number of processes per node
+ppn=<processes-per-node>
+# Total parallelism expressed as a pattern TxPxN
+# where T is number of threads per process, P is processes per node, and N is total nodes
+pat=$tpn$x$ppn$x$nodes
+
+echo "Running $pat on `date`" >> status.txt
+# Invoke MPI to run dapwc
+mpirun --report-bindings --mca btl ^tcp --hostfile $hostfile --map-by node:PE=$(($corespernode / $ppn)) -np $(($nodes*$ppn)) java $jopts -cp $cp edu.indiana.soic.spidal.pairwiseclustering.Program -c config$pat.properties -n $nodes -t $tpn | tee $pat/pwc-out.txt
+echo "Finished $pat on `date`" >> status.txt
+```
+The arguments listed in the `mpirun` command fall into three categories.
+* OpenMPI Runtime Parameters
+  * `--report-bindings` requests OpenMPI runtime to output how processes are mapped to processing units (cores) in the allocated nodes.
+  * `--mca btl ^tcp` instructs to enable transports other than tcp, which is useful when running on Infiniband.
+  * `--hostfile` indicates the file listing available nodes. Each node has to be a in a separate line.
+  * `--map-by node:PE=$(($corespernode / $ppn))` controls process mapping and binding. This is a topic on its own right 
+* Java Runtime Parameters
+* Program (dapwc) Parameters
 
 Publications
 -----
