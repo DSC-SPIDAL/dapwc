@@ -121,6 +121,11 @@ The arguments listed in the `mpirun` command fall into three categories.
   * `-n` indicates the total number of nodes
   * `-t` denotes the number of threads to use within one instance of dapwc
 
+Configuring dapwc
+-----
+The following table summarizes the parameters used in dapwc.
+
+
 Publications
 -----
 Fox, G. C. Deterministic annealing and robust scalable data mining for the
