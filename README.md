@@ -1,7 +1,19 @@
 dapwc
 =====
 
-Deterministic Annealing Pairwise Clustering
+Deterministic Annealing Pairwise Clustering (dapwc) is a scalable and parallel clustering program that operate on non vector space. 
+
+Success Stories
+-----
+* Million Sequence Clustering at http://salsahpc.indiana.edu/millionseq/ 
+* The Fungi Phylogenetic Project at http://salsafungiphy.blogspot.com/
+
+Publications
+-----
+Fox, G. C. Deterministic annealing and robust scalable data mining for the
+data deluge. In Proceedings of the Proceedings of the 2nd international
+workshop on Petascal data analytics: challenges and opportunities (Seattle,
+Washington, USA, 2011). ACM. Available at http://grids.ucs.indiana.edu/ptliupages/publications/pdac24g-fox.pdf
 
 Prerequisites
 -----
@@ -121,18 +133,53 @@ The arguments listed in the `mpirun` command fall into three categories.
   * `-n` indicates the total number of nodes
   * `-t` denotes the number of threads to use within one instance of dapwc
 
-Publications
+Configuring dapwc
 -----
-Fox, G. C. Deterministic annealing and robust scalable data mining for the
-data deluge. In Proceedings of the Proceedings of the 2nd international
-workshop on Petascal data analytics: challenges and opportunities (Seattle,
-Washington, USA, 2011). ACM. Available at http://grids.ucs.indiana.edu/ptliupages/publications/pdac24g-fox.pdf
+The following table summarizes the parameters used in dapwc.
+
+| Parameter | Description | Default Value | Type |
+|----------------------------------|-----------------------------------------------------------------|---------------|-----------------------------------------|
+| ClusterFile | Path to output cluster results. | n/a | String |
+| DistanceMatrixFile | Path to pairwise distance file. | n/a | String |
+| AddMdsFile |  | n/a | String |
+| ClusterNumberFile |  | n/a | String |
+| CenterPlotFile |  | n/a | String |
+| LabelFile |  | n/a | String |
+| TimingFile | Path to output timing information. | n/a | String |
+| SummaryFile | Path to output summary file. | n/a | String |
+| NumberDataPoints | Total number of data points | n/a | Integer |
+| ProcessingOption  | Mode of operation. | 0 | Integer |
+| TransformDimension | Transforms input distances to the given dimension. | 4 | Integer |
+| MaxNcent  | Maximum number of clusters to find. | n/a | Integer |
+| SplitOrExpandIt |  | 1 | Integer |
+| MPIIOStrategy |  | 0 | Integer |
+| TooSmallToSplit |  | 5 | Integer |
+| MinEigTest |  | -0.01 | Double |
+| ConvergeIntermediateClusters |  | false | Boolean |
+| WaitIterations |  | 10 | Integer |
+| EpsiMaxChange |  | 0.001 | Double |
+| InitialCoolingFactor |  | 0.9 | Double |
+| FineCoolingFactor |  | 0.99 | Double |
+| EigenValueChange |  | 0.001 | Double |
+| EigenVectorChange |  | 0.001 | Double |
+| IterationAtEnd |  | 2000 | Integer |
+| ConvergenceLoopLimit |  | 2000 | Integer |
+| FreezingLimit |  | 0.002 | Double |
+| PowerIterationLimit |  | 200 | Integer |
+| ContinuousClustering |  | false | Boolean |
+| AddMds |  | 1 | Integer |
+| CenterPointsPerCenterTypeInOuput |  | 3 | Integer |
+| BucketFractions |  | 0.15,0.4,0.75 | String of comma separated double values |
+| NumberOfCenters | Maximum number of centers to find for each cluster. | 8 | Integer |
+| DebugPrintOption |  | 1 | Integer |
+| ConsoleDebugOutput | Flag to enable console output. | true | Boolean |
+| DataTypeSize | Indicates the data type size in bytes for the binary distances. | 2 | Integer |
+| IsBigEndian | Indicates the endianness of the binary distance file.  | false | Boolean |
 
 Acknowledgement
 -----
 We like to express our sincere gratitude to Prof. Vivek Sarkar 
 and his team at Rice University for giving us access and 
 continuous support for HJ library. We are equally thankful to Prof. Guillermo López Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
-thankful to FutureGrid project and its support team for their 
-support with HPC systems
+thankful to FutureGrid project and its support team for their support with HPC systems. Last but not least OpenMPI community deserves equal recognition for their valuable support.
 
