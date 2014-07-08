@@ -1,4 +1,4 @@
-package edu.indiana.soic.spidal.pairwiseclustering;
+package edu.indiana.soic.spidal.dapwc;
 
 public final class RangePartitioner {
     public static Range[] Partition(int length, int numPartitions) {

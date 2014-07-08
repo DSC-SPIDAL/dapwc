@@ -103,7 +103,7 @@ pat=$tpn$x$ppn$x$nodes
 
 echo "Running $pat on `date`" >> status.txt
 # Invoke MPI to run dapwc
-mpirun --report-bindings --mca btl ^tcp --hostfile $hostfile --map-by node:PE=$(($corespernode / $ppn)) -np $(($nodes*$ppn)) java $jopts -cp $cp edu.indiana.soic.spidal.pairwiseclustering.Program -c config$pat.properties -n $nodes -t $tpn | tee $pat/pwc-out.txt
+mpirun --report-bindings --mca btl ^tcp --hostfile $hostfile --map-by node:PE=$(($corespernode / $ppn)) -np $(($nodes*$ppn)) java $jopts -cp $cp edu.indiana.soic.spidal.dapwc.Program -c config$pat.properties -n $nodes -t $tpn | tee $pat/pwc-out.txt
 echo "Finished $pat on `date`" >> status.txt
 ```
 The arguments listed in the `mpirun` command fall into three categories.

@@ -1,4 +1,4 @@
-package edu.indiana.soic.spidal.pairwiseclustering;
+package edu.indiana.soic.spidal.dapwc;
 
 import edu.rice.hj.runtime.config.HjConfiguration;
 import mpi.MPI;

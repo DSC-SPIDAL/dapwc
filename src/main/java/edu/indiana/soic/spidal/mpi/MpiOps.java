@@ -4,8 +4,8 @@ import mpi.Intracomm;
 import mpi.MPI;
 import mpi.MPIException;
 import mpi.Op;
-import edu.indiana.soic.spidal.pairwiseclustering.MPIPacket;
-import edu.indiana.soic.spidal.pairwiseclustering.MPISecPacket;
+import edu.indiana.soic.spidal.dapwc.MPIPacket;
+import edu.indiana.soic.spidal.dapwc.MPISecPacket;
 
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;

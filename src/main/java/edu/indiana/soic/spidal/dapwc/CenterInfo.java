@@ -1,4 +1,4 @@
-package edu.indiana.soic.spidal.pairwiseclustering;
+package edu.indiana.soic.spidal.dapwc;
 
 public class CenterInfo {
     private int _pnum;
