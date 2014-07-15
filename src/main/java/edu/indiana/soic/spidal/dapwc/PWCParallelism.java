@@ -1,16 +1,18 @@
 package edu.indiana.soic.spidal.dapwc;
 
-import edu.rice.hj.runtime.config.HjConfiguration;
+import edu.indiana.soic.spidal.mpi.MpiOps;
 import mpi.MPI;
 import mpi.MPIException;
-import edu.indiana.soic.spidal.mpi.MpiOps;
+
+import static edu.rice.hj.Module0.finalizeHabanero;
+import static edu.rice.hj.Module0.initializeHabanero;
 
 public class PWCParallelism
 {
 	public static void SetupParallelism(String[] args) throws MPIException
 	{
         // Set up threads
-        HjConfiguration.initializeRuntime();
+        initializeHabanero();
 
 		//  Set up MPI
         MPI.Init(args);
@@ -40,7 +42,7 @@ public class PWCParallelism
 
 	public static void TearDownParallelism() throws MPIException {
         // Finalize threads
-        HjConfiguration.finalizeRuntime();
+        finalizeHabanero();
 
         // End MPI
         MPI.Finalize();

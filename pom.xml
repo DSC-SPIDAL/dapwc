@@ -11,7 +11,7 @@
         <dependency>
             <groupId>habanero-java-lib</groupId>
             <artifactId>habanero-java-lib</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
