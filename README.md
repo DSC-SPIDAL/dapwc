@@ -1,7 +1,7 @@
 dapwc
 =====
 
-Deterministic Annealing Pairwise Clustering (dapwc) is a scalable and parallel clustering program that operate on non vector space. 
+Deterministic Annealing Pairwise Clustering (dapwc) is a scalable and parallel clustering program that operate on non vector space. GitHub page for this project is available at http://dsc-spidal.github.io/dapwc/
 
 Success Stories
 -----
@@ -180,6 +180,6 @@ Acknowledgement
 -----
 We like to express our sincere gratitude to Prof. Vivek Sarkar 
 and his team at Rice University for giving us access and 
-continuous support for HJ library. We are equally thankful to Prof. Guillermo López Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
+continuous support for HJ library. We are equally thankful to Prof. Guillermo Lï¿½pez Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
 thankful to FutureGrid project and its support team for their support with HPC systems. Last but not least OpenMPI community deserves equal recognition for their valuable support.
 
