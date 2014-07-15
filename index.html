@@ -32,9 +32,9 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <h1>
-<a name="dapwc" class="anchor" href="#dapwc"><span class="octicon octicon-link"></span></a>DAPWC</h1>
+<a name="dapwc" class="anchor" href="#dapwc"><span class="octicon octicon-link"></span></a>dapwc</h1>
 
-<p>Deterministic Annealing Pairwise Clustering (dapwc) is a scalable and parallel clustering program that operate on non vector space. </p>
+<p>Deterministic Annealing Pairwise Clustering (dapwc) is a scalable and parallel clustering program that operate on non vector space. GitHub page for this project is available at <a href="http://dsc-spidal.github.io/dapwc/">http://dsc-spidal.github.io/dapwc/</a></p>
 
 <h2>
 <a name="success-stories" class="anchor" href="#success-stories"><span class="octicon octicon-link"></span></a>Success Stories</h2>
@@ -193,7 +193,7 @@ Washington, USA, 2011). ACM. Available at <a href="http://grids.ucs.indiana.edu/
 
 <span class="nb">echo</span> <span class="s2">"Running $pat on `date`"</span> &gt;&gt; status.txt
 <span class="c"># Invoke MPI to run dapwc</span>
-mpirun --report-bindings --mca btl ^tcp --hostfile <span class="nv">$hostfile</span> --map-by node:PE<span class="o">=</span><span class="k">$((</span><span class="nv">$corespernode</span> <span class="o">/</span> <span class="nv">$ppn</span><span class="k">))</span> -np <span class="k">$((</span><span class="nv">$nodes</span><span class="o">*</span><span class="nv">$ppn</span><span class="k">))</span> java <span class="nv">$jopts</span> -cp <span class="nv">$cp</span> edu.indiana.soic.spidal.pairwiseclustering.Program -c config<span class="nv">$pat</span>.properties -n <span class="nv">$nodes</span> -t <span class="nv">$tpn</span> <span class="p">|</span> tee <span class="nv">$pat</span>/pwc-out.txt
+mpirun --report-bindings --mca btl ^tcp --hostfile <span class="nv">$hostfile</span> --map-by node:PE<span class="o">=</span><span class="k">$((</span><span class="nv">$corespernode</span> <span class="o">/</span> <span class="nv">$ppn</span><span class="k">))</span> -np <span class="k">$((</span><span class="nv">$nodes</span><span class="o">*</span><span class="nv">$ppn</span><span class="k">))</span> java <span class="nv">$jopts</span> -cp <span class="nv">$cp</span> edu.indiana.soic.spidal.dapwc.Program -c config<span class="nv">$pat</span>.properties -n <span class="nv">$nodes</span> -t <span class="nv">$tpn</span> <span class="p">|</span> tee <span class="nv">$pat</span>/pwc-out.txt
 <span class="nb">echo</span> <span class="s2">"Finished $pat on `date`"</span> &gt;&gt; status.txt
 </pre></div>
 
@@ -472,7 +472,7 @@ mpirun --report-bindings --mca btl ^tcp --hostfile <span class="nv">$hostfile</s
 
 <p>We like to express our sincere gratitude to Prof. Vivek Sarkar 
 and his team at Rice University for giving us access and 
-continuous support for HJ library. We are equally thankful to Prof. Guillermo López Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
+continuous support for HJ library. We are equally thankful to Prof. Guillermo L�pez Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
 thankful to FutureGrid project and its support team for their support with HPC systems. Last but not least OpenMPI community deserves equal recognition for their valuable support.</p>
       </section>
     </div>
