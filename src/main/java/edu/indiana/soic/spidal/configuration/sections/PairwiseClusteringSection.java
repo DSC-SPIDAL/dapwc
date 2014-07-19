@@ -58,7 +58,7 @@ public class PairwiseClusteringSection {
 
             dataTypeSize = Integer.parseInt(p.getProperty("DataTypeSize","2"));
             isBigEndian = Boolean.parseBoolean(p.getProperty("IsBigEndian", "false"));
-            isMemoryMapped = Boolean.parseBoolean(p.getProperty("isMemoryMapped", "false"));
+            isMemoryMapped = Boolean.parseBoolean(p.getProperty("IsMemoryMapped", "false"));
         } catch (IOException e) {
             e.printStackTrace();
         }
