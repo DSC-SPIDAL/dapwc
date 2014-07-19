@@ -16,4 +16,9 @@ public class Constants {
     static final String ERR_PROGRAM_ARGUMENTS_PARSING_FAILED =  "Argument parsing failed!";
     static final String ERR_INVALID_PROGRAM_ARGUMENTS =  "Invalid program arguments!";
     static final String ERR_EMPTY_FILE_NAME = "File name is null or empty!";
+    private static String ERR_WRONG_NUM_OF_BYTES_SKIPPED = "Requested %1$d bytes to skip, but could skip only %2$d bytes";
+
+    public static String errWrongNumOfBytesSkipped(int requestedBytesToSkip, int numSkippedBytes){
+        return String.format(ERR_WRONG_NUM_OF_BYTES_SKIPPED, requestedBytesToSkip, numSkippedBytes);
+    }
 }

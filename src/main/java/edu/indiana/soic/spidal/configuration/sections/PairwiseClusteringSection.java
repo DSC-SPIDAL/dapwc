@@ -56,6 +56,9 @@ public class PairwiseClusteringSection {
             DebugPrintOption = Integer.parseInt(p.getProperty("DebugPrintOption", "1"));
             ConsoleDebugOutput = Boolean.parseBoolean(p.getProperty("ConsoleDebugOutput", "true"));
 
+            dataTypeSize = Integer.parseInt(p.getProperty("DataTypeSize","2"));
+            isBigEndian = Boolean.parseBoolean(p.getProperty("IsBigEndian", "false"));
+            isMemoryMapped = Boolean.parseBoolean(p.getProperty("isMemoryMapped", "false"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -106,8 +109,9 @@ public class PairwiseClusteringSection {
     public int DebugPrintOption;
     public boolean ConsoleDebugOutput;
 
-    public int dataTypeSize = 2; // 2 for short
-    public boolean isBigEndian = false; // true for Java style binary data and false for C# style binary data
+    private int dataTypeSize = 2; // 2 for short
+    private boolean isBigEndian = false; // true for Java style binary data and false for C# style binary data
+    private boolean isMemoryMapped = false; // true to read distance as memory mapped files
 
     public String getClusterFile() {
         return ClusterFile;
@@ -411,5 +415,13 @@ public class PairwiseClusteringSection {
 
     public void setBigEndian(boolean isBigEndian) {
         this.isBigEndian = isBigEndian;
+    }
+
+    public boolean isMemoryMapped() {
+        return isMemoryMapped;
+    }
+
+    public void setMemoryMapped(boolean isMemoryMapped) {
+        this.isMemoryMapped = isMemoryMapped;
     }
 }

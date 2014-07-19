@@ -704,6 +704,7 @@ public class Program
 	    PWCUtility.CenterPlotFile = config.CenterPlotFile;
         PWCUtility.dataTypeSize = config.getDataTypeSize();
         PWCUtility.endianness = config.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
+        PWCUtility.isMemoryMapped = config.isMemoryMapped();
 	}
     public static void WriteClusterFile(String file, int[] labels, int dataPoints, int startPosition, boolean append){
         WriteClusterFile(file, i -> labels[i], dataPoints, startPosition, append);

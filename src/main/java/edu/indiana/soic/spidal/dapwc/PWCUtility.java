@@ -85,6 +85,7 @@ public class PWCUtility
     public static MpiOps mpiOps;
     public static int dataTypeSize;
     public static ByteOrder endianness;
+    public static boolean isMemoryMapped;
     public static Matrix PointDistances;
     public static boolean timingCompleted = false;
 

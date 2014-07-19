@@ -34,7 +34,7 @@ public class PWCParallelism
 		if (PWCUtility.MPI_Rank == 0)
 		{
             // TODO - distance type - short
-			PWCUtility.SALSAPrint(0, " Distance Data Type: " + (Program.config.dataTypeSize == 2 ? "short" : Program.config.dataTypeSize));
+			PWCUtility.SALSAPrint(0, " Distance Data Type: " + (Program.config.getDataTypeSize() == 2 ? "short" : Program.config.getDataTypeSize()));
 			PWCUtility.SALSAPrint(0, PWCUtility.ParallelPattern);
 		}
 
@@ -124,7 +124,7 @@ public class PWCParallelism
 		}
 
 		// Note - read binary distance data from file
-        PWCUtility.PointDistances = Matrix.readRowRange(fname, processRange, PWCUtility.PointCount_Global,PWCUtility.dataTypeSize, PWCUtility.endianness);
+        PWCUtility.PointDistances = Matrix.readRowRange(fname, processRange, PWCUtility.PointCount_Global,PWCUtility.dataTypeSize, PWCUtility.endianness, PWCUtility.isMemoryMapped);
 
 	} //  End routine controlling reading of data
 
