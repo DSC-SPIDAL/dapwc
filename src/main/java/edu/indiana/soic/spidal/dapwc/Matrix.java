@@ -49,6 +49,7 @@ public abstract class Matrix {
                 if (skippedBytes != numBytesToSkip)
                     throw new IOException(Constants.errWrongNumOfBytesSkipped(numBytesToSkip, skippedBytes));
 
+                // TODO - fix data type to things other than short
                 short[][] buffer = new short[numRows][];
                 for (int i = 0; i < numRows; ++i) {
                     buffer[i] = new short[globalColCount];
