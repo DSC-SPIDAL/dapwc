@@ -61,7 +61,7 @@ public abstract class Matrix {
                     @Override
                     public double getDistance(int globalRow, int globalCol) {
                         int localRow = globalRow - rows.getStartIndex();
-                        return buffer[localRow][globalCol];
+                        return buffer[localRow][globalCol] / (1.0*Short.MAX_VALUE);
                     }
                 };
             } catch (IOException e){
