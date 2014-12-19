@@ -45,7 +45,7 @@ Prerequisites
   * Download HJ-lib jar file from http://www.cs.rice.edu/~vs3/hjlib/code/habanero-java-lib-0.1.1.jar
   * Execute the following shell command from the directory containing the HJ-lib jar to install it as a Maven artifact
   ```sh
-    mvn install:install-file -DcreateChecksum=true -Dpackaging=jar -Dfile=habanero-java-lib.jar -DgroupId=habanero-java-lib -DartifactId=habanero-java-lib -Dversion=0.1.1;
+    mvn install:install-file -DcreateChecksum=true -Dpackaging=jar -Dfile=habanero-java-lib-0.1.1.jar -DgroupId=habanero-java-lib -DartifactId=habanero-java-lib -Dversion=0.1.1;
   ```
   * Find more information about HJ-lib at https://wiki.rice.edu/confluence/display/PARPROG/Download+and+Set+Up
 5. OpenMPI
