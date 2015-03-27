@@ -59,6 +59,9 @@ public class PairwiseClusteringSection {
             dataTypeSize = Integer.parseInt(p.getProperty("DataTypeSize","2"));
             isBigEndian = Boolean.parseBoolean(p.getProperty("IsBigEndian", "false"));
             isMemoryMapped = Boolean.parseBoolean(p.getProperty("IsMemoryMapped", "false"));
+
+            bindThreads = Boolean.parseBoolean(p.getProperty("BindThreads", "false"));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,6 +115,8 @@ public class PairwiseClusteringSection {
     private int dataTypeSize = 2; // 2 for short
     private boolean isBigEndian = false; // true for Java style binary data and false for C# style binary data
     private boolean isMemoryMapped = false; // true to read distance as memory mapped files
+
+    private boolean bindThreads = false; //true to bind threads to a separate core using AffinityThreads library
 
     public String getClusterFile() {
         return ClusterFile;
@@ -423,5 +428,13 @@ public class PairwiseClusteringSection {
 
     public void setMemoryMapped(boolean isMemoryMapped) {
         this.isMemoryMapped = isMemoryMapped;
+    }
+
+    public boolean isBindThreads() {
+        return bindThreads;
+    }
+
+    public void setBindThreads(boolean bindThreads) {
+        this.bindThreads = bindThreads;
     }
 }

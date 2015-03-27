@@ -86,6 +86,7 @@ public class PWCUtility
     public static int dataTypeSize;
     public static ByteOrder endianness;
     public static boolean isMemoryMapped;
+    public static boolean bindThreads;
     public static Matrix PointDistances;
     public static boolean timingCompleted = false;
 

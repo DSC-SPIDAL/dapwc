@@ -4,16 +4,10 @@ import edu.indiana.soic.spidal.mpi.MpiOps;
 import mpi.MPI;
 import mpi.MPIException;
 
-import static edu.rice.hj.Module0.finalizeHabanero;
-import static edu.rice.hj.Module0.initializeHabanero;
-
 public class PWCParallelism
 {
 	public static void SetupParallelism(String[] args) throws MPIException
 	{
-        // Set up threads
-        initializeHabanero();
-
 		//  Set up MPI
         MPI.Init(args);
 		PWCUtility.MPI_communicator = MPI.COMM_WORLD; //initializing MPI world communicator
@@ -41,9 +35,6 @@ public class PWCParallelism
 	} // End SetupParallelism
 
 	public static void TearDownParallelism() throws MPIException {
-        // Finalize threads
-        finalizeHabanero();
-
         // End MPI
         MPI.Finalize();
 	} // End TearDownParallelism
