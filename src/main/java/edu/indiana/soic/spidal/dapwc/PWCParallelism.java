@@ -124,7 +124,10 @@ public class PWCParallelism
 		}
 
 		// Note - read binary distance data from file
-        PWCUtility.PointDistances = Matrix.readRowRange(fname, processRange, PWCUtility.PointCount_Global,PWCUtility.dataTypeSize, PWCUtility.endianness, PWCUtility.isMemoryMapped);
+		PWCUtility.PointDistances =
+				Matrix.readRowRange(fname, PWCUtility.PointStart_Process, PWCUtility.PointCount_Process,
+									PWCUtility.PointCount_Global, PWCUtility.dataTypeSize, PWCUtility.endianness,
+									PWCUtility.isMemoryMapped);
 
 	} //  End routine controlling reading of data
 

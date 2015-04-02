@@ -86,7 +86,7 @@ public class PWCUtility
     public static int dataTypeSize;
     public static ByteOrder endianness;
     public static boolean isMemoryMapped;
-    public static Matrix PointDistances;
+    public static short[][]PointDistances; // 1st dimension is rowIdx, 2nd is colIdx
     public static boolean timingCompleted = false;
 
     public static void printException(Exception e) {

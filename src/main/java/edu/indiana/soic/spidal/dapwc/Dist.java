@@ -864,8 +864,7 @@ public class Dist
                         {
                             double tmp;
                             int betafull = betastart + betalocal;
-                            double dijforthiscase = PWCUtility.PointDistances.getDistance(
-                                    ProcessPointIndex + PWCUtility.PointStart_Process, betafull);
+                            double dijforthiscase = PWCUtility.PointDistances[ProcessPointIndex][betafull];
                             for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                             {
                                 if (MPICommunicationStepsLoopVar == 0)
@@ -1677,11 +1676,11 @@ public class Dist
                         {
                             continue;
                         }
-                            double placevalue = PWCUtility.PointDistances.getDistance(GlobalIndex, PointIndex1);
-                            DistanceSum += placevalue;
-                            STDSum += placevalue * placevalue;
-                            NumberSum += 1.0;
-                    }
+						double placevalue = PWCUtility.PointDistances[GlobalIndex - PWCUtility.PointStart_Process][PointIndex1];
+						DistanceSum += placevalue;
+						STDSum += placevalue * placevalue;
+						NumberSum += 1.0;
+					}
                 }
                 Find_avg1.addapoint(threadIndex, DistanceSum);
                 Find_avg2.addapoint(threadIndex, NumberSum);
