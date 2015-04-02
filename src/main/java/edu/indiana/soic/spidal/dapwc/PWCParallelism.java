@@ -24,7 +24,10 @@ public class PWCParallelism
             PWCUtility.printAndThrowRuntimeException("Inconsistent MPI counts Nodes " + PWCUtility.NodeCount + " Size " + PWCUtility.MPI_Size);
 		}
 
-        PWCUtility.ParallelPattern = "---------------------------------------------------------\nMachine:" + MPI.getProcessorName() + " " + PWCUtility.ThreadCount + "x" + PWCUtility.MPIperNodeCount + "x" + PWCUtility.NodeCount;
+
+		PWCUtility.ParallelPattern =
+				"---------------------------------------------------------\nMachine:" + MPI.getProcessorName() + " " +
+						PWCUtility.ThreadCount + "x" + PWCUtility.MPIperNodeCount + "x" + PWCUtility.NodeCount;
 		if (PWCUtility.MPI_Rank == 0)
 		{
             // TODO - distance type - short
