@@ -1,10 +1,10 @@
 package edu.indiana.soic.spidal.dapwc;
 
-import edu.rice.hj.api.SuspendableException;
 import mpi.MPIException;
 
 import java.util.Arrays;
 
+import static edu.rice.hj.Module0.launchHabaneroApp;
 import static edu.rice.hj.Module1.forallChunked;
 
 //	Class vectorclass **************************************************
@@ -68,41 +68,36 @@ public class vectorclass
 			GlobalReductions.FindDoubleSum Find_initnorm = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
 
             // Note - parallel for
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                    {
-                        initialvector[ProcessPointIndex] = 1.0 + 0.5 * (ProcessPointIndex + PWCUtility.PointStart_Process) * fudge;
-                        Find_initnorm.addapoint(threadIndex, initialvector[ProcessPointIndex] * initialvector[ProcessPointIndex]);
-                    }
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
+                        {
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                initialvector[ProcessPointIndex] = 1.0 + 0.5 * (ProcessPointIndex + PWCUtility.PointStart_Process) * fudge;
+                                Find_initnorm.addapoint(threadIndex,
+                                        initialvector[ProcessPointIndex] * initialvector[ProcessPointIndex]);
+                            }
+                        }
+                );
+            });
 
             Find_initnorm.sumoverthreadsandmpi();
 			final double initnorm_global = 1.0 / Math.sqrt(Find_initnorm.Total);
 
             // Note - parallel for
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                       //	Start Delegate Code normalizing initialvector
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                    {
-                        initialvector[ProcessPointIndex] *= initnorm_global;
-                    }
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
+                        {
+                            //	Start Delegate Code normalizing initialvector
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                initialvector[ProcessPointIndex] *= initnorm_global;
+                            }
+                        }
+                );
+            });
 
         } // End Initialize arrays on first call
 
@@ -272,29 +267,24 @@ public class vectorclass
 		} // End Methodology = 4
 
         // Note - parallel for
-        try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-            {
-                 //	Start Code initializing power vectors Ax oldAx
-                int indexlen = PWCUtility.PointsperThread[threadIndex];
-                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                {
-                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
+        launchHabaneroApp(() -> {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
-                        if (Dist.ClusterSelected[ClusterIndex] == 0)
-                        {
-                            continue;
+                        //	Start Code initializing power vectors Ax oldAx
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                if (Dist.ClusterSelected[ClusterIndex] == 0) {
+                                    continue;
+                                }
+                                Ax[ProcessPointIndex][ClusterIndex] = initialvector[ProcessPointIndex] * AxPattern[ClusterIndex];
+                                oldAx[ProcessPointIndex][ClusterIndex] = Ax[ProcessPointIndex][ClusterIndex];
+                            }
                         }
-                            Ax[ProcessPointIndex][ClusterIndex] = initialvector[ProcessPointIndex] * AxPattern[ClusterIndex];
-                            oldAx[ProcessPointIndex][ClusterIndex] = Ax[ProcessPointIndex][ClusterIndex];
                     }
-                }
-            }
-           );
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+            );
+        });
 
 
         double Mfudge = 1.0;
@@ -463,208 +453,170 @@ public class vectorclass
                 final double MfudgeLoopVar = Mfudge;
                 MPISecPacket fromafarMandBLoopVar = fromafarMandB;
                 // Note - parallel for
-                try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                        //	Start Code calculating power vectors Ax oldAx
-                                // DiagonalTerm[ClusterIndex] = tmp / T;
-                                            //  FirstTerm = -MalphaMu * MbetaLambda / T;
-                                        // double MatrixElement = FirstTerm + ((MalphaMu * MbetaLambda * Mfudge * Mfudge) / (T * T)) * tmp;
-                    {
-                        double[] DiagonalTerm = new double[localNcent];
-                        int indexlen = PWCUtility.PointsperThread[threadIndex];
-                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                        {
-                            int betatotal, betastart;
-                            if (MPICommunicationStepsLoopVar == 0)
+                launchHabaneroApp(() -> {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
+                                    //	Start Code calculating power vectors Ax oldAx
+                                    // DiagonalTerm[ClusterIndex] = tmp / T;
+                                    //  FirstTerm = -MalphaMu * MbetaLambda / T;
+                                    // double MatrixElement = FirstTerm + ((MalphaMu * MbetaLambda * Mfudge * Mfudge) / (T * T)) * tmp;
                             {
-                                betatotal = PWCUtility.PointCount_Process;
-                                betastart = PWCUtility.PointStart_Process;
-                                int Acount = 0;
-                                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                                {
-                                    int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
-                                    myownMandB.setMArrayDoubleAt(bigindex, localMalpha_k_[ProcessPointIndex][ClusterIndex]);
-                                    myownMandB.setBArrayDoubleAt(bigindex, localBalpha_k_[ProcessPointIndex][ClusterIndex]);
-                                    toafarMandB.setMArrayDoubleAt(bigindex, localMalpha_k_[ProcessPointIndex][ClusterIndex]);
-                                    toafarMandB.setBArrayDoubleAt(bigindex, localBalpha_k_[ProcessPointIndex][ClusterIndex]);
-                                    if (UsethisCluster[ClusterIndex] == 0)
-                                    {
-                                        continue;
-                                    }
-                                        int Aindex = ProcessPointIndex * NumberofAVectorsUsedLoopVar + Acount;
-                                        ++Acount;
-                                        toafarAxarrayLoopVar[Aindex] = oldAx[ProcessPointIndex][ClusterIndex];
-                                        myownAxarrayLoopVar[Aindex] = oldAx[ProcessPointIndex][ClusterIndex];
-                                        vectorclass.Ax[ProcessPointIndex][ClusterIndex] = 0.0;
-                                }
-                            }
-                            else
-                            {
-                                betatotal = fromafarMandBLoopVar.getNumberOfPoints();
-                                betastart = fromafarMandBLoopVar.getFirstPoint();
-                                if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
-                                {
-                                    int Acount = 0;
-                                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                                    {
-                                        int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
-                                        toafarMandB.setMArrayDoubleAt(bigindex,fromafarMandBLoopVar.getMArrayDoubleAt(bigindex));
-                                        toafarMandB.setBArrayDoubleAt(bigindex, fromafarMandBLoopVar.getBArrayDoubleAt(bigindex));
-                                        if (UsethisCluster[ClusterIndex] == 0)
-                                        {
-                                            continue;
-                                        }
-                                            int Aindex = ProcessPointIndex * NumberofAVectorsUsedLoopVar + Acount;
-                                            ++Acount;
-                                            toafarAxarrayLoopVar[Aindex] = fromafarAxarrayLoopVar[Aindex];
-                                    }
-                                }
-                            }
-                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                            {
-                                if (UsethisCluster[ClusterIndex] == 0)
-                                {
-                                    continue;
-                                }
-                                    double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex] * MfudgeLoopVar;
-                                    if (!Subtract_twiceDuplicatedCenter)
-                                    {
-                                        tmp -= tmp * tmp;
-                                    }
-                                        DiagonalTerm[ClusterIndex] = tmp;
-                            }
-                            for (int betalocal = 0; betalocal < betatotal; betalocal++)
-                            {
-                                int betafull = betastart + betalocal;
-                                double dijforthiscase = PWCUtility.PointDistances.getDistance(ProcessPointIndex + PWCUtility.PointStart_Process, betafull);
-                                boolean PointIndicesEqual = (betafull == (ProcessPointIndex + PWCUtility.PointStart_Process));
-                                for (int CenterVectorMu = 0; CenterVectorMu < localNcent; CenterVectorMu++)
-                                {
-                                    double MalphaMu = localMalpha_k_[ProcessPointIndex][CenterVectorMu];
-                                    if (UsethisCluster[CenterVectorMu] == 0)
-                                    {
-                                        continue;
-                                    }
-                                    for (int CenterVectorLambda = 0; CenterVectorLambda < localNcent; CenterVectorLambda++)
-                                        {
-                                            int ALambdacount = 0;
-                                            if (UsethisCluster[CenterVectorLambda] == 0)
-                                            {
+                                double[] DiagonalTerm = new double[localNcent];
+                                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                    int betatotal, betastart;
+                                    if (MPICommunicationStepsLoopVar == 0) {
+                                        betatotal = PWCUtility.PointCount_Process;
+                                        betastart = PWCUtility.PointStart_Process;
+                                        int Acount = 0;
+                                        for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                            int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
+                                            myownMandB.setMArrayDoubleAt(bigindex,
+                                                    localMalpha_k_[ProcessPointIndex][ClusterIndex]);
+                                            myownMandB.setBArrayDoubleAt(bigindex,
+                                                    localBalpha_k_[ProcessPointIndex][ClusterIndex]);
+                                            toafarMandB.setMArrayDoubleAt(bigindex,
+                                                    localMalpha_k_[ProcessPointIndex][ClusterIndex]);
+                                            toafarMandB.setBArrayDoubleAt(bigindex,
+                                                    localBalpha_k_[ProcessPointIndex][ClusterIndex]);
+                                            if (UsethisCluster[ClusterIndex] == 0) {
                                                 continue;
                                             }
-                                                int ALambdaindex = betalocal * NumberofAVectorsUsedLoopVar + ALambdacount;
-                                                ALambdacount++;
-                                                if ((Methodology < 4) && (CenterVectorLambda != CenterVectorMu))
-                                                {
+                                            int Aindex = ProcessPointIndex * NumberofAVectorsUsedLoopVar + Acount;
+                                            ++Acount;
+                                            toafarAxarrayLoopVar[Aindex] = oldAx[ProcessPointIndex][ClusterIndex];
+                                            myownAxarrayLoopVar[Aindex] = oldAx[ProcessPointIndex][ClusterIndex];
+                                            vectorclass.Ax[ProcessPointIndex][ClusterIndex] = 0.0;
+                                        }
+                                    } else {
+                                        betatotal = fromafarMandBLoopVar.getNumberOfPoints();
+                                        betastart = fromafarMandBLoopVar.getFirstPoint();
+                                        if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1)) {
+                                            int Acount = 0;
+                                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                                int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
+                                                toafarMandB.setMArrayDoubleAt(bigindex,
+                                                        fromafarMandBLoopVar.getMArrayDoubleAt(bigindex));
+                                                toafarMandB.setBArrayDoubleAt(bigindex,
+                                                        fromafarMandBLoopVar.getBArrayDoubleAt(bigindex));
+                                                if (UsethisCluster[ClusterIndex] == 0) {
                                                     continue;
                                                 }
-                                                    double MbetaLambda, AxbetaLambda;
-                                                    if (MPICommunicationStepsLoopVar == 0)
-                                                    {
-                                                        MbetaLambda = localMalpha_k_[betalocal][CenterVectorLambda];
-                                                        AxbetaLambda = oldAx[betalocal][CenterVectorLambda];
-                                                    }
-                                                    else
-                                                    {
-                                                        MbetaLambda = fromafarMandBLoopVar.getMArrayDoubleAt(betalocal * localNcent + CenterVectorLambda);
-                                                        AxbetaLambda = fromafarAxarrayLoopVar[ALambdaindex];
-                                                    }
-                                                    double FirstTerm = 0;
-                                                    if (PointIndicesEqual && (CenterVectorMu == CenterVectorLambda))
-                                                    {
-                                                        FirstTerm = DiagonalTerm[CenterVectorMu];
-                                                    }
-                                                        if ((Methodology == 4) && PointIndicesEqual && (CenterVectorMu != CenterVectorLambda))
-                                                        {
-                                                            FirstTerm = -MalphaMu * MbetaLambda;
-                                                        }
-                                                        double tmp = 0.0;
-                                                        for (int CentersSummed = 0; CentersSummed < localNcent; CentersSummed++)
-                                                        {
-                                                            double BbetaCenterSummed, MbetaCenterSummed;
-                                                            if (MPICommunicationStepsLoopVar == 0)
-                                                            {
-                                                                MbetaCenterSummed = localMalpha_k_[betalocal][CentersSummed];
-                                                                BbetaCenterSummed = localBalpha_k_[betalocal][CentersSummed];
-                                                            }
-                                                            else
-                                                            {
-                                                                MbetaCenterSummed = fromafarMandBLoopVar.getMArrayDoubleAt(betalocal * localNcent + CentersSummed);
-                                                                BbetaCenterSummed = fromafarMandBLoopVar.getBArrayDoubleAt(betalocal * localNcent + CentersSummed);
-                                                            }
-                                                            double MMmultiplier;
-                                                            double Mfudge_CenterCalculated = 1.0;
-                                                            if (Methodology <= 3)
-                                                            {
-                                                                if (CentersSummed == CenterVectorMu)
-                                                                {
-                                                                    Mfudge_CenterCalculated = MfudgeLoopVar;
-                                                                    if (Subtract_twiceDuplicatedCenter)
-                                                                    {
-                                                                        MMmultiplier = 1.0;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        MMmultiplier = (localMalpha_k_[ProcessPointIndex][CentersSummed] * Mfudge_CenterCalculated - 1.0) * (MbetaCenterSummed * Mfudge_CenterCalculated - 1.0);
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    if (Subtract_twiceDuplicatedCenter)
-                                                                    {
-                                                                        MMmultiplier = 0.0;
-                                                                        continue;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        MMmultiplier = localMalpha_k_[ProcessPointIndex][CentersSummed] * MbetaCenterSummed;
-                                                                    }
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                double DeltaSummedMu = 0.0;
-                                                                double DeltaSummedLambda = 0.0;
-                                                                if (CentersSummed == CenterVectorMu)
-                                                                {
-                                                                    DeltaSummedMu = 1.0;
-                                                                }
-                                                                    if (CentersSummed == CenterVectorLambda)
-                                                                    {
-                                                                        DeltaSummedLambda = 1.0;
-                                                                    }
-                                                                        MMmultiplier = (localMalpha_k_[ProcessPointIndex][CentersSummed] - DeltaSummedMu) * (MbetaCenterSummed - DeltaSummedLambda);
-                                                            }
-                                                            tmp = tmp + (-2.0 * localA_k_[CentersSummed] - BbetaCenterSummed - localBalpha_k_[ProcessPointIndex][CentersSummed] + dijforthiscase) * MMmultiplier / (localC_k_[CentersSummed] * Mfudge_CenterCalculated);
-                                                        }
-                                                        double MatrixElement = FirstTerm + ((MalphaMu * MbetaLambda * MfudgeLoopVar * MfudgeLoopVar) / T) * tmp;
-                                                        if (PassIndicator == 1)
-                                                        {
-                                                            if (PointIndicesEqual && (CenterVectorMu == CenterVectorLambda))
-                                                            {
-                                                                int eigenposition = CenterVectorMu;
-                                                                if (Methodology == 4)
-                                                                {
-                                                                    eigenposition = Dist.PlaceforEigsforMultipleCluster;
-                                                                }
-                                                                    MatrixElement = Eigenvalues_Pass0[eigenposition] - MatrixElement;
-                                                            }
-                                                            else
-                                                            {
-                                                                MatrixElement = -MatrixElement;
-                                                            }
-                                                        }
-                                                        vectorclass.Ax[ProcessPointIndex][CenterVectorMu] += MatrixElement * AxbetaLambda;
+                                                int Aindex = ProcessPointIndex * NumberofAVectorsUsedLoopVar + Acount;
+                                                ++Acount;
+                                                toafarAxarrayLoopVar[Aindex] = fromafarAxarrayLoopVar[Aindex];
+                                            }
                                         }
+                                    }
+                                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                        if (UsethisCluster[ClusterIndex] == 0) {
+                                            continue;
+                                        }
+                                        double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex] * MfudgeLoopVar;
+                                        if (!Subtract_twiceDuplicatedCenter) {
+                                            tmp -= tmp * tmp;
+                                        }
+                                        DiagonalTerm[ClusterIndex] = tmp;
+                                    }
+                                    for (int betalocal = 0; betalocal < betatotal; betalocal++) {
+                                        int betafull = betastart + betalocal;
+                                        double dijforthiscase = PWCUtility.PointDistances.getDistance(
+                                                ProcessPointIndex + PWCUtility.PointStart_Process, betafull);
+                                        boolean PointIndicesEqual = (betafull == (ProcessPointIndex + PWCUtility.PointStart_Process));
+                                        for (int CenterVectorMu = 0; CenterVectorMu < localNcent; CenterVectorMu++) {
+                                            double MalphaMu = localMalpha_k_[ProcessPointIndex][CenterVectorMu];
+                                            if (UsethisCluster[CenterVectorMu] == 0) {
+                                                continue;
+                                            }
+                                            for (int CenterVectorLambda = 0; CenterVectorLambda < localNcent; CenterVectorLambda++) {
+                                                int ALambdacount = 0;
+                                                if (UsethisCluster[CenterVectorLambda] == 0) {
+                                                    continue;
+                                                }
+                                                int ALambdaindex = betalocal * NumberofAVectorsUsedLoopVar + ALambdacount;
+                                                ALambdacount++;
+                                                if ((Methodology < 4) && (CenterVectorLambda != CenterVectorMu)) {
+                                                    continue;
+                                                }
+                                                double MbetaLambda, AxbetaLambda;
+                                                if (MPICommunicationStepsLoopVar == 0) {
+                                                    MbetaLambda = localMalpha_k_[betalocal][CenterVectorLambda];
+                                                    AxbetaLambda = oldAx[betalocal][CenterVectorLambda];
+                                                } else {
+                                                    MbetaLambda = fromafarMandBLoopVar.getMArrayDoubleAt(
+                                                            betalocal * localNcent + CenterVectorLambda);
+                                                    AxbetaLambda = fromafarAxarrayLoopVar[ALambdaindex];
+                                                }
+                                                double FirstTerm = 0;
+                                                if (PointIndicesEqual && (CenterVectorMu == CenterVectorLambda)) {
+                                                    FirstTerm = DiagonalTerm[CenterVectorMu];
+                                                }
+                                                if ((Methodology == 4) && PointIndicesEqual && (CenterVectorMu != CenterVectorLambda)) {
+                                                    FirstTerm = -MalphaMu * MbetaLambda;
+                                                }
+                                                double tmp = 0.0;
+                                                for (int CentersSummed = 0; CentersSummed < localNcent; CentersSummed++) {
+                                                    double BbetaCenterSummed, MbetaCenterSummed;
+                                                    if (MPICommunicationStepsLoopVar == 0) {
+                                                        MbetaCenterSummed = localMalpha_k_[betalocal][CentersSummed];
+                                                        BbetaCenterSummed = localBalpha_k_[betalocal][CentersSummed];
+                                                    } else {
+                                                        MbetaCenterSummed = fromafarMandBLoopVar.getMArrayDoubleAt(
+                                                                betalocal * localNcent + CentersSummed);
+                                                        BbetaCenterSummed = fromafarMandBLoopVar.getBArrayDoubleAt(
+                                                                betalocal * localNcent + CentersSummed);
+                                                    }
+                                                    double MMmultiplier;
+                                                    double Mfudge_CenterCalculated = 1.0;
+                                                    if (Methodology <= 3) {
+                                                        if (CentersSummed == CenterVectorMu) {
+                                                            Mfudge_CenterCalculated = MfudgeLoopVar;
+                                                            if (Subtract_twiceDuplicatedCenter) {
+                                                                MMmultiplier = 1.0;
+                                                            } else {
+                                                                MMmultiplier = (localMalpha_k_[ProcessPointIndex][CentersSummed] * Mfudge_CenterCalculated - 1.0) * (MbetaCenterSummed * Mfudge_CenterCalculated - 1.0);
+                                                            }
+                                                        } else {
+                                                            if (Subtract_twiceDuplicatedCenter) {
+                                                                MMmultiplier = 0.0;
+                                                                continue;
+                                                            } else {
+                                                                MMmultiplier = localMalpha_k_[ProcessPointIndex][CentersSummed] * MbetaCenterSummed;
+                                                            }
+                                                        }
+                                                    } else {
+                                                        double DeltaSummedMu = 0.0;
+                                                        double DeltaSummedLambda = 0.0;
+                                                        if (CentersSummed == CenterVectorMu) {
+                                                            DeltaSummedMu = 1.0;
+                                                        }
+                                                        if (CentersSummed == CenterVectorLambda) {
+                                                            DeltaSummedLambda = 1.0;
+                                                        }
+                                                        MMmultiplier = (localMalpha_k_[ProcessPointIndex][CentersSummed] - DeltaSummedMu) * (MbetaCenterSummed - DeltaSummedLambda);
+                                                    }
+                                                    tmp = tmp + (-2.0 * localA_k_[CentersSummed] - BbetaCenterSummed - localBalpha_k_[ProcessPointIndex][CentersSummed] + dijforthiscase) * MMmultiplier / (localC_k_[CentersSummed] * Mfudge_CenterCalculated);
+                                                }
+                                                double MatrixElement = FirstTerm + ((MalphaMu * MbetaLambda * MfudgeLoopVar * MfudgeLoopVar) / T) * tmp;
+                                                if (PassIndicator == 1) {
+                                                    if (PointIndicesEqual && (CenterVectorMu == CenterVectorLambda)) {
+                                                        int eigenposition = CenterVectorMu;
+                                                        if (Methodology == 4) {
+                                                            eigenposition = Dist.PlaceforEigsforMultipleCluster;
+                                                        }
+                                                        MatrixElement = Eigenvalues_Pass0[eigenposition] - MatrixElement;
+                                                    } else {
+                                                        MatrixElement = -MatrixElement;
+                                                    }
+                                                }
+                                                vectorclass.Ax[ProcessPointIndex][CenterVectorMu] += MatrixElement * AxbetaLambda;
+                                            }
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
-                   );
-                } catch (SuspendableException e) {
-                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
-                }
+                    );
+                });
             } // End communicationloop
 
 			MandBset = true;
@@ -675,53 +627,45 @@ public class vectorclass
 			//	sum over threads to get Power Eigenvalues
             // Note - parallel for
             final int REMOVEZEROEigsLoopVar = REMOVEZEROEigs;
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                    double[] Accum_t0 = new double[localNcent];
-                    double[] Accum_t1 = new double[localNcent];
-                    double[] Accum_t2 = new double[localNcent];
-                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                    {
-                        Accum_t0[ClusterIndex] = 0.0;
-                        Accum_t1[ClusterIndex] = 0.0;
-                        Accum_t2[ClusterIndex] = 0.0;
-                    }
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                    {
-                        double SubtractAverage = 0.0;
-                        if (REMOVEZEROEigsLoopVar == 1)
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
-                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                            {
-                                SubtractAverage += Ax[ProcessPointIndex][ClusterIndex];
+                            double[] Accum_t0 = new double[localNcent];
+                            double[] Accum_t1 = new double[localNcent];
+                            double[] Accum_t2 = new double[localNcent];
+                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                Accum_t0[ClusterIndex] = 0.0;
+                                Accum_t1[ClusterIndex] = 0.0;
+                                Accum_t2[ClusterIndex] = 0.0;
                             }
-                            SubtractAverage = SubtractAverage / localNcent;
-                        }
-                        for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                        {
-                            if (UsethisCluster[ClusterIndex] == 0)
-                            {
-                                continue;
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                double SubtractAverage = 0.0;
+                                if (REMOVEZEROEigsLoopVar == 1) {
+                                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                        SubtractAverage += Ax[ProcessPointIndex][ClusterIndex];
+                                    }
+                                    SubtractAverage = SubtractAverage / localNcent;
+                                }
+                                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                    if (UsethisCluster[ClusterIndex] == 0) {
+                                        continue;
+                                    }
+                                    double tmp = Ax[ProcessPointIndex][ClusterIndex] - SubtractAverage;
+                                    Ax[ProcessPointIndex][ClusterIndex] = tmp;
+                                    double oldtmp = oldAx[ProcessPointIndex][ClusterIndex];
+                                    Accum_t0[ClusterIndex] += tmp * oldtmp;
+                                    Accum_t1[ClusterIndex] += oldtmp * oldtmp;
+                                    Accum_t2[ClusterIndex] += tmp * tmp;
+                                }
                             }
-                                double tmp = Ax[ProcessPointIndex][ClusterIndex] - SubtractAverage;
-                                Ax[ProcessPointIndex][ClusterIndex] = tmp;
-                                double oldtmp = oldAx[ProcessPointIndex][ClusterIndex];
-                                Accum_t0[ClusterIndex] += tmp * oldtmp;
-                                Accum_t1[ClusterIndex] += oldtmp * oldtmp;
-                                Accum_t2[ClusterIndex] += tmp * tmp;
+                            Find_sum_t0.addAPoint(threadIndex, Accum_t0);
+                            Find_sum_t1.addAPoint(threadIndex, Accum_t1);
+                            Find_sum_t2.addAPoint(threadIndex, Accum_t2);
                         }
-                    }
-                    Find_sum_t0.addAPoint(threadIndex, Accum_t0);
-                    Find_sum_t1.addAPoint(threadIndex, Accum_t1);
-                    Find_sum_t2.addAPoint(threadIndex, Accum_t2);
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+                );
+            });
 
             Find_sum_t0.sumOverThreadsAndMPI();
 			Find_sum_t1.sumOverThreadsAndMPI();
@@ -806,36 +750,28 @@ public class vectorclass
 			} // End ClusterIndex loop checking eigenvalue status determination for each cluster
 
             // Note - parallel for
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int PointIndex = beginpoint; PointIndex < indexlen + beginpoint; PointIndex++)
-                    {
-                        for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
-                            double Normfactor;
-                            if (Methodology == 4)
-                            {
-                                Normfactor = AxNormfactor[Dist.PlaceforEigsforMultipleCluster];
-                            }
-                            else
-                            {
-                                Normfactor = AxNormfactor[ClusterIndex];
-                            }
-                                if (ActiveAxvalue[ClusterIndex] == 0)
-                                {
-                                    continue;
-                                }
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int PointIndex = beginpoint; PointIndex < indexlen + beginpoint; PointIndex++) {
+                                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                    double Normfactor;
+                                    if (Methodology == 4) {
+                                        Normfactor = AxNormfactor[Dist.PlaceforEigsforMultipleCluster];
+                                    } else {
+                                        Normfactor = AxNormfactor[ClusterIndex];
+                                    }
+                                    if (ActiveAxvalue[ClusterIndex] == 0) {
+                                        continue;
+                                    }
                                     vectorclass.oldAx[PointIndex][ClusterIndex] = vectorclass.Ax[PointIndex][ClusterIndex] * Normfactor;
+                                }
+                            }
                         }
-                    }
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+                );
+            });
         } // End NumPowerIterations loop over Power Iteration Method
 
 	} // End PairwiseThread_SecDrv

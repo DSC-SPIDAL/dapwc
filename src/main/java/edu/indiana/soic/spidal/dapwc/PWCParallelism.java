@@ -6,7 +6,7 @@ import mpi.MPIException;
 
 public class PWCParallelism
 {
-	public static void SetupParallelism(String[] args) throws MPIException
+	public static void SetupParallelism(String[] args, String parentAffinityString) throws MPIException
 	{
 		//  Set up MPI
         MPI.Init(args);
@@ -24,6 +24,14 @@ public class PWCParallelism
             PWCUtility.printAndThrowRuntimeException("Inconsistent MPI counts Nodes " + PWCUtility.NodeCount + " Size " + PWCUtility.MPI_Size);
 		}
 
+        if (PWCUtility.bindThreads){
+            int availableComputeUnits = getAvailableComputeUnits(parentAffinityString);
+            if (availableComputeUnits < PWCUtility.ThreadCount){
+                PWCUtility.printAndThrowRuntimeException("The process is bind to compute units [" + getHumanReadableString(parentAffinityString) + "], which is less than the requested number of threads (" + PWCUtility.ThreadCount + ")");
+            }
+            PWCUtility.bindThreadToCore = getBindToCoreIds(parentAffinityString, PWCUtility.ThreadCount);
+
+        }
 
 		PWCUtility.ParallelPattern =
 				"---------------------------------------------------------\nMachine:" + MPI.getProcessorName() + " " +
@@ -37,7 +45,38 @@ public class PWCParallelism
 
 	} // End SetupParallelism
 
-	public static void TearDownParallelism() throws MPIException {
+    private static int[] getBindToCoreIds(String affinityString, int threadCount) {
+        int [] bindings = new int[threadCount];
+        int idx = 0;
+        for (int i = affinityString.length() - 1; i >= 0; --i) {
+            if (affinityString.charAt(i) == '1') {
+                bindings[idx] = ((affinityString.length() - 1) - i);
+                ++idx;
+            }
+        }
+        return bindings;
+    }
+
+    private static String getHumanReadableString(String affinityMask) {
+        String humanReadable = "";
+        for (int i = 0; i < affinityMask.length(); i++) {
+            if (affinityMask.charAt(i) == '1'){
+                humanReadable += ((affinityMask.length() - 1) - i) + " ";
+            }
+
+        }
+        return humanReadable;
+    }
+
+    private static int getAvailableComputeUnits(String parentAffinityString) {
+        int count = 0;
+        for (char c : parentAffinityString.toCharArray()){
+            if (c == '1') ++count;
+        }
+        return count;
+    }
+
+    public static void TearDownParallelism() throws MPIException {
         // End MPI
         MPI.Finalize();
 	} // End TearDownParallelism

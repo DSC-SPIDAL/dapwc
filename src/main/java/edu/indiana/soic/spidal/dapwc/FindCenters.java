@@ -2,7 +2,6 @@ package edu.indiana.soic.spidal.dapwc;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import edu.rice.hj.api.SuspendableException;
 import mpi.MPIException;
 
 import java.io.BufferedReader;
@@ -14,6 +13,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.regex.Pattern;
 
+import static edu.rice.hj.Module0.launchHabaneroApp;
 import static edu.rice.hj.Module1.forallChunked;
 
 public class FindCenters
@@ -201,7 +201,7 @@ public class FindCenters
         //  Loop over points GlobalPointIndex1 to find MDS means which are needed for next step
         if (PWCUtility.addMDS > 0) {
             // Note - parallel for
-            try {
+            launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -211,7 +211,8 @@ public class FindCenters
                         if ((group1 < 0) || (group1 >= NumberofGroups)) {
                             PWCUtility.printAndThrowRuntimeException(
                                     " Illegal group number " + (new Integer(group1)).toString() + " Point " +
-                                            (new Integer(GlobalPointIndex1)).toString());
+                                            (new Integer(GlobalPointIndex1)).toString()
+                            );
                         }
                         if (GroupCount[group1] <= 0) {
                             continue;
@@ -225,7 +226,8 @@ public class FindCenters
                             if ((group2 < 0) || (group2 >= NumberofGroups)) {
                                 PWCUtility.printAndThrowRuntimeException(
                                         " Illegal group number " + (new Integer(group2)).toString() + " Point " +
-                                                (new Integer(GlobalPointIndex2)).toString());
+                                                (new Integer(GlobalPointIndex2)).toString()
+                                );
                             }
                             if (group1 != group2) {
                                 continue;
@@ -239,9 +241,7 @@ public class FindCenters
                         }
                     }
                 });
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+            });
 
             for (int group = 0; group < NumberofGroups; group++) {
                 if (GroupCount[group] == 0) {
@@ -259,7 +259,7 @@ public class FindCenters
 
         //  Loop over points GlobalPointIndex1
         // Note - parallel for
-        try {
+        launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -269,7 +269,8 @@ public class FindCenters
                     if ((group1 < 0) || (group1 >= NumberofGroups)) {
                         PWCUtility.printAndThrowRuntimeException(
                                 " Illegal group number " + (new Integer(group1)).toString() + " Point " +
-                                        (new Integer(GlobalPointIndex1)).toString());
+                                        (new Integer(GlobalPointIndex1)).toString()
+                        );
                     }
                     if (GroupCount[group1] <= 0) {
                         continue;
@@ -288,7 +289,8 @@ public class FindCenters
                         if ((group2 < 0) || (group2 >= NumberofGroups)) {
                             PWCUtility.printAndThrowRuntimeException(
                                     " Illegal group number " + (new Integer(group2)).toString() + " Point " +
-                                            (new Integer(GlobalPointIndex2)).toString());
+                                            (new Integer(GlobalPointIndex2)).toString()
+                            );
                         }
                         if (group1 != group2) {
                             continue;
@@ -321,9 +323,7 @@ public class FindCenters
                     }
                 }
             });
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+        });
 
         // Finishup finding centers from sequence distance means and MDS CoG and means
         for (int group = 0; group < NumberofGroups; group++) {
@@ -753,7 +753,7 @@ public class FindCenters
                 //  Loop over points selecting those in this group
                 // Note - parallel for
                 final int groupLoopVar = group;
-                try {
+                launchHabaneroApp(() -> {
                     forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -773,7 +773,8 @@ public class FindCenters
                                 if (group2 != groupLoopVar) {
                                     continue;
                                 }
-                                double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
+                                double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1,
+                                        GlobalPointIndex2);
                                 if (tmp > PWCUtility.MinimumDistanceCut) {
                                     if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                         int itmp = (int) Math.floor(tmp * fudge);
@@ -786,9 +787,7 @@ public class FindCenters
                             }
                         }
                     });
-                } catch (SuspendableException e) {
-                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
-                }
+                });
 
                 DistanceHistogramBinCounts.sumoverthreadsandmpi();
                 double NumberinHistogram = DistanceHistogramBinCounts.TotalNumberofPoints;
@@ -816,7 +815,7 @@ public class FindCenters
 
                 //  Loop over points
                 // Note - parallel for
-                try {
+                launchHabaneroApp(() -> {
                     forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -839,7 +838,8 @@ public class FindCenters
                                 if (groupLoopVar != group2) {
                                     continue;
                                 }
-                                double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1, GlobalPointIndex2);
+                                double tmp = PWCUtility.PointDistances.getDistance(GlobalPointIndex1,
+                                        GlobalPointIndex2);
                                 if (tmp > PWCUtility.MinimumDistanceCut) {
                                     if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                         for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
@@ -859,9 +859,7 @@ public class FindCenters
                             }
                         }
                     });
-                } catch (SuspendableException e) {
-                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
-                }
+                });
 
                 for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
                     FindCentersbybuckets[BucketIndex].sumOverThreadsAndMPI();

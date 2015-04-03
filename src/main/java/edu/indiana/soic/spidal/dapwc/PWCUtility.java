@@ -87,7 +87,7 @@ public class PWCUtility
     public static ByteOrder endianness;
     public static boolean isMemoryMapped;
     public static boolean bindThreads;
-    public static int[] bindToCoreIds;
+    public static int[] bindThreadToCore;
     public static Matrix PointDistances;
     public static boolean timingCompleted = false;
 

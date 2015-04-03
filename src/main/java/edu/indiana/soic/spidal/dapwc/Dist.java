@@ -5,6 +5,7 @@ import mpi.MPIException;
 
 import java.util.Arrays;
 
+import static edu.rice.hj.Module0.launchHabaneroApp;
 import static edu.rice.hj.Module1.forallChunked;
 
 
@@ -585,7 +586,7 @@ public class Dist
             // Note - parallel for
             int pmloopmaxLoopVar = pmloopmax;
             int pmloopLoopVar = pmloop;
-            try {
+            launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
                             //	Start Code setting Malpha_k_ and partialsum_C_k_
@@ -658,9 +659,7 @@ public class Dist
                             Find_FreezingMeasure_k_.addAPoint(threadIndex, Accum_FreezingMeasure_k_);
                         }
                 );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+            });
 
             Find_C_k_.sumOverThreadsAndMPI();
 			Find_FreezingMeasure_k_.sumOverThreadsAndMPI();
@@ -825,66 +824,52 @@ public class Dist
 
             // Note - parallel for
             final int MPICommunicationStepsLoopVar = MPICommunicationSteps;
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                    //  Loop over Home (point) indices in thread using non-home values from MPI or locally for communicationloop == 0
-                    int betastart, betatotal;
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                    {
-                        if (MPICommunicationStepsLoopVar == 0)
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
-                            Arrays.fill(localBalpha_k_[ProcessPointIndex], 0, localNcent, 0.0);
-                            betatotal = PWCUtility.PointCount_Process;
-                            betastart = PWCUtility.PointStart_Process;
-                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                            {
-                                double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex];
-                                int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
-                                myown.setMArrayDoubleAt(bigindex, tmp);
-                                toafar.setMArrayDoubleAt(bigindex, tmp);
-                            }
-                        }
-                        else
-                        {
-                            betatotal = fromafar.getNumberOfPoints();
-                            betastart = fromafar.getFirstPoint();
-                            if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
-                            {
-                                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                                {
-                                    int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
-                                    toafar.setMArrayDoubleAt(bigindex,fromafar.getMArrayDoubleAt(bigindex));
+                            //  Loop over Home (point) indices in thread using non-home values from MPI or locally for communicationloop == 0
+                            int betastart, betatotal;
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                if (MPICommunicationStepsLoopVar == 0) {
+                                    Arrays.fill(localBalpha_k_[ProcessPointIndex], 0, localNcent, 0.0);
+                                    betatotal = PWCUtility.PointCount_Process;
+                                    betastart = PWCUtility.PointStart_Process;
+                                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                        double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex];
+                                        int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
+                                        myown.setMArrayDoubleAt(bigindex, tmp);
+                                        toafar.setMArrayDoubleAt(bigindex, tmp);
+                                    }
+                                } else {
+                                    betatotal = fromafar.getNumberOfPoints();
+                                    betastart = fromafar.getFirstPoint();
+                                    if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1)) {
+                                        for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                            int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
+                                            toafar.setMArrayDoubleAt(bigindex, fromafar.getMArrayDoubleAt(bigindex));
+                                        }
+                                    }
+                                }
+                                for (int betalocal = 0; betalocal < betatotal; betalocal++) {
+                                    double tmp;
+                                    int betafull = betastart + betalocal;
+                                    double dijforthiscase = PWCUtility.PointDistances.getDistance(
+                                            ProcessPointIndex + PWCUtility.PointStart_Process, betafull);
+                                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                        if (MPICommunicationStepsLoopVar == 0) {
+                                            tmp = localMalpha_k_[betalocal][ClusterIndex];
+                                        } else {
+                                            tmp = fromafar.getMArrayDoubleAt(betalocal * localNcent + ClusterIndex);
+                                        }
+                                        localBalpha_k_[ProcessPointIndex][ClusterIndex] += dijforthiscase * tmp / localC_k_[ClusterIndex];
+                                    }
                                 }
                             }
                         }
-                        for (int betalocal = 0; betalocal < betatotal; betalocal++)
-                        {
-                            double tmp;
-                            int betafull = betastart + betalocal;
-                            double dijforthiscase = PWCUtility.PointDistances.getDistance(
-                                    ProcessPointIndex + PWCUtility.PointStart_Process, betafull);
-                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                            {
-                                if (MPICommunicationStepsLoopVar == 0)
-                                {
-                                    tmp = localMalpha_k_[betalocal][ClusterIndex];
-                                }
-                                else
-                                {
-                                    tmp = fromafar.getMArrayDoubleAt(betalocal * localNcent + ClusterIndex);
-                                }
-                                localBalpha_k_[ProcessPointIndex][ClusterIndex] += dijforthiscase * tmp / localC_k_[ClusterIndex];
-                            }
-                        }
-                    }
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+                );
+            });
         } // End loop over communicationloop
 
 		//  Now calculate quantities involving global sums
@@ -893,25 +878,21 @@ public class Dist
 		GlobalReductions.FindVectorDoubleSum Find_A_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
 
         // Note - parallel for
-        try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-            {
-                double[] LocalContribution_A_k_ = new double[localNcent];
-                int indexlen = PWCUtility.PointsperThread[threadIndex];
-                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                {
-                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
+        launchHabaneroApp(() -> {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
-                        LocalContribution_A_k_[ClusterIndex] = localBalpha_k_[ProcessPointIndex][ClusterIndex] * localMalpha_k_[ProcessPointIndex][ClusterIndex];
+                        double[] LocalContribution_A_k_ = new double[localNcent];
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                LocalContribution_A_k_[ClusterIndex] = localBalpha_k_[ProcessPointIndex][ClusterIndex] * localMalpha_k_[ProcessPointIndex][ClusterIndex];
+                            }
+                            Find_A_k_.addAPoint(threadIndex, LocalContribution_A_k_);
+                        }
                     }
-                    Find_A_k_.addAPoint(threadIndex, LocalContribution_A_k_);
-                }
-            }
-           );
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+            );
+        });
 
         Find_A_k_.sumOverThreadsAndMPI();
 
@@ -924,34 +905,29 @@ public class Dist
 		GlobalReductions.FindVectorDoubleSum Find_EpsiDiff = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
 
         // Note - parallel for
-        try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-            {
-                double[] Local_EpsiDiff = new double[localNcent];
-                int indexlen = PWCUtility.PointsperThread[threadIndex];
-                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                {
-                    for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
+        launchHabaneroApp(() -> {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
-                        double tmp = localBalpha_k_[ProcessPointIndex][ClusterIndex] + localA_k_[ClusterIndex];
-                        localepsi[ProcessPointIndex][ClusterIndex] = tmp;
-                        if (Dist.oldepsiset > 0)
-                        {
-                            Local_EpsiDiff[ClusterIndex] = Math.abs(Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] - tmp);
+                        double[] Local_EpsiDiff = new double[localNcent];
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                double tmp = localBalpha_k_[ProcessPointIndex][ClusterIndex] + localA_k_[ClusterIndex];
+                                localepsi[ProcessPointIndex][ClusterIndex] = tmp;
+                                if (Dist.oldepsiset > 0) {
+                                    Local_EpsiDiff[ClusterIndex] = Math.abs(
+                                            Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] - tmp);
+                                }
+                                Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = tmp;
+                            }
+                            if (Dist.oldepsiset > 0) {
+                                Find_EpsiDiff.addAPoint(threadIndex, Local_EpsiDiff);
+                            }
                         }
-                            Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = tmp;
                     }
-                    if (Dist.oldepsiset > 0)
-                    {
-                        Find_EpsiDiff.addAPoint(threadIndex, Local_EpsiDiff);
-                    }
-                }
-            }
-           );
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+            );
+        });
 
         if (Dist.oldepsiset > 0)
 		{ //    Calculate epsidiff which is sum for each center over data points
@@ -1077,46 +1053,40 @@ public class Dist
 		GlobalReductions.FindDoubleSum Find_AverageMalpha_k_Change = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
 
         // Note - parallel for
-        try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-            {
-                double[] NewMalpha_k_ = new double[Dist.RunningPWC.Ncent];
-                double[] partialsum_NewC_k_ = new double[Dist.RunningPWC.Ncent];
-                int indexlen = PWCUtility.PointsperThread[threadIndex];
-                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                {
-                    double AverageMalpha_k_Change = 0.0;
-                    double tmp = 0.0;
-                    for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
+        launchHabaneroApp(() -> {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
-                        double perturb;
-                        if (Program.JigglePerturbation == 1)
-                        {
-                            perturb = Randobject.nextDouble();
+                        double[] NewMalpha_k_ = new double[Dist.RunningPWC.Ncent];
+                        double[] partialsum_NewC_k_ = new double[Dist.RunningPWC.Ncent];
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                            double AverageMalpha_k_Change = 0.0;
+                            double tmp = 0.0;
+                            for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++) {
+                                double perturb;
+                                if (Program.JigglePerturbation == 1) {
+                                    perturb = Randobject.nextDouble();
+                                } else {
+                                    perturb = vectorclass.oldAx[ProcessPointIndex][ClusterIndex];
+                                }
+                                Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] += perturb * Program.JigglePerturbationFactor * Dist.RunningPWC.Temperature;
+                                NewMalpha_k_[ClusterIndex] = Math.exp(
+                                        -Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] / Dist.RunningPWC.Temperature);
+                                tmp += NewMalpha_k_[ClusterIndex];
+                            }
+                            for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++) {
+                                double addtoC = NewMalpha_k_[ClusterIndex] / tmp;
+                                partialsum_NewC_k_[ClusterIndex] += addtoC;
+                                AverageMalpha_k_Change += Math.abs(
+                                        addtoC - Dist.RunningPWC.Malpha_k_[ProcessPointIndex][ClusterIndex]);
+                            }
+                            Find_NewC_k_.addAPoint(threadIndex, partialsum_NewC_k_);
+                            Find_AverageMalpha_k_Change.addapoint(threadIndex, AverageMalpha_k_Change);
                         }
-                        else
-                        {
-                            perturb = vectorclass.oldAx[ProcessPointIndex][ClusterIndex];
-                        }
-                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] += perturb * Program.JigglePerturbationFactor * Dist.RunningPWC.Temperature;
-                        NewMalpha_k_[ClusterIndex] = Math.exp(-Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] / Dist.RunningPWC.Temperature);
-                        tmp += NewMalpha_k_[ClusterIndex];
                     }
-                    for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
-                    {
-                        double addtoC = NewMalpha_k_[ClusterIndex] / tmp;
-                        partialsum_NewC_k_[ClusterIndex] += addtoC;
-                        AverageMalpha_k_Change += Math.abs(addtoC - Dist.RunningPWC.Malpha_k_[ProcessPointIndex][ClusterIndex]);
-                    }
-                    Find_NewC_k_.addAPoint(threadIndex, partialsum_NewC_k_);
-                    Find_AverageMalpha_k_Change.addapoint(threadIndex, AverageMalpha_k_Change);
-                }
-            }
-           );
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+            );
+        });
 
         Find_AverageMalpha_k_Change.sumoverthreadsandmpi();
 		double FullAverageMalpha_k_Change = Find_AverageMalpha_k_Change.Total / (Dist.RunningPWC.Ncent * PWCUtility.PointCount_Global);
@@ -1282,25 +1252,21 @@ public class Dist
             // Parallel reSetting of Epsilon
 
             // Note - parallel for
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int index = beginpoint; index < indexlen + beginpoint; index++)
-                    {
-                        for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
-                            Dist.RunningPWC.Master_Epsilonalpha_k_[index][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
-                            Dist.RunningPWC.Best_Epsilonalpha_k_[index][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
-                            Dist.RunningPWC.Old_Epsilonalpha_k_[index][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int index = beginpoint; index < indexlen + beginpoint; index++) {
+                                for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++) {
+                                    Dist.RunningPWC.Master_Epsilonalpha_k_[index][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
+                                    Dist.RunningPWC.Best_Epsilonalpha_k_[index][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
+                                    Dist.RunningPWC.Old_Epsilonalpha_k_[index][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
+                                }
+                            }
                         }
-                    }
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+                );
+            });
 
             double[] Save_C_k_ = new double[Dist.RunningPWC.Ncent];
             System.arraycopy(Dist.RunningPWC.C_k_, 0, Save_C_k_, 0, Dist.RunningPWC.Ncent);
@@ -1371,36 +1337,28 @@ public class Dist
                 // Parallel Saving of Epsilon
                 // Note - parallel for
                 int ClusterToRefineLoopVar = ClusterToRefine;
-                try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                    {
-                        int indexlen = PWCUtility.PointsperThread[threadIndex];
-                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                        {
-                            for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
+                launchHabaneroApp(() -> {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                             {
-                                if (Dist.RunningPWC.ClustertoSplit == ClusterToRefineLoopVar)
-                                {
-                                    Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                    for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++) {
+                                        if (Dist.RunningPWC.ClustertoSplit == ClusterToRefineLoopVar) {
+                                            Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                        }
+                                        if (ClusterToRefineLoopVar < Dist.RunningPWC.Ncent - 1) {
+                                            Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                            Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                        } else {
+                                            Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                            Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                        }
+                                    }
                                 }
-                                    if (ClusterToRefineLoopVar < Dist.RunningPWC.Ncent - 1)
-                                    {
-                                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                                        Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                                    }
-                                    else
-                                    {
-                                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                                        Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                                    }
                             }
-                        }
-                    }
-                   );
-                } catch (SuspendableException e) {
-                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
-                }
+                    );
+                });
             } // End case Methodology 3 or 4
 
 			for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
@@ -1412,21 +1370,18 @@ public class Dist
 			{
 				// Eigenvalue Test for Methodology 3
                 // Note - parallel for
-                try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                    {
-                        int indexlen = PWCUtility.PointsperThread[threadIndex];
-                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                        {
-                            Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent] = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
-                            Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent] = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
-                        }
-                    }
-                   );
-                } catch (SuspendableException e) {
-                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
-                }
+                launchHabaneroApp(() -> {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
+                            {
+                                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                    Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent] = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
+                                    Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent] = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
+                                }
+                            }
+                    );
+                });
 
                 Dist.RunningPWC.Ncent++;
 				for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
@@ -1481,30 +1436,26 @@ public class Dist
 			GlobalReductions.FindDoubleSum EpsNorm = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
 
             // Note - parallel for
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                    {
-                        double tmp = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * 0.5;
-                        tmp = tmp * vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] / Dist.RunningPWC.Temperature;
-                        if (Dist.RunningPWC.Ncent == 1)
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
-                            tmp = Math.abs(tmp);
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                double tmp = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * 0.5;
+                                tmp = tmp * vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] / Dist.RunningPWC.Temperature;
+                                if (Dist.RunningPWC.Ncent == 1) {
+                                    tmp = Math.abs(tmp);
+                                }
+                                double tmp1 = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor;
+                                double tmp2 = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
+                                SumoverShifts.addapoint(threadIndex, tmp);
+                                ShiftNorm.addapoint(threadIndex, tmp1 * tmp1);
+                                EpsNorm.addapoint(threadIndex, tmp2 * tmp2);
+                            }
                         }
-                            double tmp1 = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor;
-                            double tmp2 = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
-                            SumoverShifts.addapoint(threadIndex, tmp);
-                            ShiftNorm.addapoint(threadIndex, tmp1 * tmp1);
-                            EpsNorm.addapoint(threadIndex, tmp2 * tmp2);
-                    }
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+                );
+            });
             SumoverShifts.sumoverthreadsandmpi();
 			ShiftNorm.sumoverthreadsandmpi();
 			EpsNorm.sumoverthreadsandmpi();
@@ -1559,26 +1510,23 @@ public class Dist
 
                 // Note - parallel for
                 final double PerturbationNormFactorLoopVar = PerturbationNormFactor;
-                try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                    {
-                        int indexlen = PWCUtility.PointsperThread[threadIndex];
-                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                        {
-                            double tmp = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * 0.5;
-                            double perturb = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor * PerturbationNormFactorLoopVar;
-                            double tmp2 = tmp * Math.exp(perturb / Dist.RunningPWC.Temperature);
-                            double tmp1 = tmp * Math.exp(-perturb / Dist.RunningPWC.Temperature);
-                            double NewBottom = 1.0 - 2.0 * tmp + tmp1 + tmp2;
-                            NewC1.addapoint(threadIndex, tmp1 / NewBottom);
-                            NewC2.addapoint(threadIndex, tmp2 / NewBottom);
-                        }
-                    }
-                   );
-                } catch (SuspendableException e) {
-                    PWCUtility.printAndThrowRuntimeException(e.getMessage());
-                }
+                launchHabaneroApp(() -> {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
+                            {
+                                int indexlen = PWCUtility.PointsperThread[threadIndex];
+                                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                    double tmp = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * 0.5;
+                                    double perturb = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor * PerturbationNormFactorLoopVar;
+                                    double tmp2 = tmp * Math.exp(perturb / Dist.RunningPWC.Temperature);
+                                    double tmp1 = tmp * Math.exp(-perturb / Dist.RunningPWC.Temperature);
+                                    double NewBottom = 1.0 - 2.0 * tmp + tmp1 + tmp2;
+                                    NewC1.addapoint(threadIndex, tmp1 / NewBottom);
+                                    NewC2.addapoint(threadIndex, tmp2 / NewBottom);
+                                }
+                            }
+                    );
+                });
                 NewC1.sumoverthreadsandmpi();
 				NewC2.sumoverthreadsandmpi();
 				PWCUtility.SALSAPrint(0, "Real Expectation " + String.format("%1$.6E", NewC1.Total) + " " + String.format("%1$.6E", NewC2.Total) + " Temp " + String.format("%1$.4e", Dist.RunningPWC.Temperature));
@@ -1600,37 +1548,30 @@ public class Dist
 		//  Parallel Section Splitting Cluster with delegate for action reading thread # from StartindexPort
         // Note - parallel for
         double PerturbationNormFactorLoopVar = PerturbationNormFactor;
-        try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-            {
-                int indexlen = PWCUtility.PointsperThread[threadIndex];
-                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                {
-                    if (Program.PerturbationVehicle == 1)
+        launchHabaneroApp(() -> {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
-                        double newvalueofM = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * 0.5;
-                        double fudge = 1.0 + Program.SplitPerturbationFactor;
-                        if (ProcessPointIndex % 2 == 0)
-                        {
-                            fudge = 2.0 - fudge;
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                            if (Program.PerturbationVehicle == 1) {
+                                double newvalueofM = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * 0.5;
+                                double fudge = 1.0 + Program.SplitPerturbationFactor;
+                                if (ProcessPointIndex % 2 == 0) {
+                                    fudge = 2.0 - fudge;
+                                }
+                                Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] = newvalueofM * fudge;
+                                Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent - 1] = newvalueofM * (2.0 - fudge);
+                            } else {
+                                double perturb = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor * PerturbationNormFactorLoopVar;
+                                double original = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
+                                Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] = original + perturb;
+                                Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent - 1] = original - perturb;
+                            }
                         }
-                            Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] = newvalueofM * fudge;
-                            Dist.RunningPWC.Malpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent - 1] = newvalueofM * (2.0 - fudge);
                     }
-                    else
-                    {
-                        double perturb = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor * PerturbationNormFactorLoopVar;
-                        double original = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit];
-                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] = original + perturb;
-                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent - 1] = original - perturb;
-                    }
-                }
-            }
-           );
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+            );
+        });
 
         if (Program.PerturbationVehicle == 1)
 		{
@@ -1660,37 +1601,32 @@ public class Dist
 		GlobalReductions.FindDoubleSum Find_avg3 = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
 
         // Note - parallel for
-        try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-            {
-                double DistanceSum = 0.0;
-                double NumberSum = 0.0;
-                double STDSum = 0.0;
-                int indexlen = PWCUtility.PointsperThread[threadIndex];
-                int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                {
-                    int GlobalIndex = ProcessPointIndex + PWCUtility.PointStart_Process;
-                    for (int PointIndex1 = 0; PointIndex1 < PWCUtility.PointCount_Global; PointIndex1++)
+        launchHabaneroApp(() -> {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
-                        if (PointIndex1 == GlobalIndex)
-                        {
-                            continue;
+                        double DistanceSum = 0.0;
+                        double NumberSum = 0.0;
+                        double STDSum = 0.0;
+                        int indexlen = PWCUtility.PointsperThread[threadIndex];
+                        int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                        for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                            int GlobalIndex = ProcessPointIndex + PWCUtility.PointStart_Process;
+                            for (int PointIndex1 = 0; PointIndex1 < PWCUtility.PointCount_Global; PointIndex1++) {
+                                if (PointIndex1 == GlobalIndex) {
+                                    continue;
+                                }
+                                double placevalue = PWCUtility.PointDistances.getDistance(GlobalIndex, PointIndex1);
+                                DistanceSum += placevalue;
+                                STDSum += placevalue * placevalue;
+                                NumberSum += 1.0;
+                            }
                         }
-                            double placevalue = PWCUtility.PointDistances.getDistance(GlobalIndex, PointIndex1);
-                            DistanceSum += placevalue;
-                            STDSum += placevalue * placevalue;
-                            NumberSum += 1.0;
+                        Find_avg1.addapoint(threadIndex, DistanceSum);
+                        Find_avg2.addapoint(threadIndex, NumberSum);
+                        Find_avg3.addapoint(threadIndex, STDSum);
                     }
-                }
-                Find_avg1.addapoint(threadIndex, DistanceSum);
-                Find_avg2.addapoint(threadIndex, NumberSum);
-                Find_avg3.addapoint(threadIndex, STDSum);
-            }
-           );
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+            );
+        });
 
         Find_avg1.sumoverthreadsandmpi();
 		Find_avg2.sumoverthreadsandmpi();
@@ -1733,26 +1669,22 @@ public class Dist
 
             // Note - parallel for
             int CorrelationrowIndexLoopVar = CorrelationrowIndex;
-            try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
-                {
-                    //	Start Code setting partialsum_Correlation
-                    double[] TempCorrel = new double[localNcent];
-                    int indexlen = PWCUtility.PointsperThread[threadIndex];
-                    int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
-                    for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
-                    {
-                        for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
+            launchHabaneroApp(() -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
-                            TempCorrel[ClusterIndex] = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][ClusterIndex] * Dist.RunningPWC.Balpha_k_[ProcessPointIndex][CorrelationrowIndexLoopVar];
+                            //	Start Code setting partialsum_Correlation
+                            double[] TempCorrel = new double[localNcent];
+                            int indexlen = PWCUtility.PointsperThread[threadIndex];
+                            int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                            for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
+                                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                                    TempCorrel[ClusterIndex] = Dist.RunningPWC.Malpha_k_[ProcessPointIndex][ClusterIndex] * Dist.RunningPWC.Balpha_k_[ProcessPointIndex][CorrelationrowIndexLoopVar];
+                                }
+                                Find_CorrelationRow.addAPoint(threadIndex, TempCorrel);
+                            }
                         }
-                            Find_CorrelationRow.addAPoint(threadIndex, TempCorrel);
-                    }
-                }
-               );
-            } catch (SuspendableException e) {
-                PWCUtility.printAndThrowRuntimeException(e.getMessage());
-            }
+                );
+            });
 
             //  Form Correlation Row from sum over threads
 			Find_CorrelationRow.sumOverThreadsAndMPI();

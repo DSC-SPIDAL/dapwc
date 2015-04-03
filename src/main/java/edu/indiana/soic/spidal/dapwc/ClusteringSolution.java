@@ -113,6 +113,7 @@ package edu.indiana.soic.spidal.dapwc;
 
 import edu.rice.hj.api.SuspendableException;
 
+import static edu.rice.hj.Module0.launchHabaneroApp;
 import static edu.rice.hj.Module1.forallChunked;
 
 public class ClusteringSolution
@@ -175,7 +176,8 @@ public class ClusteringSolution
         Saved_oldAx = new double[NumberofPointsinProcess][];
 
         // Note - parallel for
-        try {
+
+        launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -195,9 +197,7 @@ public class ClusteringSolution
                     }
                 }
             });
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+        });
 
         C_k_ = new double[MaximumNumberClusters + cachelinesize]; // Final value of C(k)
         A_k_ = new double[MaximumNumberClusters + cachelinesize];
@@ -232,7 +232,7 @@ public class ClusteringSolution
         }
 
         // Note - parallel for
-        try {
+        launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -258,9 +258,7 @@ public class ClusteringSolution
                     }
                 }
             });
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+        });
     } // End CopySolution
 
     public static void RemoveCluster(ClusteringSolution Changing, int RemovedIndex) {
@@ -279,7 +277,7 @@ public class ClusteringSolution
         }
 
         // Note - parallel for
-        try {
+        launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -308,9 +306,7 @@ public class ClusteringSolution
                     }
                 }
             });
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+        });
     } // End RemoveCluster
 
     public static void SetAxinSolution(ClusteringSolution Solution) {
@@ -318,7 +314,7 @@ public class ClusteringSolution
         int NumberClusters = Solution.Ncent;
 
         // Note - parallel for
-        try {
+        launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -331,9 +327,7 @@ public class ClusteringSolution
                     }
                 }
             });
-        } catch (SuspendableException e) {
-            PWCUtility.printAndThrowRuntimeException(e.getMessage());
-        }
+        });
     }
 
     public static void RestoreAxfromSolution(ClusteringSolution Solution) {
