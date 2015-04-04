@@ -49,6 +49,7 @@ public class PWCParallelism
         int [] bindings = new int[threadCount];
         int idx = 0;
         for (int i = affinityString.length() - 1; i >= 0; --i) {
+            if (idx >= threadCount) break; // to avoid the mess with hyper threading
             if (affinityString.charAt(i) == '1') {
                 bindings[idx] = ((affinityString.length() - 1) - i);
                 ++idx;
