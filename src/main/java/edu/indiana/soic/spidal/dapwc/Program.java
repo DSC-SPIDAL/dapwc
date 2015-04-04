@@ -539,6 +539,9 @@ public class Program
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         Arrays.fill(partialsum_OccupationCounts[threadIndex], 0, Dist.RunningPWC.Ncent, 0);
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -604,6 +607,9 @@ public class Program
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             int indexlen = PWCUtility.PointsperThread[threadIndex];
                             int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                             for (int index = beginpoint; index < indexlen + beginpoint; index++) {
@@ -699,7 +705,7 @@ public class Program
         PWCUtility.endianness = config.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
         PWCUtility.isMemoryMapped = config.isMemoryMapped();
         PWCUtility.bindThreads = config.isBindThreads();
-	}
+    }
     public static void WriteClusterFile(String file, int[] labels, int dataPoints, int startPosition, boolean append){
         WriteClusterFile(file, i -> labels[i], dataPoints, startPosition, append);
     }

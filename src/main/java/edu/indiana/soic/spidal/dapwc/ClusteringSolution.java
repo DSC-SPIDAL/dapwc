@@ -112,6 +112,7 @@ package edu.indiana.soic.spidal.dapwc;
 // Calculate Pairwise Algorithm
 
 import edu.rice.hj.api.SuspendableException;
+import net.openhft.affinity.AffinitySupport;
 
 import static edu.rice.hj.Module0.launchHabaneroApp;
 import static edu.rice.hj.Module1.forallChunked;
@@ -179,6 +180,9 @@ public class ClusteringSolution
 
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                if (PWCUtility.bindThreads){
+                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                }
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -234,6 +238,9 @@ public class ClusteringSolution
         // Note - parallel for
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                if (PWCUtility.bindThreads){
+                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                }
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -279,6 +286,9 @@ public class ClusteringSolution
         // Note - parallel for
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                if (PWCUtility.bindThreads){
+                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                }
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -316,6 +326,9 @@ public class ClusteringSolution
         // Note - parallel for
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                if (PWCUtility.bindThreads){
+                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                }
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -340,6 +353,9 @@ public class ClusteringSolution
         // Note - parallel for
         try {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                if (PWCUtility.bindThreads){
+                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                }
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {

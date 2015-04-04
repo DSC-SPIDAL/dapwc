@@ -1,6 +1,7 @@
 package edu.indiana.soic.spidal.dapwc;
 
 import mpi.MPIException;
+import net.openhft.affinity.AffinitySupport;
 
 import java.util.Arrays;
 
@@ -71,6 +72,9 @@ public class vectorclass
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L << PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             int indexlen = PWCUtility.PointsperThread[threadIndex];
                             int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                             for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -89,6 +93,9 @@ public class vectorclass
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             //	Start Delegate Code normalizing initialvector
                             int indexlen = PWCUtility.PointsperThread[threadIndex];
                             int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -270,6 +277,9 @@ public class vectorclass
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         //	Start Code initializing power vectors Ax oldAx
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -460,6 +470,9 @@ public class vectorclass
                                     //  FirstTerm = -MalphaMu * MbetaLambda / T;
                                     // double MatrixElement = FirstTerm + ((MalphaMu * MbetaLambda * Mfudge * Mfudge) / (T * T)) * tmp;
                             {
+                                if (PWCUtility.bindThreads){
+                                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                                }
                                 double[] DiagonalTerm = new double[localNcent];
                                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -630,6 +643,9 @@ public class vectorclass
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             double[] Accum_t0 = new double[localNcent];
                             double[] Accum_t1 = new double[localNcent];
                             double[] Accum_t2 = new double[localNcent];
@@ -753,6 +769,9 @@ public class vectorclass
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             int indexlen = PWCUtility.PointsperThread[threadIndex];
                             int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                             for (int PointIndex = beginpoint; PointIndex < indexlen + beginpoint; PointIndex++) {

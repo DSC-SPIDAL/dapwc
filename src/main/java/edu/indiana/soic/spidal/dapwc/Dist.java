@@ -2,6 +2,7 @@ package edu.indiana.soic.spidal.dapwc;
 
 import edu.rice.hj.api.SuspendableException;
 import mpi.MPIException;
+import net.openhft.affinity.AffinitySupport;
 
 import java.util.Arrays;
 
@@ -589,6 +590,9 @@ public class Dist
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L << PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             //	Start Code setting Malpha_k_ and partialsum_C_k_
                             int localNcent = Dist.RunningPWC.Ncent;
                             double[] Accum_C_k_ = new double[localNcent];
@@ -827,6 +831,9 @@ public class Dist
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             //  Loop over Home (point) indices in thread using non-home values from MPI or locally for communicationloop == 0
                             int betastart, betatotal;
                             int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -881,6 +888,9 @@ public class Dist
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         double[] LocalContribution_A_k_ = new double[localNcent];
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -908,6 +918,9 @@ public class Dist
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         double[] Local_EpsiDiff = new double[localNcent];
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1056,6 +1069,9 @@ public class Dist
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         double[] NewMalpha_k_ = new double[Dist.RunningPWC.Ncent];
                         double[] partialsum_NewC_k_ = new double[Dist.RunningPWC.Ncent];
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -1255,6 +1271,9 @@ public class Dist
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             int indexlen = PWCUtility.PointsperThread[threadIndex];
                             int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                             for (int index = beginpoint; index < indexlen + beginpoint; index++) {
@@ -1340,6 +1359,9 @@ public class Dist
                 launchHabaneroApp(() -> {
                     forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                             {
+                                if (PWCUtility.bindThreads){
+                                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                                }
                                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -1373,6 +1395,9 @@ public class Dist
                 launchHabaneroApp(() -> {
                     forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                             {
+                                if (PWCUtility.bindThreads){
+                                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                                }
                                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -1439,6 +1464,9 @@ public class Dist
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             int indexlen = PWCUtility.PointsperThread[threadIndex];
                             int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                             for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -1513,6 +1541,9 @@ public class Dist
                 launchHabaneroApp(() -> {
                     forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                             {
+                                if (PWCUtility.bindThreads){
+                                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                                }
                                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -1551,6 +1582,9 @@ public class Dist
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -1604,6 +1638,9 @@ public class Dist
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                     {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         double DistanceSum = 0.0;
                         double NumberSum = 0.0;
                         double STDSum = 0.0;
@@ -1672,6 +1709,9 @@ public class Dist
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            if (PWCUtility.bindThreads){
+                                AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                            }
                             //	Start Code setting partialsum_Correlation
                             double[] TempCorrel = new double[localNcent];
                             int indexlen = PWCUtility.PointsperThread[threadIndex];

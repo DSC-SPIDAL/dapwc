@@ -4,6 +4,7 @@ import edu.indiana.soic.spidal.general.Box;
 import edu.indiana.soic.spidal.mpi.MPIReducePlusIndex;
 import mpi.MPI;
 import mpi.MPIException;
+import net.openhft.affinity.AffinitySupport;
 
 import static edu.rice.hj.Module0.launchHabaneroApp;
 import static edu.rice.hj.Module1.forallChunked;
@@ -597,6 +598,9 @@ public class GlobalReductions {
             // Note - parallel for
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    if (PWCUtility.bindThreads){
+                        AffinitySupport.setAffinity(1L << PWCUtility.bindThreadToCore[threadIndex]);
+                    }
                     int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
                     int indexlength = ParallelArrayRanges[threadIndex].getLength();
                     for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
@@ -670,6 +674,9 @@ public class GlobalReductions {
             // Note - parallel for
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    if (PWCUtility.bindThreads){
+                        AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                    }
                     int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
                     int indexlength = ParallelArrayRanges[threadIndex].getLength();
                     for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
@@ -759,6 +766,9 @@ public class GlobalReductions {
             // Note - parallel for
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    if (PWCUtility.bindThreads){
+                        AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                    }
                     int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
                     int indexlength = ParallelArrayRanges[threadIndex].getLength();
                     for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {

@@ -57,7 +57,7 @@ public class PWCParallelism
         return bindings;
     }
 
-    private static String getHumanReadableString(String affinityMask) {
+    public static String getHumanReadableString(String affinityMask) {
         String humanReadable = "";
         for (int i = 0; i < affinityMask.length(); i++) {
             if (affinityMask.charAt(i) == '1'){

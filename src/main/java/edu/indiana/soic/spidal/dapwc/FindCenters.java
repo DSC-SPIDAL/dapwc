@@ -3,6 +3,7 @@ package edu.indiana.soic.spidal.dapwc;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import mpi.MPIException;
+import net.openhft.affinity.AffinitySupport;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -203,6 +204,9 @@ public class FindCenters
             // Note - parallel for
             launchHabaneroApp(() -> {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                    if (PWCUtility.bindThreads){
+                        AffinitySupport.setAffinity(1L << PWCUtility.bindThreadToCore[threadIndex]);
+                    }
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                     for (int index = beginpoint; index < indexlen + beginpoint; index++) {
@@ -261,6 +265,9 @@ public class FindCenters
         // Note - parallel for
         launchHabaneroApp(() -> {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                if (PWCUtility.bindThreads){
+                    AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                }
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int index = beginpoint; index < indexlen + beginpoint; index++) {
@@ -755,6 +762,9 @@ public class FindCenters
                 final int groupLoopVar = group;
                 launchHabaneroApp(() -> {
                     forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         DistanceHistogramBinCounts.startthread(threadIndex);
@@ -817,6 +827,9 @@ public class FindCenters
                 // Note - parallel for
                 launchHabaneroApp(() -> {
                     forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                        if (PWCUtility.bindThreads){
+                            AffinitySupport.setAffinity(1L<<PWCUtility.bindThreadToCore[threadIndex]);
+                        }
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         for (int index = beginpoint; index < indexlen + beginpoint; index++) {
