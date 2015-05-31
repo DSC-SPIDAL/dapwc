@@ -9,59 +9,71 @@ public class PairwiseClusteringSection {
         Properties p = new Properties();
         try {
             p.load(new FileInputStream(configurationFilePath));
-            ClusterFile = p.getProperty("ClusterFile","cluster.txt");
-            DistanceMatrixFile = p.getProperty("DistanceMatrixFile", "distance.bin");
-            AddMdsFile = p.getProperty("AddMdsFile","mds.txt");
-            ClusterNumberFile = p.getProperty("ClusterNumberFile","cnums.txt");
-            CenterPlotFile = p.getProperty("CenterPlotFile","cplot.txt");
-            LabelFile = p.getProperty("LabelFile", "labels.txt");
-            TimingFile = p.getProperty("TimingFile", "timings.txt");
-            SummaryFile = p.getProperty("SummaryFile","summary.txt");
+            ClusterFile = getProperty(p, "ClusterFile","cluster.txt");
+            DistanceMatrixFile = getProperty(p, "DistanceMatrixFile", "distance.bin");
+            AddMdsFile = getProperty(p, "AddMdsFile","mds.txt");
+            ClusterNumberFile = getProperty(p, "ClusterNumberFile","cnums.txt");
+            CenterPlotFile = getProperty(p, "CenterPlotFile","cplot.txt");
+            LabelFile = getProperty(p, "LabelFile", "labels.txt");
+            TimingFile = getProperty(p, "TimingFile", "timings.txt");
+            SummaryFile = getProperty(p, "SummaryFile","summary.txt");
 
-            NumberDataPoints = Integer.parseInt(p.getProperty("NumberDataPoints","-1"));
-            ProcessingOption = Integer.parseInt(p.getProperty("ProcessingOption", "0"));
-            TransformDimension = Integer.parseInt(p.getProperty("TransformDimension", "4"));
+            NumberDataPoints = Integer.parseInt(getProperty(p, "NumberDataPoints","-1"));
+            ProcessingOption = Integer.parseInt(getProperty(p, "ProcessingOption", "0"));
+            TransformDimension = Integer.parseInt(getProperty(p, "TransformDimension", "4"));
 
-            MaxNcent = Integer.parseInt(p.getProperty("MaxNcent", "8"));
-            SplitOrExpandIt = Integer.parseInt(p.getProperty("SplitOrExpandIt", "1"));
-            MPIIOStrategy = Integer.parseInt(p.getProperty("MPIIOStrategy", "0"));
-            TooSmallToSplit = Integer.parseInt(p.getProperty("TooSmallToSplit", "5"));
+            MaxNcent = Integer.parseInt(getProperty(p, "MaxNcent", "8"));
+            SplitOrExpandIt = Integer.parseInt(getProperty(p, "SplitOrExpandIt", "1"));
+            MPIIOStrategy = Integer.parseInt(getProperty(p, "MPIIOStrategy", "0"));
+            TooSmallToSplit = Integer.parseInt(getProperty(p, "TooSmallToSplit", "5"));
 
-            MinEigTest = Double.parseDouble(p.getProperty("MinEigTest", "-0.01"));
-            ConvergeIntermediateClusters = Boolean.parseBoolean(p.getProperty("ConvergeIntermediateClusters", "false"));
-            WaitIterations = Integer.parseInt(p.getProperty("WaitIterations", "10"));
-            EpsiMaxChange = Double.parseDouble(p.getProperty("EpsiMaxChange", "0.001"));
+            MinEigTest = Double.parseDouble(getProperty(p, "MinEigTest", "-0.01"));
+            ConvergeIntermediateClusters = Boolean.parseBoolean(getProperty(p, "ConvergeIntermediateClusters", "false"));
+            WaitIterations = Integer.parseInt(getProperty(p, "WaitIterations", "10"));
+            EpsiMaxChange = Double.parseDouble(getProperty(p, "EpsiMaxChange", "0.001"));
 
-            InitialCoolingFactor = Double.parseDouble(p.getProperty("InitialCoolingFactor", "0.9"));
-            FineCoolingFactor = Double.parseDouble(p.getProperty("FineCoolingFactor", "0.99"));
-            EigenValueChange = Double.parseDouble(p.getProperty("EigenValueChange", "0.001"));
-            EigenVectorChange = Double.parseDouble(p.getProperty("EigenVectorChange", "0.001"));
+            InitialCoolingFactor = Double.parseDouble(getProperty(p, "InitialCoolingFactor", "0.9"));
+            FineCoolingFactor = Double.parseDouble(getProperty(p, "FineCoolingFactor", "0.99"));
+            EigenValueChange = Double.parseDouble(getProperty(p, "EigenValueChange", "0.001"));
+            EigenVectorChange = Double.parseDouble(getProperty(p, "EigenVectorChange", "0.001"));
 
-            IterationAtEnd = Integer.parseInt(p.getProperty("IterationAtEnd", "2000"));
-            ConvergenceLoopLimit = Integer.parseInt(p.getProperty("ConvergenceLoopLimit", "2000"));
-            FreezingLimit = Double.parseDouble(p.getProperty("FreezingLimit", "0.002"));
-            PowerIterationLimit = Integer.parseInt(p.getProperty("PowerIterationLimit", "200"));
-            ContinuousClustering = Boolean.parseBoolean(p.getProperty("ContinuousClustering", "false"));
+            IterationAtEnd = Integer.parseInt(getProperty(p, "IterationAtEnd", "2000"));
+            ConvergenceLoopLimit = Integer.parseInt(getProperty(p, "ConvergenceLoopLimit", "2000"));
+            FreezingLimit = Double.parseDouble(getProperty(p, "FreezingLimit", "0.002"));
+            PowerIterationLimit = Integer.parseInt(getProperty(p, "PowerIterationLimit", "200"));
+            ContinuousClustering = Boolean.parseBoolean(getProperty(p, "ContinuousClustering", "false"));
 
-            AddMds = Integer.parseInt(p.getProperty("AddMds", "1"));
-            CenterPointsPerCenterTypeInOuput = Integer.parseInt(p.getProperty("CenterPointsPerCenterTypeInOuput", "3"));
-            String BucketFractionsString = p.getProperty("BucketFractions", "0.15,0.4,0.75");
+            AddMds = Integer.parseInt(getProperty(p, "AddMds", "1"));
+            CenterPointsPerCenterTypeInOuput = Integer.parseInt(getProperty(p, "CenterPointsPerCenterTypeInOuput", "3"));
+            String BucketFractionsString = getProperty(p, "BucketFractions", "0.15,0.4,0.75");
             String [] splits = BucketFractionsString.split(",");
             BucketFractions = new double[splits.length];
             for (int i = 0; i < splits.length; ++i){
                 BucketFractions[i] = Double.parseDouble(splits[i]);
             }
-            NumberOfCenters = Integer.parseInt(p.getProperty("NumberOfCenters", "8"));
+            NumberOfCenters = Integer.parseInt(getProperty(p, "NumberOfCenters", "8"));
 
-            DebugPrintOption = Integer.parseInt(p.getProperty("DebugPrintOption", "1"));
-            ConsoleDebugOutput = Boolean.parseBoolean(p.getProperty("ConsoleDebugOutput", "true"));
+            DebugPrintOption = Integer.parseInt(getProperty(p, "DebugPrintOption", "1"));
+            ConsoleDebugOutput = Boolean.parseBoolean(getProperty(p, "ConsoleDebugOutput", "true"));
 
-            dataTypeSize = Integer.parseInt(p.getProperty("DataTypeSize","2"));
-            isBigEndian = Boolean.parseBoolean(p.getProperty("IsBigEndian", "false"));
-            isMemoryMapped = Boolean.parseBoolean(p.getProperty("IsMemoryMapped", "false"));
+            dataTypeSize = Integer.parseInt(getProperty(p, "DataTypeSize","2"));
+            isBigEndian = Boolean.parseBoolean(getProperty(p, "IsBigEndian", "false"));
+            isMemoryMapped = Boolean.parseBoolean(getProperty(p, "IsMemoryMapped", "false"));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String getProperty(Properties p, String name, String def) {
+        String val = System.getProperty(name);
+        if (val == null) {
+            if (def != null) {
+                val = p.getProperty(name, def);
+            } else {
+                val = p.getProperty(name);
+            }
+        }
+        return val;
     }
 
     public String ClusterFile;
