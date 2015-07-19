@@ -183,3 +183,5 @@ and his team at Rice University for giving us access and
 continuous support for HJ library. We are equally thankful to Prof. Guillermo L�pez Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
 thankful to FutureGrid project and its support team for their support with HPC systems. Last but not least OpenMPI community deserves equal recognition for their valuable support.
 
+We also like to thank ej-technologies for giving us licence to use their Java profiler - JProfiler (http://www.ej-technologies.com/products/jprofiler/overview.html)
+
