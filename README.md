@@ -70,7 +70,7 @@ Prerequisites
   ```
   * If everything goes well `mpirun --version` will show `mpirun (Open MPI) 1.8.1`. Execute the following command to instal `$OMPI_181/ompi/mpi/java/java/mpi.jar` as a Maven artifact.
   ```
-    mvn install:install-file -DcreateChecksum=true -Dpackaging=jar -Dfile=$OMPI_181/ompi/mpi/java/java/mpi.jar -DgroupId=ompi -DartifactId=ompijavabinding -Dversion=1.8.1;
+    mvn install:install-file -DcreateChecksum=true -Dpackaging=jar -Dfile=$OMPI_181/ompi/mpi/java/java/mpi.jar -DgroupId=ompi -DartifactId=ompijavabinding -Dversion=1.8.1
   ```
   * Few examples are available in `$OMPI_181/examples`. Please use `mpijavac` with other parameters similar to `javac` command to compile OpenMPI Java programs. Once compiled `mpirun [options] java -cp <classpath> class-name arguments` command with proper values set as arguments will run the program. 
 
@@ -183,3 +183,14 @@ and his team at Rice University for giving us access and
 continuous support for HJ library. We are equally thankful to Prof. Guillermo L�pez Taboada for giving us free unrestricted access to commercially available FastMPJ MPI library, which we evaluated in an earlier internal version. We are also 
 thankful to FutureGrid project and its support team for their support with HPC systems. Last but not least OpenMPI community deserves equal recognition for their valuable support.
 
+We also like to thank the following companies for providing us Open Source licences for their profiler software.
+
+![alt text][jprofiler logo]
+ - ej-technologies the creator of JProfiler  (http://www.ej-technologies.com/products/jprofiler/overview.html)
+
+![alt text][yourkit logo]
+ - YourKit supports open source projects with its full-featured Java Profiler. YourKit, LLC is the creator of [YourKit Java Profiler](https://www.yourkit.com/java/profiler/index.jsp) and [YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/index.jsp), innovative and intelligent tools for profiling Java and .NET applications
+
+
+[jprofiler logo]: https://www.ej-technologies.com/images/product_banners/jprofiler_medium.png
+[yourkit logo]: https://www.yourkit.com/images/yklogo.png
