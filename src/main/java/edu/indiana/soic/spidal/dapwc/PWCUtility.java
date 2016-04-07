@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PWCUtility
 {
+    public static final double INV_SHORT_MAX = 1.0/Short.MAX_VALUE;
 	public static int PointCount_Global = 0; // Total number of points summed over all threads and processes
 	public static int PointCount_Process = 0; // Total number of points summed over all threads in this process
 	public static int PointCount_Largest = 0; // Largest number of points in all processes

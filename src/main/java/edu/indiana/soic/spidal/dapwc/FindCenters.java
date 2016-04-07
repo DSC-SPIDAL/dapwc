@@ -293,7 +293,7 @@ public class FindCenters
                         if (group1 != group2) {
                             continue;
                         }
-                        double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                        double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                         if (tmp > PWCUtility.MinimumDistanceCut) {
                             if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                 ++Countlinks;
@@ -439,7 +439,7 @@ public class FindCenters
                         }
                         double tmp;
                         if (CenterIndex1 != CenterIndex2) {
-                            tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                            tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                             if (CenterIndex1 == 0) {
                                 TopMeanDistance[CenterIndex2] = tmp;
                             }
@@ -565,7 +565,7 @@ public class FindCenters
                                 Avg_Internal = Avg_Internal + tmp;
                             }
                             GlobalPointIndex2 = GroupIndexfromMinMeans[group][CenterIndex2];
-                            tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                            tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                             Avg_MeanMethod = Avg_MeanMethod + tmp;
                             if (CenterIndex2 == 0) {
                                 TopMeanDistance[CenterIndex1] = tmp;
@@ -680,7 +680,7 @@ public class FindCenters
                                     TopMeanDistance[CenterIndex1] = 0.0;
                                 }
                             } else {
-                                tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                                tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                 Avg_MeanMethod = Avg_MeanMethod + tmp;
                                 ++Num_MeanMethod;
                                 if (CenterIndex2 == 0) {
@@ -773,7 +773,7 @@ public class FindCenters
                                 if (group2 != groupLoopVar) {
                                     continue;
                                 }
-                                double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                                double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                 if (tmp > PWCUtility.MinimumDistanceCut) {
                                     if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                         int itmp = (int) Math.floor(tmp * fudge);
@@ -839,7 +839,7 @@ public class FindCenters
                                 if (groupLoopVar != group2) {
                                     continue;
                                 }
-                                double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                                double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                 if (tmp > PWCUtility.MinimumDistanceCut) {
                                     if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                         for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
@@ -925,7 +925,7 @@ public class FindCenters
                                 }
                                 double tmp;
                                 if (CenterIndex1 != CenterIndex2) {
-                                    tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                                    tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                     if (CenterIndex1 == 0) {
                                         TopBucketDistance[CenterIndex2] = tmp;
                                     }
@@ -938,7 +938,7 @@ public class FindCenters
                                         TopMeanDistance[CenterIndex1] = 0.0;
                                     }
                                 } else {
-                                    tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2];
+                                    tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                     Avg_MeanMethod = Avg_MeanMethod + tmp;
                                     ++Num_MeanMethod;
                                     if (CenterIndex2 == 0) {
