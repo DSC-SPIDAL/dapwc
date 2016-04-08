@@ -591,7 +591,7 @@ public class Program
 		String directory = (new File(config.ClusterFile)).getParent();
 		String file = Files.getNameWithoutExtension(config.ClusterFile) + "-M" + Program.maxNcent + "-C" + Dist.RunningPWC.Ncent + Files.getFileExtension(config.ClusterFile);
 
-		String ClusternumberFileName = Paths.get(directory, file).toString();
+		String ClusternumberFileName = Strings.isNullOrEmpty(directory) ? Paths.get(file).toString() : Paths.get(directory, file).toString();
 
 		if (PWCUtility.MPIIOStrategy > 0)
 		{
