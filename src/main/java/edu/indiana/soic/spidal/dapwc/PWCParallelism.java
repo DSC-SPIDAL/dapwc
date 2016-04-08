@@ -1,5 +1,6 @@
 package edu.indiana.soic.spidal.dapwc;
 
+import edu.indiana.soic.spidal.common.BinaryReader2D;
 import edu.indiana.soic.spidal.mpi.MpiOps;
 import mpi.MPI;
 import mpi.MPIException;
@@ -124,10 +125,12 @@ public class PWCParallelism
 		}
 
 		// Note - read binary distance data from file
-		PWCUtility.PointDistances =
-				Matrix.readRowRange(fname, PWCUtility.PointStart_Process, PWCUtility.PointCount_Process,
-									PWCUtility.PointCount_Global, PWCUtility.dataTypeSize, PWCUtility.endianness,
-									PWCUtility.isMemoryMapped);
+        final edu.indiana.soic.spidal.common.Range range =
+            new edu.indiana.soic.spidal.common.Range(
+                PWCUtility.PointStart_Process,
+                (PWCUtility.PointStart_Process + PWCUtility.PointCount_Process
+                 - 1));
+        PWCUtility.PointDistances = BinaryReader2D.readRowRange(fname, range, PWCUtility.PointCount_Global, PWCUtility.endianness, true, null);
 
 	} //  End routine controlling reading of data
 
