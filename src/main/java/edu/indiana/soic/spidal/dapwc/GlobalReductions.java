@@ -355,7 +355,7 @@ public class GlobalReductions {
     } // End FindDoubleMean
 
 
-    public static class FindVectorIntSum {
+    /*public static class FindVectorIntSum {
         private int[] NumberofPoints;
         private int NumberofThreads;
         private int[][] VectorSum;
@@ -414,9 +414,9 @@ public class GlobalReductions {
             }
         }
 
-    } // End FindVectorIntSum
+    } // End FindVectorIntSum*/
 
-    public static class FindVectorDoubleMax {
+    /*public static class FindVectorDoubleMax {
         private double[] NumberofPoints;
         private int NumberofThreads;
         private double[][] VectorMax;
@@ -476,7 +476,7 @@ public class GlobalReductions {
 
         }
 
-    } // End FindVectorDoubleMax
+    } // End FindVectorDoubleMax*/
 
     public static class FindVectorDoubleSum {
         private double[] NumberofPoints;
@@ -553,7 +553,7 @@ public class GlobalReductions {
 
     } // End FindVectorDoubleSum
 
-    public static class FindVectorDoubleSum2 {
+    /*public static class FindVectorDoubleSum2 {
         private double[] NumberofPoints;
         private int NumberofThreads;
         private double[][] VectorSum;
@@ -621,9 +621,9 @@ public class GlobalReductions {
 
         }
 
-    } // End FindVectorDoubleSum2
+    } // End FindVectorDoubleSum2*/
 
-    public static class FindVectorDoubleSum3 {
+    /*public static class FindVectorDoubleSum3 {
         private double[] NumberofPoints;
         private int NumberofThreads;
         private double[][] VectorSum;
@@ -712,9 +712,9 @@ public class GlobalReductions {
             }
         }
 
-    } // End FindVectorDoubleSum3
+    } // End FindVectorDoubleSum3*/
 
-    public static class FindIndirectVectorDoubleSum {
+    /*public static class FindIndirectVectorDoubleSum {
         private double[] NumberofPoints;
         private int NumberofThreads;
         private double[][] VectorSum;
@@ -787,9 +787,9 @@ public class GlobalReductions {
 
         }
 
-    } // End FindIndirectVectorDoubleSum
+    } // End FindIndirectVectorDoubleSum*/
 
-    public static class FindArrayMean {
+    /*public static class FindArrayMean {
         public double[] NumberofPoints;
         public int NumberofThreads;
         public double[][] mean;
@@ -848,9 +848,9 @@ public class GlobalReductions {
                 Totalmean[ArrayLoop] = Totalmean[ArrayLoop] / TotalNumberofPoints;
             }
         }
-    } // End FindArrayMean
+    } // End FindArrayMean*/
 
-    public static class FindMinorMaxValuewithIndex {
+    /*public static class FindMinorMaxValuewithIndex {
         public double[] NumberofPoints;
         public int NumberofThreads;
         public double[] MaxOrMinvalue;
@@ -935,7 +935,7 @@ public class GlobalReductions {
                 PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
             }
         }
-    } // End FindMinorMaxValuewithIndex
+    } // End FindMinorMaxValuewithIndex*/
 
     public static class FindManyMinValuewithIndex { // Finds top LimitNumberStored points by minimizing value given
     // in addAPoint
