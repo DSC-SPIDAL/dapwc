@@ -122,7 +122,7 @@ public class MpiOps {
     }
 
     /* AllGather */
-    public int[] allGather(int value) throws MPIException {
+    /*public int[] allGather(int value) throws MPIException {
         int[] result = new int[size];
         allGather(value, result, comm);
         return result;
@@ -148,7 +148,7 @@ public class MpiOps {
     public void allGather(double value, double [] result, Intracomm comm) throws MPIException {
         doubleBuff.put(0,value);
         comm.allGather(doubleBuff, 1, MPI.DOUBLE, result, 1, MPI.DOUBLE);
-    }
+    }*/
 
 
     /* Broadcast */
@@ -198,7 +198,7 @@ public class MpiOps {
         return booleanBuff[0];
     }
 
-    public void broadcast (boolean[] values, int root) throws MPIException{
+    /*public void broadcast (boolean[] values, int root) throws MPIException{
         broadcast(values, root, comm);
     }
 
@@ -213,7 +213,7 @@ public class MpiOps {
     public MPIPacket broadcast(MPIPacket value, int root, Intracomm comm) throws MPIException{
         comm.bcast(value.getBuffer(), value.getExtent(), MPI.BYTE, root);
         return value;
-    }
+    }*/
 
     /* Sendrecv */
     public double[] sendReceive(double[] sendValue, int dest, int destTag, int src, int srcTag) throws MPIException {
