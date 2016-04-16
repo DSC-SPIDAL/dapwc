@@ -1,6 +1,5 @@
 package edu.indiana.soic.spidal.dapwc;
 
-import edu.rice.hj.api.SuspendableException;
 import mpi.MPI;
 import mpi.MPIException;
 import edu.indiana.soic.spidal.mpi.MPIReducePlusIndex;
@@ -41,7 +40,7 @@ public class GlobalReductions {
                 TotalNumberofPoints += NumberofPoints[ThreadNo];
                 TotalOr = Orvalue[ThreadNo] || TotalOr;
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -83,7 +82,7 @@ public class GlobalReductions {
                 TotalNumberofPoints += NumberofPoints[ThreadNo];
                 TotalInt += Intvalue[ThreadNo];
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - int - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -140,7 +139,7 @@ public class GlobalReductions {
                     TotalSum[loop] += Sum[ThreadNo][loop];
                 }
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - int - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -182,7 +181,7 @@ public class GlobalReductions {
                 TotalNumberofPoints += NumberofPoints[ThreadNo];
                 TotalMax = Math.max(TotalMax, Maxvalue[ThreadNo]);
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -233,7 +232,7 @@ public class GlobalReductions {
                 Totalmean += mean[ThreadNo];
                 Totalsquare += square[ThreadNo];
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -294,7 +293,7 @@ public class GlobalReductions {
                 TotalNumberofPoints += NumberofPoints[ThreadNo];
                 Total += TotalinThread[ThreadNo];
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -337,7 +336,7 @@ public class GlobalReductions {
                 TotalNumberofPoints += NumberofPoints[ThreadNo];
                 Totalmean += mean[ThreadNo];
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -404,7 +403,7 @@ public class GlobalReductions {
                     TotalVectorSum[ArrayLoop] += VectorSum[ThreadNo][ArrayLoop];
                 }
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - int - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -465,7 +464,7 @@ public class GlobalReductions {
                 }
             }
 
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -540,7 +539,7 @@ public class GlobalReductions {
                 }
             }
 
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -575,7 +574,7 @@ public class GlobalReductions {
                 TotalVectorSum[ArrayLoop] = 0.0;
             }
 
-            ParallelArrayRanges = RangePartitioner.Partition(NumberinArray, PWCUtility.ThreadCount);
+            ParallelArrayRanges = RangePartitioner.Partition(NumberinArray, PWCUtility.threadCount);
         }
 
         public final void startThread(int ThreadNo) {
@@ -596,7 +595,7 @@ public class GlobalReductions {
         public final void sumOverThreadsAndMPI() throws MPIException {
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                     int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
                     int indexlength = ParallelArrayRanges[threadIndex].getLength();
                     for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
@@ -610,7 +609,7 @@ public class GlobalReductions {
                 PWCUtility.printAndThrowRuntimeException(e.getMessage());
             }
 
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -647,7 +646,7 @@ public class GlobalReductions {
 
             TotalNumberofPoints = 0.0;
 
-            ParallelArrayRanges = RangePartitioner.Partition(ArraySize, PWCUtility.ThreadCount);
+            ParallelArrayRanges = RangePartitioner.Partition(ArraySize, PWCUtility.threadCount);
         }
 
         public final void startThread(int ThreadNo) {
@@ -671,7 +670,7 @@ public class GlobalReductions {
             PWCUtility.StartSubTimer(PWCUtility.ThreadTiming);
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                     int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
                     int indexlength = ParallelArrayRanges[threadIndex].getLength();
                     for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
@@ -687,7 +686,7 @@ public class GlobalReductions {
             }
             PWCUtility.StopSubTimer(PWCUtility.ThreadTiming);
 
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -733,7 +732,7 @@ public class GlobalReductions {
 
             TotalNumberofPoints = 0.0;
 
-            ParallelArrayRanges = RangePartitioner.Partition(NumberinArray, PWCUtility.ThreadCount);
+            ParallelArrayRanges = RangePartitioner.Partition(NumberinArray, PWCUtility.threadCount);
         }
 
         public final void startThread(int ThreadNo) {
@@ -762,7 +761,7 @@ public class GlobalReductions {
 
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                     int beginindex = ParallelArrayRanges[threadIndex].getStartIndex();
                     int indexlength = ParallelArrayRanges[threadIndex].getLength();
                     for (int ArrayLoop = beginindex; ArrayLoop < beginindex + indexlength; ArrayLoop++) {
@@ -776,7 +775,7 @@ public class GlobalReductions {
                 PWCUtility.printAndThrowRuntimeException(e.getMessage());
             }
 
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -832,7 +831,7 @@ public class GlobalReductions {
                     Totalmean[ArrayLoop] += mean[ThreadNo][ArrayLoop];
                 }
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -913,7 +912,7 @@ public class GlobalReductions {
                 TotalMaxOrMin = MaxOrMinvalue[ThreadNo];
                 TotalIndexValue = IndexValue[ThreadNo];
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 if (MinMaxPointer != 0) {
                     // Note - MPI Call - Allreduce - MPIReducePlusIndex - max with index
@@ -1013,7 +1012,7 @@ public class GlobalReductions {
                     TotalWorst = boxTotalWorst.content;
                 }
             }
-            if (PWCUtility.MPI_Size > 1) {
+            if (PWCUtility.worldProcsCount > 1) {
                 PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                 // Note - MPI Call - Allreduce - double - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
@@ -1035,7 +1034,7 @@ public class GlobalReductions {
                     }
                 }
                 int oldlocalindex = localindex;
-                if (PWCUtility.MPI_Size > 1) {
+                if (PWCUtility.worldProcsCount > 1) {
                     PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                     // Note - MPI Call - Allreduce - MPIReducePlusIndex - min with index
                     MPIReducePlusIndex result = PWCUtility.mpiOps

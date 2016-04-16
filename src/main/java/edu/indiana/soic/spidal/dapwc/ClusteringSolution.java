@@ -176,7 +176,7 @@ public class ClusteringSolution
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+            forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -233,7 +233,7 @@ public class ClusteringSolution
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+            forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -280,7 +280,7 @@ public class ClusteringSolution
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+            forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -319,7 +319,7 @@ public class ClusteringSolution
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+            forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
@@ -345,7 +345,7 @@ public class ClusteringSolution
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+            forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {

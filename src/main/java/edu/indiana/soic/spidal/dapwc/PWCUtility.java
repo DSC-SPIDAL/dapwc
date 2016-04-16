@@ -23,24 +23,24 @@ public class PWCUtility
 	public static int PointStart_Process = 0; //    First data point in this process
 
 	// Parallel Parameters
-	public static int MPI_Rank = 0; // Rank of process
-	public static int MPI_Size = 1; // Number of MPI Processes
-	public static Intracomm MPI_communicator = null; //MPI communicator
+	public static int worldProcsRank = 0; // Rank of process
+	public static int worldProcsCount = 1; // Number of MPI Processes
+	public static Intracomm worldProcsComm = null; //MPI communicator
 
 	public static String ParallelPattern = " "; // Pattern of parallel execution (e.g. 8x1x8 indicates [threads/process][processes/node][nodes])
 	public static String PatternLabel = " "; // Title line for print
 
-	//  Within a job data points will be divided into MPI_Size parts -- each part is assigned to a separate MPI Process
+	//  Within a job data points will be divided into worldProcsCount parts -- each part is assigned to a separate MPI Process
 	public static int[] PointsperProcess = null; //how many data points each process will take care
 	public static int[][] PointsperThreadperProcess = null; // Number of data points in each process-thread
 
-	//	Within a process, data points will be divided into ThreadCount segments( each thread a segment), the array keep the size of each segment
+	//	Within a process, data points will be divided into threadCount segments( each thread a segment), the array keep the size of each segment
 	public static int[] PointsperThread = null; //how many data points each thread will take care
 	public static int[] StartPointperThread = null; //the starting point that a thread will take care
 
-	public static int ThreadCount = 1; // maximum number of parallel threads in a process
-	public static int NodeCount = 1; // maximum number of separate nodes in run
-	public static int MPIperNodeCount = 1; // Number of MPI processes per node
+	public static int threadCount = 1; // maximum number of parallel threads in a process
+	public static int nodeCount = 1; // maximum number of separate nodes in run
+	public static int worldProcsPerNode = 1; // Number of MPI processes per node
 
 	public static int MPIIOStrategy = 0; // MPI I/O Strategy
 
@@ -108,7 +108,7 @@ public class PWCUtility
     // PrintOption = 1 Summary Printout
     // PrintOption = 2 Only if full print out requested
     public static void SALSAPrint(int PrintOption, String StufftoPrint) {
-        if (MPI_Rank != 0) {
+        if (worldProcsRank != 0) {
             return;
         }
         if (DebugPrintOption < PrintOption) {
@@ -238,7 +238,7 @@ public class PWCUtility
 
 
     public static int synchronizeMPIVariable(int sync) throws MPIException {
-        if (PWCUtility.MPI_Size > 1) {
+        if (PWCUtility.worldProcsCount > 1) {
             PWCUtility.StartSubTimer(PWCUtility.MPIBROADCASTTiming);
             // Note - MPI Call - Broadcast - int
             sync = PWCUtility.mpiOps.broadcast(sync, 0);
@@ -248,7 +248,7 @@ public class PWCUtility
     }
 
     public static boolean synchronizeMPIVariable(boolean sync) throws MPIException {
-        if (PWCUtility.MPI_Size > 1) {
+        if (PWCUtility.worldProcsCount > 1) {
             PWCUtility.StartSubTimer(PWCUtility.MPIBROADCASTTiming);
             // Note - MPI Call - Broadcast - boolean
             sync = PWCUtility.mpiOps.broadcast(sync, 0);

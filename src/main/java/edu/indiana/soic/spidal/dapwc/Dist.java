@@ -232,7 +232,7 @@ public class Dist
 						}
 					}
 					decreasing = PWCUtility.synchronizeMPIVariable(decreasing);
-					if (PWCUtility.MPI_Rank == 0)
+					if (PWCUtility.worldProcsRank == 0)
 					{
 						currenttaskfinished = !((toobigfreezing > 0) && decreasing);
 					}
@@ -558,10 +558,10 @@ public class Dist
 	public final void PairwiseThread() throws MPIException {
 		Diff_Epsilon_k_ = new double[Dist.RunningPWC.Ncent];
 
-		GlobalReductions.FindVectorDoubleSum Find_C_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, Dist.RunningPWC.Ncent);
-		GlobalReductions.FindVectorDoubleSum Find_FreezingMeasure_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, Dist.RunningPWC.Ncent);
-		GlobalReductions.FindDoubleSum Find_ChangeinM = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
-		GlobalReductions.FindDoubleSum Find_NormalizechangeinM = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
+		GlobalReductions.FindVectorDoubleSum Find_C_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, Dist.RunningPWC.Ncent);
+		GlobalReductions.FindVectorDoubleSum Find_FreezingMeasure_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, Dist.RunningPWC.Ncent);
+		GlobalReductions.FindDoubleSum Find_ChangeinM = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
+		GlobalReductions.FindDoubleSum Find_NormalizechangeinM = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
 
 		int pmloopmax = 1;
 		if (Program.ContinuousClustering && (Dist.needtocalculateMalpha_k_ == 1) && (Dist.RunningPWC.Ncent > 1))
@@ -586,7 +586,7 @@ public class Dist
             int pmloopmaxLoopVar = pmloopmax;
             int pmloopLoopVar = pmloop;
             try {
-                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
+                forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) ->
                         {
                             //	Start Code setting Malpha_k_ and partialsum_C_k_
                             int localNcent = Dist.RunningPWC.Ncent;
@@ -775,19 +775,19 @@ public class Dist
 				myown.setMArrayDoubleAt(PWCUtility.PointCount_Process * localNcent + countC,0.0);
 			}
 		}
-		int fromprocess = PWCUtility.MPI_Rank - 1;
+		int fromprocess = PWCUtility.worldProcsRank - 1;
 		if (fromprocess < 0)
 		{
-			fromprocess = PWCUtility.MPI_Size - 1;
+			fromprocess = PWCUtility.worldProcsCount - 1;
 		}
-		int toprocess = PWCUtility.MPI_Rank + 1;
-		if (toprocess > PWCUtility.MPI_Size - 1)
+		int toprocess = PWCUtility.worldProcsRank + 1;
+		if (toprocess > PWCUtility.worldProcsCount - 1)
 		{
 			toprocess = 0;
 		}
 
-		//	First communicationloop is local; then we have MPI_Size transfers of data in  a ring through processes             
-		for (int MPICommunicationSteps = 0; MPICommunicationSteps < PWCUtility.MPI_Size; MPICommunicationSteps++)
+		//	First communicationloop is local; then we have worldProcsCount transfers of data in  a ring through processes
+		for (int MPICommunicationSteps = 0; MPICommunicationSteps < PWCUtility.worldProcsCount; MPICommunicationSteps++)
 		{
 			if (MPICommunicationSteps == 1)
 			{
@@ -826,7 +826,7 @@ public class Dist
             // Note - parallel for
             final int MPICommunicationStepsLoopVar = MPICommunicationSteps;
             try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                 {
                     //  Loop over Home (point) indices in thread using non-home values from MPI or locally for communicationloop == 0
                     int betastart, betatotal;
@@ -851,7 +851,7 @@ public class Dist
                         {
                             betatotal = fromafar.getNumberOfPoints();
                             betastart = fromafar.getFirstPoint();
-                            if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
+                            if (MPICommunicationStepsLoopVar != (PWCUtility.worldProcsCount - 1))
                             {
                                 for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                                 {
@@ -889,11 +889,11 @@ public class Dist
 		//  Now calculate quantities involving global sums
 
 		//	Calculate full A(k)
-		GlobalReductions.FindVectorDoubleSum Find_A_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
+		GlobalReductions.FindVectorDoubleSum Find_A_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, localNcent);
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+            forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
             {
                 double[] LocalContribution_A_k_ = new double[localNcent];
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -920,11 +920,11 @@ public class Dist
 		}
 
 		// Calculate new values of epsi and do partial sums of differences   
-		GlobalReductions.FindVectorDoubleSum Find_EpsiDiff = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
+		GlobalReductions.FindVectorDoubleSum Find_EpsiDiff = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, localNcent);
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+            forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
             {
                 double[] Local_EpsiDiff = new double[localNcent];
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -1072,12 +1072,12 @@ public class Dist
 		} // End Initialization of JiggleOption = 2
 
 		// NewC_k_ and AverageMalpha_k_Change calculated for output only
-		GlobalReductions.FindVectorDoubleSum Find_NewC_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, Dist.RunningPWC.Ncent);
-		GlobalReductions.FindDoubleSum Find_AverageMalpha_k_Change = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
+		GlobalReductions.FindVectorDoubleSum Find_NewC_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, Dist.RunningPWC.Ncent);
+		GlobalReductions.FindDoubleSum Find_AverageMalpha_k_Change = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+            forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
             {
                 double[] NewMalpha_k_ = new double[Dist.RunningPWC.Ncent];
                 double[] partialsum_NewC_k_ = new double[Dist.RunningPWC.Ncent];
@@ -1234,7 +1234,7 @@ public class Dist
 				Dist.RunningPWC.ClustertoSplit = 0;
 
                 try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                    forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                     {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1282,7 +1282,7 @@ public class Dist
 
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                 {
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1371,7 +1371,7 @@ public class Dist
                 // Note - parallel for
                 int ClusterToRefineLoopVar = ClusterToRefine;
                 try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                    forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                     {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1412,7 +1412,7 @@ public class Dist
 				// Eigenvalue Test for Methodology 3
                 // Note - parallel for
                 try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                    forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                     {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1475,13 +1475,13 @@ public class Dist
 		//  Calculate Normalization
 		if (Program.PerturbationVehicle == 0)
 		{
-			GlobalReductions.FindDoubleSum SumoverShifts = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
-			GlobalReductions.FindDoubleSum ShiftNorm = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
-			GlobalReductions.FindDoubleSum EpsNorm = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
+			GlobalReductions.FindDoubleSum SumoverShifts = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
+			GlobalReductions.FindDoubleSum ShiftNorm = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
+			GlobalReductions.FindDoubleSum EpsNorm = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
 
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                 {
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1553,13 +1553,13 @@ public class Dist
 
 			if (Program.ContinuousClustering)
 			{
-				GlobalReductions.FindDoubleSum NewC1 = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
-				GlobalReductions.FindDoubleSum NewC2 = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
+				GlobalReductions.FindDoubleSum NewC1 = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
+				GlobalReductions.FindDoubleSum NewC2 = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
 
                 // Note - parallel for
                 final double PerturbationNormFactorLoopVar = PerturbationNormFactor;
                 try {
-                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                    forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                     {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1600,7 +1600,7 @@ public class Dist
         // Note - parallel for
         double PerturbationNormFactorLoopVar = PerturbationNormFactor;
         try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+            forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
             {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -1654,13 +1654,13 @@ public class Dist
 	//	Find initial Temperature
 	public static void initializeTemperature() throws MPIException {
 
-		GlobalReductions.FindDoubleSum Find_avg1 = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
-		GlobalReductions.FindDoubleSum Find_avg2 = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
-		GlobalReductions.FindDoubleSum Find_avg3 = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
+		GlobalReductions.FindDoubleSum Find_avg1 = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
+		GlobalReductions.FindDoubleSum Find_avg2 = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
+		GlobalReductions.FindDoubleSum Find_avg3 = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+            forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
             {
                 double DistanceSum = 0.0;
                 double NumberSum = 0.0;
@@ -1720,7 +1720,7 @@ public class Dist
 		Dist.DistanceCorrelation = new double[localNcent][localNcent];
 
 // Summation of one row of Correlation Matrix
-		GlobalReductions.FindVectorDoubleSum Find_CorrelationRow = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
+		GlobalReductions.FindVectorDoubleSum Find_CorrelationRow = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, localNcent);
 
 		// Loop over rows over Correlation Matrix
 		for (int CorrelationrowIndex = 0; CorrelationrowIndex < Dist.RunningPWC.Ncent; CorrelationrowIndex++)
@@ -1733,7 +1733,7 @@ public class Dist
             // Note - parallel for
             int CorrelationrowIndexLoopVar = CorrelationrowIndex;
             try {
-                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
+                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
                 {
                     //	Start Code setting partialsum_Correlation
                     double[] TempCorrel = new double[localNcent];
