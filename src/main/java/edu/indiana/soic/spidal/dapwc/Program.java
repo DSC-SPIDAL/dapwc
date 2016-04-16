@@ -269,7 +269,7 @@ public class Program
 		// Set up Decomposition of USED points
 		PWCParallelism.SetParallelDecomposition();
 
-        PWCUtility.PatternLabel = String.format("==== mpi-cluster(%1$s) ==== Threads:%2$s Clusters:%3$s PointCount_Global:%4$s ==== %5$s (%6$s) ==== ", PWCUtility.ParallelPattern, (new Integer(PWCUtility.threadCount)).toString(), (new Integer(Program.maxNcent)).toString(), PWCUtility.PointCount_Global, config.DistanceMatrixFile, new java.util.Date());
+        PWCUtility.PatternLabel = String.format("==== mpi-cluster(%1$s) ==== Threads:%2$s Clusters:%3$s PointCount_Global:%4$s ==== %5$s (%6$s) ==== ", PWCUtility.ParallelPattern, (new Integer(PWCUtility.ThreadCount)).toString(), (new Integer(Program.maxNcent)).toString(), PWCUtility.PointCount_Global, config.DistanceMatrixFile, new java.util.Date());
 
 		PWCUtility.SALSAPrint(0, "\n" + PWCUtility.PatternLabel);
 
@@ -311,16 +311,16 @@ public class Program
 			//  Create Centers
 			FindCenters.FindGroupCenters(Program.ClusterAssignments, NumberofClusters, 0, CenterFileName, MDSFileName, FullLabelFileName);
 			// Produce pviz file
-			PWCUtility.worldProcsComm.Barrier();
-			if (PWCUtility.worldProcsRank == 0)
+			PWCUtility.MPI_communicator.Barrier();
+			if (PWCUtility.MPI_Rank == 0)
 			{
 				String plotDescription = PWCUtility.PointCount_Global + "_points_into_" + NumberofClusters + "_clusters_with_centers";
 				String clusterNumberFile = config.ClusterNumberFile;
 				PlotTools.CreatePlotWithCenters(CenterFileName, MDSFileName, clusterNumberFile, PWCUtility.CenterPointsPerCenterTypeInOutput, PWCUtility.CenterPlotFile, plotDescription);
 			}
-			PWCUtility.worldProcsComm.Barrier();
+			PWCUtility.MPI_communicator.Barrier();
 
-			if ((PWCUtility.MPIIOStrategy > 0) || (PWCUtility.worldProcsRank == 0))
+			if ((PWCUtility.MPIIOStrategy > 0) || (PWCUtility.MPI_Rank == 0))
 			{
 				PWCUtility.writeClusterResults(config.SummaryFile, PWCUtility.CosmicOutput);
 			}
@@ -486,11 +486,11 @@ public class Program
 		}
 		PWCUtility.SALSAPrint(0, nextline);
 
-		if ((PWCUtility.MPIIOStrategy > 0) || (PWCUtility.worldProcsRank == 0))
+		if ((PWCUtility.MPIIOStrategy > 0) || (PWCUtility.MPI_Rank == 0))
 		{
 			PWCUtility.writeClusterResults(config.SummaryFile, PWCUtility.CosmicOutput);
-            WriteTimingFile(config.TimingFile, PWCUtility.mainDuration, PWCUtility.HPDuration, PWCUtility.threadCount,
-                            PWCUtility.worldProcsPerNode, PWCUtility.nodeCount, PWCUtility.PointCount_Process,
+            WriteTimingFile(config.TimingFile, PWCUtility.mainDuration, PWCUtility.HPDuration, PWCUtility.ThreadCount,
+                            PWCUtility.MPIperNodeCount, PWCUtility.NodeCount, PWCUtility.PointCount_Process,
                             PWCUtility.PointCount_Global, Program.maxNcent, PWCUtility.SubDurations[0] * 0.001,
                             PWCUtility.SubDurations[0] / PWCUtility.HPDuration, PWCUtility.SubDurations[1] * 0.001,
                             PWCUtility.SubDurations[1] / PWCUtility.HPDuration, PWCUtility.SubDurations[2] * 0.001,
@@ -526,9 +526,9 @@ public class Program
 	public static void OutputClusterLabels(int[] OccupationCounts) throws MPIException {
 		// Generate Cluster Labels (cluster number) from final epsi
 		final int[] labels = new int[PWCUtility.PointCount_Process];
-		int[][] partialsum_OccupationCounts = new int[PWCUtility.threadCount][];
+		int[][] partialsum_OccupationCounts = new int[PWCUtility.ThreadCount][];
 
-		for (int ThreadNo = 0; ThreadNo < PWCUtility.threadCount; ThreadNo++)
+		for (int ThreadNo = 0; ThreadNo < PWCUtility.ThreadCount; ThreadNo++)
 		{
 			partialsum_OccupationCounts[ThreadNo] = new int[Dist.RunningPWC.Ncent + cachelinesize];
 		}
@@ -536,7 +536,7 @@ public class Program
 		//  Parallel Section setting cluster labels
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
             {
                 Arrays.fill(partialsum_OccupationCounts[threadIndex], 0, Dist.RunningPWC.Ncent, 0);
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -565,7 +565,7 @@ public class Program
 
         int[] LocalOccupationCounts = new int[Dist.RunningPWC.Ncent];
 		Arrays.fill(LocalOccupationCounts, 0, Dist.RunningPWC.Ncent, 0);
-		for (int ThreadNo = 0; ThreadNo < PWCUtility.threadCount; ThreadNo++)
+		for (int ThreadNo = 0; ThreadNo < PWCUtility.ThreadCount; ThreadNo++)
 		{
 			for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
 			{
@@ -574,7 +574,7 @@ public class Program
 		}
 
 
-		if (PWCUtility.worldProcsCount > 1)
+		if (PWCUtility.MPI_Size > 1)
 		{
 			PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming);
             // Note - MPI Call - Allreduce - int - sum
@@ -600,13 +600,13 @@ public class Program
 
 
 		int MPItag = 100;
-		if (PWCUtility.worldProcsRank == 0)
+		if (PWCUtility.MPI_Rank == 0)
 		{
 			WriteClusterFile(ClusternumberFileName, labels, PWCUtility.PointCount_Process, PWCUtility.PointStart_Process, false);
 
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                 {
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -620,7 +620,7 @@ public class Program
                 PWCUtility.printAndThrowRuntimeException(e.getMessage());
             }
 
-            for (int MPISource = 1; MPISource < PWCUtility.worldProcsCount; MPISource++)
+            for (int MPISource = 1; MPISource < PWCUtility.MPI_Size; MPISource++)
 			{
                 // Note - MPI Call - Receive - MPIPacket
 				MPIPacket fromsource = PWCUtility.mpiOps.receive(MPISource, MPItag, MPIPacket.Type.Integer);
@@ -660,22 +660,22 @@ public class Program
 	{
         config = ConfigurationMgr.LoadConfiguration(cmd.getOptionValue(Constants.CMD_OPTION_LONG_C)).pairwiseClusteringSection;
         Program.ControlFileName = cmd.getOptionValue(Constants.CMD_OPTION_LONG_C);
-        PWCUtility.nodeCount = Integer.parseInt(cmd.getOptionValue(Constants.CMD_OPTION_LONG_N));
-        PWCUtility.threadCount = Integer.parseInt(cmd.getOptionValue(Constants.CMD_OPTION_LONG_T));
+        PWCUtility.NodeCount = Integer.parseInt(cmd.getOptionValue(Constants.CMD_OPTION_LONG_N));
+        PWCUtility.ThreadCount = Integer.parseInt(cmd.getOptionValue(Constants.CMD_OPTION_LONG_T));
 
         // Override section's node and thread counts with command line values if different
-        if (config.getNodeCount() != PWCUtility.nodeCount) {
-            config.setNodeCount(PWCUtility.nodeCount);
+        if (config.getNodeCount() != PWCUtility.NodeCount) {
+            config.setNodeCount(PWCUtility.NodeCount);
         }
-        if (config.getThreadCount() != PWCUtility.threadCount) {
-            config.setThreadCount(PWCUtility.threadCount);
+        if (config.getThreadCount() != PWCUtility.ThreadCount) {
+            config.setThreadCount(PWCUtility.ThreadCount);
         }
 
 	    PWCUtility.PointCount_Global = config.NumberDataPoints;
 	    Program.ProcessingOption = config.ProcessingOption;
 	    Program.maxNcent = config.MaxNcent;
-	    PWCUtility.threadCount = config.ThreadCount;     // Number of Threads
-	    PWCUtility.nodeCount = config.NodeCount;       // Number of Nodes
+	    PWCUtility.ThreadCount = config.ThreadCount;     // Number of Threads
+	    PWCUtility.NodeCount = config.NodeCount;       // Number of Nodes
 	    PWCUtility.MPIIOStrategy = config.MPIIOStrategy;   // Controls strategy of file handling with MPI =0 is ONE FILE
 	    Program.ToosmalltoSplit = config.TooSmallToSplit;
 	    Program.Waititerations = config.WaitIterations;

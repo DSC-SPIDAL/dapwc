@@ -65,11 +65,11 @@ public class vectorclass
 			initialvector = new double[PWCUtility.PointCount_Process];
 			double fudge = 1.0 / PWCUtility.PointCount_Global;
 
-			GlobalReductions.FindDoubleSum Find_initnorm = new GlobalReductions.FindDoubleSum(PWCUtility.threadCount);
+			GlobalReductions.FindDoubleSum Find_initnorm = new GlobalReductions.FindDoubleSum(PWCUtility.ThreadCount);
 
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                 {
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -89,7 +89,7 @@ public class vectorclass
 
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                 {
                        //	Start Delegate Code normalizing initialvector
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -107,8 +107,8 @@ public class vectorclass
         } // End Initialize arrays on first call
 
 		MaxlengthMandB = localNcent * PWCUtility.PointCount_Largest;
-		MandBRepository = new MPISecPacket[PWCUtility.worldProcsCount];
-		for (int localrank = 0; localrank < PWCUtility.worldProcsCount; localrank++)
+		MandBRepository = new MPISecPacket[PWCUtility.MPI_Size];
+		for (int localrank = 0; localrank < PWCUtility.MPI_Size; localrank++)
 		{
 			MandBRepository[localrank] = new MPISecPacket(MaxlengthMandB);
 		}
@@ -273,7 +273,7 @@ public class vectorclass
 
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+            forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
             {
                  //	Start Code initializing power vectors Ax oldAx
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -382,19 +382,19 @@ public class vectorclass
 					++Acount;
 				}
 			}
-			int fromprocess = PWCUtility.worldProcsRank - 1;
+			int fromprocess = PWCUtility.MPI_Rank - 1;
 			if (fromprocess < 0)
 			{
-				fromprocess = PWCUtility.worldProcsCount - 1;
+				fromprocess = PWCUtility.MPI_Size - 1;
 			}
-			int toprocess = PWCUtility.worldProcsRank + 1;
-			if (toprocess > PWCUtility.worldProcsCount - 1)
+			int toprocess = PWCUtility.MPI_Rank + 1;
+			if (toprocess > PWCUtility.MPI_Size - 1)
 			{
 				toprocess = 0;
 			}
 
-			//	First communicationloop is local; then we have worldProcsCount transfers of data in  a ring through processes
-			for (int MPICommunicationSteps = 0; MPICommunicationSteps < PWCUtility.worldProcsCount; MPICommunicationSteps++)
+			//	First communicationloop is local; then we have MPI_Size transfers of data in  a ring through processes
+			for (int MPICommunicationSteps = 0; MPICommunicationSteps < PWCUtility.MPI_Size; MPICommunicationSteps++)
 			{
 				if (MPICommunicationSteps == 1)
 				{
@@ -464,7 +464,7 @@ public class vectorclass
                 MPISecPacket fromafarMandBLoopVar = fromafarMandB;
                 // Note - parallel for
                 try {
-                    forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+                    forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                         //	Start Code calculating power vectors Ax oldAx
                                 // DiagonalTerm[ClusterIndex] = tmp / T;
                                             //  FirstTerm = -MalphaMu * MbetaLambda / T;
@@ -503,7 +503,7 @@ public class vectorclass
                             {
                                 betatotal = fromafarMandBLoopVar.getNumberOfPoints();
                                 betastart = fromafarMandBLoopVar.getFirstPoint();
-                                if (MPICommunicationStepsLoopVar != (PWCUtility.worldProcsCount - 1))
+                                if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
                                 {
                                     int Acount = 0;
                                     for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
@@ -668,15 +668,15 @@ public class vectorclass
             } // End communicationloop
 
 			MandBset = true;
-			GlobalReductions.FindVectorDoubleSum Find_sum_t0 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, localNcent);
-			GlobalReductions.FindVectorDoubleSum Find_sum_t1 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, localNcent);
-			GlobalReductions.FindVectorDoubleSum Find_sum_t2 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.threadCount, localNcent);
+			GlobalReductions.FindVectorDoubleSum Find_sum_t0 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
+			GlobalReductions.FindVectorDoubleSum Find_sum_t1 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
+			GlobalReductions.FindVectorDoubleSum Find_sum_t2 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
 
 			//	sum over threads to get Power Eigenvalues
             // Note - parallel for
             final int REMOVEZEROEigsLoopVar = REMOVEZEROEigs;
             try {
-                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                 {
                     double[] Accum_t0 = new double[localNcent];
                     double[] Accum_t1 = new double[localNcent];
@@ -781,7 +781,7 @@ public class vectorclass
 				if ((NumPowerIterations > 10) && (eigenvalue > 0.0))
 				{ // Arbitrary choice for Number of Power Iterations Cut
 					int somethingtodo = 0;
-					if (PWCUtility.worldProcsRank == 0)
+					if (PWCUtility.MPI_Rank == 0)
 					{ // Decisions can only be made in one process
 						if (Math.abs(eigenvalue - Eigenvalues_Current[ClusterIndex]) > eigenvalue * Program.eigenvaluechange)
 						{
@@ -807,7 +807,7 @@ public class vectorclass
 
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.threadCount -1, (threadIndex) ->
+                forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                 {
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;

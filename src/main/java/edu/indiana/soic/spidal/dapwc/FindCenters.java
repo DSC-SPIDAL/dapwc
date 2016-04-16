@@ -87,7 +87,7 @@ public class FindCenters
         String[] SequenceLabels = new String[PWCUtility.PointCount_Global];
         int[] SequenceLengths = new int[PWCUtility.PointCount_Global];
         if (LabelInputFileName.length() > 0) {
-            if (PWCUtility.worldProcsRank == 0) {
+            if (PWCUtility.MPI_Rank == 0) {
                 ReadLabels(LabelInputFileName, SequenceLabels, SequenceLengths, 0, PWCUtility.PointCount_Global);
                 int maxlen = 0;
                 for (int looplabel = 0; looplabel < PWCUtility.PointCount_Global; looplabel++) {
@@ -181,20 +181,20 @@ public class FindCenters
                 continue;
             }
 
-            FindGroupMax[group] = new GlobalReductions.FindDoubleMax(PWCUtility.threadCount);
-            FindGroupMeansigma[group] = new GlobalReductions.FindMeanSigma(PWCUtility.threadCount);
-            FindGroupMDSMeansigma[group] = new GlobalReductions.FindMeanSigma(PWCUtility.threadCount);
+            FindGroupMax[group] = new GlobalReductions.FindDoubleMax(PWCUtility.ThreadCount);
+            FindGroupMeansigma[group] = new GlobalReductions.FindMeanSigma(PWCUtility.ThreadCount);
+            FindGroupMDSMeansigma[group] = new GlobalReductions.FindMeanSigma(PWCUtility.ThreadCount);
             FindGroupMDSCoG[group] = new GlobalReductions.FindMeanSigma[3];
             for (int MDSIndex = 0; MDSIndex < 3; MDSIndex++) {
-                FindGroupMDSCoG[group][MDSIndex] = new GlobalReductions.FindMeanSigma(PWCUtility.threadCount);
+                FindGroupMDSCoG[group][MDSIndex] = new GlobalReductions.FindMeanSigma(PWCUtility.ThreadCount);
             }
 
             FindGroupOriginalDataCenters_mean[group] =
-                    new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.threadCount, PWCUtility.NumberofCenters);
+                    new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.ThreadCount, PWCUtility.NumberofCenters);
             FindGroupMDSCenters_mean[group] =
-                    new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.threadCount, PWCUtility.NumberofCenters);
+                    new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.ThreadCount, PWCUtility.NumberofCenters);
             FindGroupMDSCenters_CoG[group] =
-                    new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.threadCount, PWCUtility.NumberofCenters);
+                    new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.ThreadCount, PWCUtility.NumberofCenters);
         }
 
 
@@ -202,7 +202,7 @@ public class FindCenters
         if (PWCUtility.addMDS > 0) {
             // Note - parallel for
             try {
-                forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
+                forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                     for (int index = beginpoint; index < indexlen + beginpoint; index++) {
@@ -260,7 +260,7 @@ public class FindCenters
         //  Loop over points GlobalPointIndex1
         // Note - parallel for
         try {
-            forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
+            forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int index = beginpoint; index < indexlen + beginpoint; index++) {
@@ -429,7 +429,7 @@ public class FindCenters
                 double avgmean = 0.0;
                 double Avg_CoGcenters = 0.0;
                 int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
-                if (owner == PWCUtility.worldProcsRank) {
+                if (owner == PWCUtility.MPI_Rank) {
                     for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                         int GlobalPointIndex2 = GroupIndexfromMinMeans[group][CenterIndex2];
                         if (GlobalPointIndex2 < 0) {
@@ -459,7 +459,7 @@ public class FindCenters
                         Avg_CoGcenters = Avg_CoGcenters / PWCUtility.NumberofCenters;
                     }
                 }
-                if (PWCUtility.worldProcsCount > 1) {
+                if (PWCUtility.MPI_Size > 1) {
                     PWCUtility.StartSubTimer(PWCUtility.MPIBROADCASTTiming);
                     // Note - MPI Call - Broadcast - double
                     avgmean = PWCUtility.mpiOps.broadcast(avgmean, owner);
@@ -477,7 +477,7 @@ public class FindCenters
                     PWCUtility.StopSubTimer(PWCUtility.MPIBROADCASTTiming);
                 }
 
-                if (PWCUtility.worldProcsRank == 0) {
+                if (PWCUtility.MPI_Rank == 0) {
                     String Seqlabel = "";
                     if (LabelsAvailable) {
                         Seqlabel = " Sequence=" + SequenceLabels[GlobalPointIndex1] + " Length=" +
@@ -500,7 +500,7 @@ public class FindCenters
                 }
             }
 
-            if (PWCUtility.worldProcsRank == 0) {
+            if (PWCUtility.MPI_Rank == 0) {
                 if (NumMinMeansFound > 0) {
                     System.arraycopy(GroupIndexfromMinMeans[group], 0, UtilityIndex, 0, NumMinMeansFound);
                     WritePointProperties(CenterOutputFileName, UtilityIndex, PointProperties, NumMinMeansFound, true);
@@ -547,7 +547,7 @@ public class FindCenters
                     double Avg_MeanMethod = 0.0;
                     double Avg_Internal = 0.0;
                     int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
-                    if (owner == PWCUtility.worldProcsRank) {
+                    if (owner == PWCUtility.MPI_Rank) {
 
                         for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                             int GlobalPointIndex2 = GroupIndexfromMDSMinMeans[group][CenterIndex2];
@@ -573,7 +573,7 @@ public class FindCenters
                         }
                     }
 
-                    if (PWCUtility.worldProcsCount > 1) {
+                    if (PWCUtility.MPI_Size > 1) {
                         PWCUtility.StartSubTimer(PWCUtility.MPIBROADCASTTiming);
                         // Note - MPI Call - Broadcast - double
                         Avg_Internal = PWCUtility.mpiOps.broadcast(Avg_Internal, owner);
@@ -591,7 +591,7 @@ public class FindCenters
                     Avg_MeanMethod = Avg_MeanMethod / PWCUtility.NumberofCenters;
                     Avg_Internal = Avg_Internal / (PWCUtility.NumberofCenters - 1);
 
-                    if (PWCUtility.worldProcsRank == 0) {
+                    if (PWCUtility.MPI_Rank == 0) {
                         String Seqlabel = "";
                         if (LabelsAvailable) {
                             Seqlabel = " Sequence=" + SequenceLabels[GlobalPointIndex1] + " Length=" +
@@ -611,7 +611,7 @@ public class FindCenters
                     }
                 }
 
-                if (PWCUtility.worldProcsRank == 0) {
+                if (PWCUtility.MPI_Rank == 0) {
                     if (NumMDSMeansFound > 0) {
                         System.arraycopy(GroupIndexfromMDSMinMeans[group], 0, UtilityIndex, 0, NumMDSMeansFound);
                         WritePointProperties(CenterOutputFileName, UtilityIndex, PointProperties, NumMDSMeansFound,
@@ -657,7 +657,7 @@ public class FindCenters
                     int Num_MeanMethod = 0;
                     double Avg_Internal = 0.0;
                     int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
-                    if (owner == PWCUtility.worldProcsRank) {
+                    if (owner == PWCUtility.MPI_Rank) {
 
                         for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                             int GlobalPointIndex2 = GroupIndexfromMDSCoG[group][CenterIndex2];
@@ -691,7 +691,7 @@ public class FindCenters
 
                     }
 
-                    if (PWCUtility.worldProcsCount > 1) {
+                    if (PWCUtility.MPI_Size > 1) {
                         PWCUtility.StartSubTimer(PWCUtility.MPIBROADCASTTiming);
                         // Note - MPI Call - Broadcast - double
                         Avg_Internal = PWCUtility.mpiOps.broadcast(Avg_Internal, owner);
@@ -713,7 +713,7 @@ public class FindCenters
                     }
                     Avg_Internal = Avg_Internal / (PWCUtility.NumberofCenters - 1);
 
-                    if (PWCUtility.worldProcsRank == 0) {
+                    if (PWCUtility.MPI_Rank == 0) {
                         String Seqlabel = "";
                         if (LabelsAvailable) {
                             Seqlabel = " Sequence=" + SequenceLabels[GlobalPointIndex1] + " Length=" +
@@ -733,7 +733,7 @@ public class FindCenters
                     }
                 }
 
-                if (PWCUtility.worldProcsRank == 0) {
+                if (PWCUtility.MPI_Rank == 0) {
                     System.arraycopy(GroupIndexfromMDSCoG[group], 0, UtilityIndex, 0, PWCUtility.NumberofCenters);
                     WritePointProperties(CenterOutputFileName, UtilityIndex, PointProperties,
                                          PWCUtility.NumberofCenters, true);
@@ -748,13 +748,13 @@ public class FindCenters
                 //  First Histogram distance values so we can convert bucket fractions into radii
                 double fudge = (double) NumberofBins / GlobalGroupMax[group];
                 GlobalReductions.FindDoubleArraySum DistanceHistogramBinCounts =
-                        new GlobalReductions.FindDoubleArraySum(PWCUtility.threadCount, NumberofBins);
+                        new GlobalReductions.FindDoubleArraySum(PWCUtility.ThreadCount, NumberofBins);
 
                 //  Loop over points selecting those in this group
                 // Note - parallel for
                 final int groupLoopVar = group;
                 try {
-                    forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         DistanceHistogramBinCounts.startthread(threadIndex);
@@ -810,14 +810,14 @@ public class FindCenters
                         new GlobalReductions.FindManyMinValuewithIndex[PWCUtility.NumberofBuckets];
                 for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
                     FindCentersbybuckets[BucketIndex] =
-                            new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.threadCount,
+                            new GlobalReductions.FindManyMinValuewithIndex(PWCUtility.ThreadCount,
                                                                            PWCUtility.NumberofCenters);
                 }
 
                 //  Loop over points
                 // Note - parallel for
                 try {
-                    forallChunked(0, PWCUtility.threadCount - 1, (threadIndex) -> {
+                    forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         for (int index = beginpoint; index < indexlen + beginpoint; index++) {
@@ -914,7 +914,7 @@ public class FindCenters
                         double Avg_MeanMethod = 0.0;
                         int Num_MeanMethod = 0;
                         int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
-                        if (owner == PWCUtility.worldProcsRank) {
+                        if (owner == PWCUtility.MPI_Rank) {
                             for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                                 int GlobalPointIndex2 =
                                         FindCentersbybuckets[BucketIndex].OrderedIndexValue[CenterIndex2];
@@ -947,7 +947,7 @@ public class FindCenters
                                 }
                             }
                         }
-                        if (PWCUtility.worldProcsCount > 1) {
+                        if (PWCUtility.MPI_Size > 1) {
                             PWCUtility.StartSubTimer(PWCUtility.MPIBROADCASTTiming);
                             // Note - MPI Call - Broadcast - double
                             Avg_Internal = PWCUtility.mpiOps.broadcast(Avg_Internal, owner);
@@ -968,7 +968,7 @@ public class FindCenters
                         if (Num_MeanMethod > 0) {
                             Avg_MeanMethod = Avg_MeanMethod / Num_MeanMethod;
                         }
-                        if (PWCUtility.worldProcsRank == 0) {
+                        if (PWCUtility.MPI_Rank == 0) {
                             String Seqlabel = "";
                             if (LabelsAvailable) {
                                 Seqlabel = " Sequence=" + SequenceLabels[GlobalPointIndex1] + " Length=" +
@@ -990,7 +990,7 @@ public class FindCenters
                     }
 
                     // Output
-                    if (PWCUtility.worldProcsRank == 0) {
+                    if (PWCUtility.MPI_Rank == 0) {
                         if (NumBucketEntriesFound > 0) {
                             System.arraycopy(FindCentersbybuckets[BucketIndex].OrderedIndexValue, 0, UtilityIndex, 0,
                                              NumBucketEntriesFound);
@@ -1003,7 +1003,7 @@ public class FindCenters
             }
 
             //  Global Rating
-            if (PWCUtility.worldProcsRank == 0) {
+            if (PWCUtility.MPI_Rank == 0) {
                 PWCUtility.SALSAPrint(1, "\n---------------- Best Rated Points");
                 double bestrating = -1.0;
                 int bestposition = -1;
@@ -1191,7 +1191,7 @@ public class FindCenters
     // Write General Point results into a file
     public static void WritePointProperties(String file, int[] PointNumbers, String[] labels, int dataPoints,
                                             boolean append) {
-        if (PWCUtility.worldProcsRank != 0) {
+        if (PWCUtility.MPI_Rank != 0) {
             return;
         }
 
