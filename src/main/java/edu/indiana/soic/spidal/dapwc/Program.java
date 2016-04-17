@@ -156,6 +156,10 @@ public class Program
                                  Constants.CMD_OPTION_DESCRIPTION_N);
         programOptions.addOption(String.valueOf(Constants.CMD_OPTION_SHORT_T),Constants.CMD_OPTION_LONG_T,true,
                                  Constants.CMD_OPTION_DESCRIPTION_T);
+        programOptions.addOption(Constants.CMD_OPTION_SHORT_MMAPS, true, Constants.CMD_OPTION_DESCRIPTION_MMAPS);
+        programOptions.addOption(
+                Constants.CMD_OPTION_SHORT_MMAP_SCRATCH_DIR, true,
+                Constants.CMD_OPTION_DESCRIPTION_MMAP_SCRATCH_DIR);
     }
 	public static int ClusterCountOutput = 1; // Control Label Output = 0 not at all, = 1 at each count, = 2 also find centers
 	public static int[] ClusterAssignments = null; // This gives for all points their cluster assignments (set in OutputClusterLabels)
