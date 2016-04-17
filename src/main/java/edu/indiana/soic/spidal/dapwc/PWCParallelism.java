@@ -5,6 +5,8 @@ import edu.indiana.soic.spidal.mpi.MpiOps;
 import mpi.MPI;
 import mpi.MPIException;
 
+import java.io.IOException;
+
 import static edu.rice.hj.Module0.finalizeHabanero;
 import static edu.rice.hj.Module0.initializeHabanero;
 
@@ -16,7 +18,10 @@ public class PWCParallelism
         initializeHabanero();
 
 		//  Set up MPI
-        MPI.Init(args);
+		// Note - moving to ParallelOps
+		ParallelOps.setupParallelism(args);
+        /*MPI.Init(args);*/
+
 		PWCUtility.MPI_communicator = MPI.COMM_WORLD; //initializing MPI world communicator
 
 		PWCUtility.MPI_Rank = PWCUtility.MPI_communicator.getRank(); // Rank of this process
@@ -46,11 +51,16 @@ public class PWCParallelism
         finalizeHabanero();
 
         // End MPI
-        MPI.Finalize();
+		// Note - moving to ParallelOps
+		ParallelOps.tearDownParallelism();
+        /*MPI.Finalize();*/
 	} // End TearDownParallelism
 
-	public static void SetParallelDecomposition()
-	{
+	public static void SetParallelDecomposition() throws IOException,
+            MPIException {
+		// Note - moving to ParallelOps
+		ParallelOps.setParallelDecomposition(PWCUtility.PointCount_Global,1);
+
 		//	First divide points among processes
 		Range[] processRanges = RangePartitioner.Partition(PWCUtility.PointCount_Global, PWCUtility.MPI_Size);
 		Range processRange = processRanges[PWCUtility.MPI_Rank]; // The answer for this process
