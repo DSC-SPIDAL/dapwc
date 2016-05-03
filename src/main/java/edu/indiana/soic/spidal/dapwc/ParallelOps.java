@@ -365,7 +365,6 @@ public class ParallelOps {
             debug.append(idx).append(" ");
             mmapAllReduceWriteBytes.writeInt(idx*Integer.BYTES, values[i]);
         }
-        debug.append('\n');
         printInOrder(debug.toString());
         // Important barrier here - as we need to make sure writes are done
         // to the mmap file.
