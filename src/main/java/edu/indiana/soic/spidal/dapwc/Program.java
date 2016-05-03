@@ -714,6 +714,8 @@ public class Program
 
 		ParallelOps.mmapsPerNode = cmd.hasOption(Constants.CMD_OPTION_SHORT_MMAPS) ? Integer.parseInt(cmd.getOptionValue(Constants.CMD_OPTION_SHORT_MMAPS)) : 1;
 		ParallelOps.mmapScratchDir = cmd.hasOption(Constants.CMD_OPTION_SHORT_MMAP_SCRATCH_DIR) ? cmd.getOptionValue(Constants.CMD_OPTION_SHORT_MMAP_SCRATCH_DIR) : ".";
+        ParallelOps.nodeCount = PWCUtility.NodeCount;
+        ParallelOps.threadCount = PWCUtility.ThreadCount;
 	}
     public static void WriteClusterFile(String file, int[] labels, int dataPoints, int startPosition, boolean append){
         WriteClusterFile(file, i -> labels[i], dataPoints, startPosition, append);
