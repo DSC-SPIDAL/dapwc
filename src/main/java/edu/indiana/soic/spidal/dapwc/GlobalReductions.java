@@ -145,7 +145,9 @@ public class GlobalReductions {
                 // Note - MPI Call - Allreduce - int - sum
                 TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
                 // Note - MPI Call - Allreduce - double[] - sum
-                PWCUtility.mpiOps.allReduce(TotalSum, MPI.SUM);
+                // TODO - changing to mmap all reduce call
+                /*PWCUtility.mpiOps.allReduce(TotalSum, MPI.SUM);*/
+                ParallelOps.allReduceSum(TotalSum);
                 PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
             }
         }

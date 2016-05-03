@@ -399,6 +399,49 @@ public class ParallelOps {
         }
     }
 
+    public static void allReduceSum(double[] values) throws MPIException {
+        int idx;
+        mmapAllReduceWriteBytes.position(0);
+        for (int i = 0; i < values.length; ++i){
+            idx = (i*mmapProcsCount)+mmapProcRank;
+            mmapAllReduceWriteBytes.writeDouble(idx*Double.BYTES, values[i]);
+        }
+        // Important barrier here - as we need to make sure writes are done
+        // to the mmap file.
+        // It's sufficient to wait on ParallelOps.mmapProcComm,
+        // but it's cleaner for timings if we wait on the whole world
+        worldProcsComm.barrier();
+        if (ParallelOps.isMmapLead) {
+            // Node local reduction using shared memory maps
+            double sum;
+            int pos;
+            for (int i = 0; i < values.length; ++i){
+                sum = 0.0;
+                pos = i*mmapProcsCount*Integer.BYTES;
+                for (int j = 0; j < mmapProcsCount; ++j){
+                    ParallelOps.mmapAllReduceReadBytes.position(pos);
+                    sum += mmapAllReduceReadBytes.readDouble();
+                    pos += Integer.BYTES;
+                }
+                mmapAllReduceWriteBytes.writeDouble(i*Double.BYTES, sum);
+            }
+
+            // Leaders participate in MPI AllReduce
+            cgProcComm.allReduce(mmapAllReduceReadByteBuffer, values.length, MPI.DOUBLE,MPI.SUM);
+        }
+
+        // Each process in a memory group waits here.
+        // It's not necessary to wait for a process
+        // in another memory map group, hence the use of mmapProcComm.
+        // However it's cleaner for any timings to have everyone sync here,
+        // so will use worldProcsComm instead.
+        ParallelOps.worldProcsComm.barrier();
+        ParallelOps.mmapAllReduceReadBytes.position(0);
+        for (int i = 0; i < values.length; ++i){
+            values[i] = ParallelOps.mmapAllReduceReadBytes.readDouble();
+        }
+    }
+
     public static DoubleStatistics allReduce(DoubleStatistics stat)
             throws MPIException {
         stat.addToBuffer(statBuffer, 0);
