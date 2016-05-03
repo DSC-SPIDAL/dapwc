@@ -347,7 +347,7 @@ public class ParallelOps {
 
     private static void printInOrder(String str) throws MPIException {
         for (int i = 0; i < worldProcsCount; ++i){
-            intBuffer.put(i);
+            intBuffer.put(0,i);
             worldProcsComm.bcast(intBuffer, 1, MPI.INT, 0);
             int r = intBuffer.get(0);
             if (r == worldProcRank){
