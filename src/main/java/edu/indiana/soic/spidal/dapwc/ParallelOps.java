@@ -359,13 +359,10 @@ public class ParallelOps {
     public static void allReduceSum(int[] values) throws MPIException {
         int idx;
         mmapAllReduceWriteBytes.position(0);
-        StringBuilder debug = new StringBuilder("Rank: " + worldProcRank + " MMapRank: " + mmapProcRank + " Vals: " + Arrays.toString(values) + " Idxs: ");
         for (int i = 0; i < values.length; ++i){
             idx = (i*mmapProcsCount)+mmapProcRank;
-            debug.append(idx).append(" ");
             mmapAllReduceWriteBytes.writeInt(idx*Integer.BYTES, values[i]);
         }
-        printInOrder(debug.toString());
         // Important barrier here - as we need to make sure writes are done
         // to the mmap file.
         // It's sufficient to wait on ParallelOps.mmapProcComm,
