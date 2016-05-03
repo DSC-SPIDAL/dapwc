@@ -345,13 +345,28 @@ public class ParallelOps {
         }
     }
 
+    private static void printInOrder(String str) throws MPIException {
+        for (int i = 0; i < worldProcsCount; ++i){
+            intBuffer.put(i);
+            worldProcsComm.bcast(intBuffer, 1, MPI.INT, 0);
+            int r = intBuffer.get(0);
+            if (r == worldProcRank){
+                System.out.println(str);
+            }
+        }
+    }
+
     public static void allReduceSum(int[] values) throws MPIException {
         int idx;
         mmapAllReduceWriteBytes.position(0);
+        StringBuilder debug = new StringBuilder("Rank: " + worldProcRank + " MMapRank: " + mmapProcRank + " Vals: " + Arrays.toString(values) + " Idxs: ");
         for (int i = 0; i < values.length; ++i){
             idx = (i*mmapProcsCount)+mmapProcRank;
+            debug.append(idx).append(" ");
             mmapAllReduceWriteBytes.writeInt(idx*Integer.BYTES, values[i]);
         }
+        debug.append('\n');
+        printInOrder(debug.toString());
         // Important barrier here - as we need to make sure writes are done
         // to the mmap file.
         // It's sufficient to wait on ParallelOps.mmapProcComm,
@@ -360,11 +375,14 @@ public class ParallelOps {
         if (ParallelOps.isMmapLead) {
             // Node local reduction using shared memory maps
             int sum;
+            int pos;
             for (int i = 0; i < values.length; ++i){
                 sum = 0;
-                ParallelOps.mmapAllReduceReadBytes.position(i*mmapProcsCount*Integer.BYTES);
+                pos = i*mmapProcsCount*Integer.BYTES;
                 for (int j = 0; j < mmapProcsCount; ++j){
+                    ParallelOps.mmapAllReduceReadBytes.position(pos);
                     sum += mmapAllReduceReadBytes.readInt();
+                    pos += Integer.BYTES;
                 }
                 mmapAllReduceWriteBytes.writeInt(i*Integer.BYTES, sum);
             }
