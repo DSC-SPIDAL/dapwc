@@ -82,9 +82,11 @@ public class ParallelOps {
     public static Bytes fullXBytes;
     public static ByteBuffer fullXByteBuffer;
 
-    public static Bytes mmapSReadBytes;
-    public static ByteBuffer mmapSReadByteBuffer;
-    public static Bytes mmapSWriteBytes;
+    public static Bytes mmapAllReduceReadBytes;
+    public static ByteBuffer mmapAllReduceReadByteBuffer;
+    public static Bytes mmapAllReduceWriteBytes;
+    public static int mmapAllReduceChunkSizeInBytes;
+    public static long mmapAllReduceWriteByteOffset;
 
     public static void setupParallelism(String[] args) throws MPIException {
         MPI.Init(args);
@@ -313,27 +315,73 @@ public class ParallelOps {
         }
 
         /* Allocate memory maps for single double valued communications like AllReduce */
-        final String mmapSFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapS.bin";
-        try (FileChannel mmapSFc = FileChannel
-                .open(Paths.get(mmapScratchDir, mmapSFname),
+        final String mmapAllReduceFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapAllReduce.bin";
+        try (FileChannel mmapAllReduceFc = FileChannel
+                .open(Paths.get(mmapScratchDir, mmapAllReduceFname),
                         StandardOpenOption.CREATE, StandardOpenOption.READ,
                         StandardOpenOption.WRITE)) {
 
-            int mmapSReadByteExtent = mmapProcsCount * Double.BYTES;
-            long mmapSReadByteOffset = 0L;
-            int mmapSWriteByteExtent = Double.BYTES;
-            long mmapSWriteByteOffset = mmapProcRank * Double.BYTES;
+            // See SharedMemoryCommunicatioNotes for more info on the number 1000
+            mmapAllReduceChunkSizeInBytes = Math.max(Program.maxNcent, 1000)*Double.BYTES;
+            int mmapAllReduceReadByteExtent = mmapProcsCount * mmapAllReduceChunkSizeInBytes;
+            long mmapAllReduceReadByteOffset = 0L;
+            /*int mmapAllReduceWriteByteExtent = mmapAllReduceChunkSizeInBytes;
+            mmapAllReduceWriteByteOffset = mmapProcRank * mmapAllReduceChunkSizeInBytes;*/
+            // TODO - this will help to do column wise storage for better access
+            int mmapAllReduceWriteByteExtent = mmapAllReduceReadByteExtent;
+            mmapAllReduceWriteByteOffset = 0L;
 
 
-            mmapSReadBytes = ByteBufferBytes.wrap(mmapSFc.map(
-                    FileChannel.MapMode.READ_WRITE, mmapSReadByteOffset,
-                    mmapSReadByteExtent));
-            mmapSReadByteBuffer = mmapSReadBytes.sliceAsByteBuffer(
-                    mmapSReadByteBuffer);
+            mmapAllReduceReadBytes = ByteBufferBytes.wrap(mmapAllReduceFc.map(
+                    FileChannel.MapMode.READ_WRITE, mmapAllReduceReadByteOffset,
+                    mmapAllReduceReadByteExtent));
+            mmapAllReduceReadByteBuffer = mmapAllReduceReadBytes.sliceAsByteBuffer(
 
-            mmapSReadBytes.position(0);
-            mmapSWriteBytes = mmapSReadBytes.slice(mmapSWriteByteOffset,
-                    mmapSWriteByteExtent);
+                    mmapAllReduceReadByteBuffer);
+
+            mmapAllReduceReadBytes.position(0);
+            mmapAllReduceWriteBytes = mmapAllReduceReadBytes.slice(mmapAllReduceWriteByteOffset,
+                    mmapAllReduceWriteByteExtent);
+        }
+    }
+
+    public static void allReduceSum(int[] values) throws MPIException {
+        int idx;
+        mmapAllReduceWriteBytes.position(0);
+        for (int i = 0; i < values.length; ++i){
+            idx = (i*mmapProcsCount)+mmapProcRank;
+            mmapAllReduceWriteBytes.writeInt(idx*Integer.BYTES, values[i]);
+        }
+        // Important barrier here - as we need to make sure writes are done
+        // to the mmap file.
+        // It's sufficient to wait on ParallelOps.mmapProcComm,
+        // but it's cleaner for timings if we wait on the whole world
+        worldProcsComm.barrier();
+        if (ParallelOps.isMmapLead) {
+            // Node local reduction using shared memory maps
+            int sum;
+            for (int i = 0; i < values.length; ++i){
+                sum = 0;
+                ParallelOps.mmapAllReduceReadBytes.position(i*mmapProcsCount*Integer.BYTES);
+                for (int j = 0; j < mmapProcsCount; ++j){
+                    sum += mmapAllReduceReadBytes.readInt();
+                }
+                mmapAllReduceWriteBytes.writeInt(i*Integer.BYTES, sum);
+            }
+
+            // Leaders participate in MPI AllReduce
+            cgProcComm.allReduce(mmapAllReduceReadByteBuffer, values.length, MPI.INT,MPI.SUM);
+        }
+
+        // Each process in a memory group waits here.
+        // It's not necessary to wait for a process
+        // in another memory map group, hence the use of mmapProcComm.
+        // However it's cleaner for any timings to have everyone sync here,
+        // so will use worldProcsComm instead.
+        ParallelOps.worldProcsComm.barrier();
+        ParallelOps.mmapAllReduceReadBytes.position(0);
+        for (int i = 0; i < values.length; ++i){
+            values[i] = ParallelOps.mmapAllReduceReadBytes.readInt();
         }
     }
 
@@ -365,7 +413,7 @@ public class ParallelOps {
     }
 
     public static void partialSAllReduce(Op op) throws MPIException{
-        cgProcComm.allReduce(mmapSReadByteBuffer, 1, MPI.DOUBLE,op);
+        cgProcComm.allReduce(mmapAllReduceReadByteBuffer, 1, MPI.DOUBLE,op);
     }
 
     public static void broadcast(ByteBuffer buffer, int extent, int root)

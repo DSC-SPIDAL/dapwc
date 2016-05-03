@@ -1,0 +1,21 @@
+The type of communications
+--
+1. Allreduce <int[]>; RunnningPWC.NCent
+   Allreduce <double[]>; 1000 (NumberofBins in FindCenters)
+                         RunningPWC.NCent
+2. Allreduce <MPIReducePlusIndex<int, double>>; reduce operations are min
+with idx or max with idx
+
+3. Broadcast <int[]>; pointCountGlobal
+   Boradcast <double[]>; MaxNCent (from config)
+
+4. SendReceive <double[]>; PointCountLargest (for a proc)
+
+5. SendReceive <MPISecPacket<double[], double[]>>;
+RunningPWC.NCent*PointCountLargest (for each array)
+
+6. SendReceive <MPIPacket<double[]>>; RunningPWC.NCent*PointCountLargest
+
+7. Send <MPIPacket<int[]>>; pointCount_proc
+   Receive <MPIPacket<int[]>>; pointCount_proc
+

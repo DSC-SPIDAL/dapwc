@@ -582,7 +582,9 @@ public class Program
 		{
 			PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming);
             // Note - MPI Call - Allreduce - int - sum
-            PWCUtility.mpiOps.allReduce(LocalOccupationCounts, MPI.SUM);
+            // TODO - changing to mmap all reduce call
+			/*PWCUtility.mpiOps.allReduce(LocalOccupationCounts, MPI.SUM);*/
+			ParallelOps.allReduceSum(LocalOccupationCounts);
 			PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming);
 		}
 
