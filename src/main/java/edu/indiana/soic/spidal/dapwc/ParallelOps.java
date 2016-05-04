@@ -417,11 +417,11 @@ public class ParallelOps {
             int pos;
             for (int i = 0; i < values.length; ++i){
                 sum = 0.0;
-                pos = i*mmapProcsCount*Integer.BYTES;
+                pos = i*mmapProcsCount*Double.BYTES;
                 for (int j = 0; j < mmapProcsCount; ++j){
                     ParallelOps.mmapAllReduceReadBytes.position(pos);
                     sum += mmapAllReduceReadBytes.readDouble();
-                    pos += Integer.BYTES;
+                    pos += Double.BYTES;
                 }
                 mmapAllReduceWriteBytes.writeDouble(i*Double.BYTES, sum);
             }
