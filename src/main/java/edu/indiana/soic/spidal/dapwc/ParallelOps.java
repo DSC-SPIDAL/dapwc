@@ -72,6 +72,7 @@ public class ParallelOps {
     public static int globalColCount;
 
     // Buffers for MPI operations
+    private static ByteBuffer MPISecPacketBuffer;
     private static ByteBuffer statBuffer;
     private static DoubleBuffer doubleBuffer;
     private static IntBuffer intBuffer;
@@ -286,46 +287,55 @@ public class ParallelOps {
 
         boolean status = new File(mmapScratchDir).mkdirs();
 
-        final String mmapXFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapX.bin";
-        final String fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
-        try (FileChannel mmapXFc = FileChannel.open(Paths.get(mmapScratchDir,
-                mmapXFname),
-                StandardOpenOption
-                        .CREATE,
-                StandardOpenOption.READ,
-                StandardOpenOption
-                        .WRITE);
-             FileChannel fullXFc = FileChannel.open(Paths.get(mmapScratchDir,
-                     fullXFname),
-                     StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
+        // TODO - before playing with memory maps for MPISecPackets
+        // let's use built-in MPI collectives
+        MPISecPacketBuffer = MPI.newByteBuffer(((2 * Program.maxNcent * PWCUtility.PointCount_Largest *
+                            Double.BYTES + 2 * Integer.BYTES) * worldProcsCount));
 
-
-            int mmapXReadByteExtent = mmapProcsRowCount * targetDimension * Double.BYTES;
-            long mmapXReadByteOffset = 0L;
-            int mmapXWriteByteExtent = procRowCount * targetDimension * Double.BYTES;
-            long
-                    mmapXWriteByteOffset =
-                    (procRowStartOffset - procRowRanges[mmapLeadWorldRank].getStartIndex())
-                            * targetDimension * Double.BYTES;
-            int fullXByteExtent = globalRowCount * targetDimension * Double.BYTES;
-            long fullXByteOffset = 0L;
-
-            mmapXReadBytes = ByteBufferBytes.wrap(mmapXFc.map(
-                    FileChannel.MapMode.READ_WRITE, mmapXReadByteOffset,
-                    mmapXReadByteExtent));
-            mmapXReadByteBuffer = mmapXReadBytes.sliceAsByteBuffer(
-                    mmapXReadByteBuffer);
-
-            mmapXReadBytes.position(0);
-            mmapXWriteBytes = mmapXReadBytes.slice(mmapXWriteByteOffset,
-                    mmapXWriteByteExtent);
-
-            fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode
-                            .READ_WRITE,
-                    fullXByteOffset,
-                    fullXByteExtent));
-            fullXByteBuffer = fullXBytes.sliceAsByteBuffer(fullXByteBuffer);
-        }
+        /* Let's use mmapX and fullX to AllGather MPISecPackets, which should
+        *  be large enough for data in other chained SendReceive calls */
+//        final String mmapXFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapX.bin";
+//        final String fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
+//        try (FileChannel mmapXFc = FileChannel.open(Paths.get(mmapScratchDir,
+//                mmapXFname),
+//                StandardOpenOption
+//                        .CREATE,
+//                StandardOpenOption.READ,
+//                StandardOpenOption
+//                        .WRITE);
+//             FileChannel fullXFc = FileChannel.open(Paths.get(mmapScratchDir,
+//                     fullXFname),
+//                     StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
+//
+//
+//            /* Set mmapXReadByteExtent to the largest possible */
+//            int mmapXReadByteExtent =
+//                    (2 * Program.maxNcent * PWCUtility.PointCount_Largest *
+//                            Double.BYTES + 2 * Integer.BYTES) * mmapProcsCount;
+//            long mmapXReadByteOffset = 0L;
+//            int mmapXWriteByteExtent = mmapXReadByteExtent;
+//            long
+//                    mmapXWriteByteOffset =
+//                    0L;
+//            int fullXByteExtent = globalRowCount * targetDimension * Double.BYTES;
+//            long fullXByteOffset = 0L;
+//
+//            mmapXReadBytes = ByteBufferBytes.wrap(mmapXFc.map(
+//                    FileChannel.MapMode.READ_WRITE, mmapXReadByteOffset,
+//                    mmapXReadByteExtent));
+//            mmapXReadByteBuffer = mmapXReadBytes.sliceAsByteBuffer(
+//                    mmapXReadByteBuffer);
+//
+//            mmapXReadBytes.position(0);
+//            mmapXWriteBytes = mmapXReadBytes.slice(mmapXWriteByteOffset,
+//                    mmapXWriteByteExtent);
+//
+//            fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode
+//                            .READ_WRITE,
+//                    fullXByteOffset,
+//                    fullXByteExtent));
+//            fullXByteBuffer = fullXBytes.sliceAsByteBuffer(fullXByteBuffer);
+//        }
 
         /* Allocate memory maps for single double valued communications like AllReduce */
         final String mmapAllReduceFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapAllReduce.bin";

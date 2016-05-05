@@ -7,13 +7,17 @@ import java.nio.ByteBuffer;
 
 public class MPISecPacket implements Serializable
 {
-    private static final int firstPointOffset = 0;
-    private static final int numberOfPointsOffset = Integer.BYTES;
-    private static final int mArrayOffset = 2*Integer.BYTES;
+    private int firstPointOffset = 0;
+    private int numberOfPointsOffset = Integer.BYTES;
+    private int mArrayOffset = 2*Integer.BYTES;
     private int extent;
     private int arrayLength;
     private int bArrayOffset;
     private ByteBuffer buffer;
+
+    public void mapAt(int offset, int length){
+        firstPointOffset = offset;
+    }
 
     public MPISecPacket(int length){
         this(length, null);
@@ -46,6 +50,8 @@ public class MPISecPacket implements Serializable
     public static MPISecPacket loadMPISecPacket(ByteBuffer buffer, int extent){
         return new MPISecPacket((extent - 2*Integer.BYTES)/(2*Double.BYTES), buffer);
     }
+
+
 
     public void setMArrayDoubleAt(int idx, double value){
         this.buffer.putDouble(mArrayOffset + idx * Double.BYTES, value);
