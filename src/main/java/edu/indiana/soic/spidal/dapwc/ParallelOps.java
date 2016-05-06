@@ -75,6 +75,7 @@ public class ParallelOps {
     private static ByteBuffer MPISecPacketBuffer;
     private static ByteBuffer statBuffer;
     private static DoubleBuffer doubleBuffer;
+    private static DoubleBuffer doubleArrayBuffer;
     private static IntBuffer intBuffer;
     public static LongBuffer threadsAndMPIBuffer;
     public static LongBuffer mpiOnlyBuffer;
@@ -291,6 +292,7 @@ public class ParallelOps {
         // let's use built-in MPI collectives
         MPISecPacketBuffer = MPI.newByteBuffer(((2 * Program.maxNcent * PWCUtility.PointCount_Largest *
                             Double.BYTES + 2 * Integer.BYTES) * worldProcsCount));
+        doubleArrayBuffer = MPI.newDoubleBuffer(PWCUtility.PointCount_Largest * Program.maxNcent * worldProcsCount);
 
         /* Let's use mmapX and fullX to AllGather MPISecPackets, which should
         *  be large enough for data in other chained SendReceive calls */

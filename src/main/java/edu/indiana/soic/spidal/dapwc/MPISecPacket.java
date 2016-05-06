@@ -4,6 +4,7 @@ import mpi.MPI;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 public class MPISecPacket implements Serializable
 {
@@ -15,8 +16,28 @@ public class MPISecPacket implements Serializable
     private int bArrayOffset;
     private ByteBuffer buffer;
 
-    public void mapAt(int offset, int length){
+    public void mapAt(int offset, int length, ByteBuffer buffer){
         firstPointOffset = offset;
+        numberOfPointsOffset = firstPointOffset+Integer.BYTES;
+        mArrayOffset = firstPointOffset+2* Integer.BYTES;
+        bArrayOffset = mArrayOffset+length*Double.BYTES;
+        extent = 2*length*Double.BYTES + 2*Integer.BYTES;
+        arrayLength = length;
+        this.buffer = buffer;
+    }
+
+    public void copyFrom(int offset, int length, ByteBuffer buffer){
+        if (length != this.arrayLength){
+            throw new RuntimeException("Array lengths should be equal!");
+        }
+
+        buffer.position(offset);
+        this.buffer.putInt(firstPointOffset, buffer.getInt(offset));
+        this.buffer.putInt(numberOfPointsOffset, buffer.getInt(offset+Integer.BYTES));
+        for (int i = 0; i < (extent - 2*Integer.BYTES); ++i){
+            this.buffer.putDouble(buffer.getDouble(mArrayOffset+i*Double.BYTES));
+        }
+
     }
 
     public MPISecPacket(int length){
