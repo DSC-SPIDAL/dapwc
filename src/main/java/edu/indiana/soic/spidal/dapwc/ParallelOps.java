@@ -12,6 +12,7 @@ import net.openhft.lang.io.Bytes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.*;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
@@ -81,8 +82,13 @@ public class ParallelOps {
     public static Bytes mmapXReadBytes;
     public static ByteBuffer mmapXReadByteBuffer;
     public static Bytes mmapXWriteBytes;
+    public static Bytes sendLock;
+    public static Bytes recvLock;
     public static Bytes fullXBytes;
     public static ByteBuffer fullXByteBuffer;
+
+    private static int LOCK = 0;
+    private static int FLAG = Long.BYTES;
 
     public static Bytes mmapAllReduceReadBytes;
     public static ByteBuffer mmapAllReduceReadByteBuffer;
@@ -287,6 +293,9 @@ public class ParallelOps {
         boolean status = new File(mmapScratchDir).mkdirs();
 
         final String mmapXFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapX.bin";
+        /* Note, my send lock file name should match my successors recv lock file name */
+        final String sendLockFname = machineName + ".mmapId." + mmapIdLocalToNode + "." + worldProcRank + ".bin";
+        final String recvLockFname = machineName + ".mmapId." + mmapIdLocalToNode + "." + (worldProcRank != 0 ? worldProcRank-1 : worldProcsCount-1) +".bin";
         final String fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
         try (FileChannel mmapXFc = FileChannel.open(Paths.get(mmapScratchDir,
                 mmapXFname),
@@ -300,13 +309,15 @@ public class ParallelOps {
                      StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
 
 
-            int mmapXReadByteExtent = mmapProcsRowCount * targetDimension * Double.BYTES;
+            /* we need buffer space only for (mmapProcsCount - 1)
+            *  because mmap tails don't need any buffers.*/
+            int mmapXReadByteExtent = (2 * Integer.BYTES +
+                    2 * Program.maxNcent * PWCUtility.PointCount_Largest *
+                            Double.BYTES) * (mmapProcsCount - 1);
             long mmapXReadByteOffset = 0L;
-            int mmapXWriteByteExtent = procRowCount * targetDimension * Double.BYTES;
+            int mmapXWriteByteExtent = mmapXReadByteExtent;
             long
-                    mmapXWriteByteOffset =
-                    (procRowStartOffset - procRowRanges[mmapLeadWorldRank].getStartIndex())
-                            * targetDimension * Double.BYTES;
+                    mmapXWriteByteOffset = 0L;
             int fullXByteExtent = globalRowCount * targetDimension * Double.BYTES;
             long fullXByteOffset = 0L;
 
@@ -319,6 +330,19 @@ public class ParallelOps {
             mmapXReadBytes.position(0);
             mmapXWriteBytes = mmapXReadBytes.slice(mmapXWriteByteOffset,
                     mmapXWriteByteExtent);
+
+            /* Send receive locks */
+            if (!isMmapTail){
+                FileChannel fc = new RandomAccessFile(new File(sendLockFname), "rw").getChannel();
+                MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, 64); // 64 for cache line size
+                sendLock = ByteBufferBytes.wrap(mbb);
+            }
+
+            if (!isMmapHead){
+                FileChannel fc = new RandomAccessFile(new File(recvLockFname), "rw").getChannel();
+                MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, 64); // 64 for cache line size
+                recvLock = ByteBufferBytes.wrap(mbb);
+            }
 
             fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode
                             .READ_WRITE,
@@ -355,6 +379,43 @@ public class ParallelOps {
             mmapAllReduceReadBytes.position(0);
             mmapAllReduceWriteBytes = mmapAllReduceReadBytes.slice(mmapAllReduceWriteByteOffset,
                     mmapAllReduceWriteByteExtent);
+        }
+    }
+
+    /* to rank is my successor, from rank is my predecessor */
+    public static void sendRecvPipeLine(MPISecPacket send, int to, int sendTag, MPISecPacket recv, int from, int recvTag) throws MPIException, InterruptedException {
+        int extent = send.getExtent();
+        if (extent != recv.getExtent()){
+            PWCUtility.printAndThrowRuntimeException("Send and recv extents should match");
+        }
+
+        if (!isMmapTail) {
+            sendLock.busyLockLong(LOCK);
+            int offset = extent * mmapProcRank;
+            send.copyTo(offset, mmapXWriteBytes);
+            sendLock.writeBoolean(FLAG, true);
+            sendLock.unlockLong(LOCK);
+        }
+
+        if (isMmapHead){
+            /* mmap heads receive from tails of the previous mamps (or last mmap)*/
+            worldProcsComm.recv(recv.getBuffer(), extent, MPI.BYTE, from, recvTag);
+        } else if (isMmapTail) {
+            worldProcsComm.send(send.getBuffer(), extent, MPI.BYTE, to, sendTag);
+        }
+
+        if (!isMmapHead){
+            boolean dataReady = false;
+            while (!dataReady) {
+                recvLock.busyLockLong(LOCK);
+                dataReady = recvLock.readBoolean(FLAG);
+                if (dataReady){
+                    int offset = extent*(mmapProcRank - 1);
+                    recv.copyFrom(offset, mmapXReadByteBuffer);
+                    recvLock.writeBoolean(FLAG, false);
+                }
+                recvLock.unlockLong(LOCK);
+            }
         }
     }
 

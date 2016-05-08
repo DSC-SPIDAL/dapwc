@@ -1,19 +1,56 @@
 package edu.indiana.soic.spidal.dapwc;
 
 import mpi.MPI;
+import net.openhft.lang.io.Bytes;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 public class MPISecPacket implements Serializable
 {
-    private static final int firstPointOffset = 0;
-    private static final int numberOfPointsOffset = Integer.BYTES;
-    private static final int mArrayOffset = 2*Integer.BYTES;
+    private int firstPointOffset = 0;
+    private int numberOfPointsOffset = Integer.BYTES;
+    private int mArrayOffset = 2*Integer.BYTES;
     private int extent;
     private int arrayLength;
     private int bArrayOffset;
     private ByteBuffer buffer;
+
+    public void mapAt(int offset, int length, ByteBuffer buffer){
+        firstPointOffset = offset;
+        numberOfPointsOffset = firstPointOffset+Integer.BYTES;
+        mArrayOffset = firstPointOffset+2* Integer.BYTES;
+        bArrayOffset = mArrayOffset+length*Double.BYTES;
+        extent = 2*length*Double.BYTES + 2*Integer.BYTES;
+        arrayLength = length;
+        this.buffer = buffer;
+    }
+
+    public void copyFrom(int offset, ByteBuffer buffer){
+        copyFrom(offset, arrayLength, buffer);
+    }
+
+    public void copyFrom(int offset, int length, ByteBuffer buffer){
+        if (length != this.arrayLength){
+            throw new RuntimeException("Array lengths should be equal!");
+        }
+
+        buffer.position(offset);
+        this.buffer.putInt(firstPointOffset, buffer.getInt(offset));
+        this.buffer.putInt(numberOfPointsOffset, buffer.getInt(offset+Integer.BYTES));
+        for (int i = 0; i < (extent - 2*Integer.BYTES); ++i){
+            this.buffer.putDouble(buffer.getDouble(mArrayOffset+i*Double.BYTES));
+        }
+    }
+
+    public void copyTo(int offset, Bytes buffer){
+        buffer.writeInt(offset+firstPointOffset, this.buffer.get(firstPointOffset));
+        buffer.writeInt(offset+numberOfPointsOffset, this.buffer.get(numberOfPointsOffset));
+        for (int i = 0; i < (extent - 2*Integer.BYTES); ++i){
+            buffer.writeDouble(offset+mArrayOffset+i*Double.BYTES, this.buffer.getDouble(mArrayOffset+i*Double.BYTES));
+        }
+    }
 
     public MPISecPacket(int length){
         this(length, null);

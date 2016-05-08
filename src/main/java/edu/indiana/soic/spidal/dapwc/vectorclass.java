@@ -443,7 +443,13 @@ public class vectorclass
 					PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 					if (!MandBset)
 					{
-                        fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);
+                        /*fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);*/
+                        // TODO - changing to mmap call
+                        try {
+                            ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         MPISecPacket.memberCopy(fromafarMandB, MandBRepository[MPICommunicationSteps]);
 					}
 					else
