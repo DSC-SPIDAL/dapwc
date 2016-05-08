@@ -58,8 +58,7 @@ public class PWCParallelism
 
 	public static void SetParallelDecomposition() throws IOException,
             MPIException {
-		// Note - moving to ParallelOps
-		ParallelOps.setParallelDecomposition(PWCUtility.PointCount_Global,1);
+
 
 		//	First divide points among processes
 		Range[] processRanges = RangePartitioner.Partition(PWCUtility.PointCount_Global, PWCUtility.MPI_Size);
@@ -99,6 +98,9 @@ public class PWCParallelism
 			PWCUtility.PointsperThread[j] = threadRanges[j].getLength();
 			PWCUtility.StartPointperThread[j] = threadRanges[j].getStartIndex();
 		}
+
+		// Note - moving to ParallelOps
+		ParallelOps.setParallelDecomposition(PWCUtility.PointCount_Global,1);
 	}
 
 	// read data from file to memory
