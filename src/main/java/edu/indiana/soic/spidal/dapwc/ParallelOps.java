@@ -392,7 +392,11 @@ public class ParallelOps {
         }
 
         if (!isMmapTail) {
-            sendLock.busyLockLong(LOCK);
+            try {
+                sendLock.busyLockLong(LOCK);
+            } catch (Exception e) {
+                System.out.println("Rank: " + worldProcRank + " failed to acquire send lock");
+            }
             System.out.println("Rank: " + worldProcRank + " acquired send lock");
             int offset = extent * mmapProcRank;
             send.copyTo(offset, mmapXWriteBytes);
