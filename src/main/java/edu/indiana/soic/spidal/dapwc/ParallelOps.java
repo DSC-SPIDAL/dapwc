@@ -335,13 +335,13 @@ public class ParallelOps {
 
             /* Send receive locks */
             if (!isMmapTail){
-                FileChannel fc = new RandomAccessFile(new File(sendLockFname), "rw").getChannel();
+                FileChannel fc = new RandomAccessFile(new File(mmapScratchDir, sendLockFname), "rw").getChannel();
                 MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, 64); // 64 for cache line size
                 sendLock = ByteBufferBytes.wrap(mbb);
             }
 
             if (!isMmapHead){
-                FileChannel fc = new RandomAccessFile(new File(recvLockFname), "rw").getChannel();
+                FileChannel fc = new RandomAccessFile(new File(mmapScratchDir, recvLockFname), "rw").getChannel();
                 MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, 64); // 64 for cache line size
                 recvLock = ByteBufferBytes.wrap(mbb);
             }
