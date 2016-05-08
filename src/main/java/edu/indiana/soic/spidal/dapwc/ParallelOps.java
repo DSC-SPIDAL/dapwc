@@ -296,8 +296,8 @@ public class ParallelOps {
 
         final String mmapXFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapX.bin";
         /* Note, my send lock file name should match my successors recv lock file name */
-        final String sendLockFname = machineName + ".mmapId." + mmapIdLocalToNode + "." + worldProcRank + ".bin";
-        final String recvLockFname = machineName + ".mmapId." + mmapIdLocalToNode + "." + (worldProcRank != 0 ? worldProcRank-1 : worldProcsCount-1) +".bin";
+        final String sendLockFname = machineName + ".mmapId." + mmapIdLocalToNode + ".lock." + worldProcRank + ".bin";
+        final String recvLockFname = machineName + ".mmapId." + mmapIdLocalToNode + ".lock." + (worldProcRank != 0 ? worldProcRank-1 : worldProcsCount-1) +".bin";
         final String fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
         try (FileChannel mmapXFc = FileChannel.open(Paths.get(mmapScratchDir,
                 mmapXFname),
