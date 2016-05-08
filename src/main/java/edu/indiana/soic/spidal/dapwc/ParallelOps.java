@@ -392,7 +392,13 @@ public class ParallelOps {
         if (!isMmapTail) {
             sendLock.busyLockLong(LOCK);
             int offset = extent * mmapProcRank;
-            send.copyTo(offset, mmapXWriteBytes);
+            try {
+                send.copyTo(offset, mmapXWriteBytes);
+            } catch (Exception e) {
+                System.out.println("Rank: " + worldProcRank + " offset: " + offset + "extent: " + extent + " totalbuffersize: " + ((2 * Integer.BYTES +
+                        2 * Program.maxNcent * PWCUtility.PointCount_Largest *
+                                Double.BYTES) * (mmapProcsCount - 1)) );
+            }
             sendLock.writeBoolean(FLAG, true);
             sendLock.unlockLong(LOCK);
         }
