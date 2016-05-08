@@ -166,7 +166,9 @@ public class ParallelOps {
                 "---------------------------------------------------------\n"
                         + "Machine:" + machineName + ' ' + threadCount + 'x'
                         + worldProcsPerNode + 'x' + nodeCount;
-        PWCUtility.SALSAPrint(0,parallelPattern);
+        if (PWCUtility.MPI_Rank == 0) {
+            PWCUtility.SALSAPrint(0, parallelPattern);
+        }
     }
 
     private static int[] findQandR() throws MPIException {
