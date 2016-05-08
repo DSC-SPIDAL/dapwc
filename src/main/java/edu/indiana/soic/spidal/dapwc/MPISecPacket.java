@@ -38,6 +38,9 @@ public class MPISecPacket implements Serializable
 
         try {
             buffer.position(offset);
+        }catch (IllegalArgumentException e){
+            System.out.println("Rank: " + ParallelOps.worldProcRank + " offset: " + offset + " buffer size: " + buffer.position(0).remaining());
+        }
             this.buffer.putInt(firstPointOffset, buffer.getInt(
                     offset + firstPointOffset));
             this.buffer.putInt(numberOfPointsOffset, buffer.getInt(
@@ -47,9 +50,8 @@ public class MPISecPacket implements Serializable
                         mArrayOffset + i * Double.BYTES, buffer.getDouble(
                                 offset + mArrayOffset + i * Double.BYTES));
             }
-        }catch (IllegalArgumentException e){
-            System.out.println("Rank: " + ParallelOps.worldProcRank + " offset: " + offset);
-        }
+
+
     }
 
     public void copyTo(int offset, Bytes buffer){
