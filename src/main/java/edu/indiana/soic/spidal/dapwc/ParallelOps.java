@@ -166,8 +166,8 @@ public class ParallelOps {
                 "---------------------------------------------------------\n"
                         + "Machine:" + machineName + ' ' + threadCount + 'x'
                         + worldProcsPerNode + 'x' + nodeCount;
-        if (PWCUtility.MPI_Rank == 0) {
-//            PWCUtility.SALSAPrint(0, parallelPattern);
+        if (worldProcRank == 0) {
+            PWCUtility.SALSAPrint(0, parallelPattern);
         }
     }
 
