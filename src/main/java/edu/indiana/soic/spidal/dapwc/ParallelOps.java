@@ -430,7 +430,7 @@ public class ParallelOps {
             }
         }
         worldProcsComm.barrier();
-        System.out.println("Rank: " + worldProcRank  + " came here");
+//        System.out.println("Rank: " + worldProcRank  + " came here");
     }
 
     private static void printInOrder(String str) throws MPIException {
