@@ -406,9 +406,13 @@ public class ParallelOps {
 
         if (isMmapHead){
             /* mmap heads receive from tails of the previous mamps (or last mmap)*/
+            System.out.println("Rank: " + worldProcRank + " waiting to receive");
             worldProcsComm.recv(recv.getBuffer(), extent, MPI.BYTE, from, recvTag);
+            System.out.println("Rank: " + worldProcRank + " recv done");
         } else if (isMmapTail) {
+            System.out.println("Rank: " + worldProcRank + " waiting to send");
             worldProcsComm.send(send.getBuffer(), extent, MPI.BYTE, to, sendTag);
+            System.out.println("Rank: " + worldProcRank + " send done");
         }
 
         if (!isMmapHead){
