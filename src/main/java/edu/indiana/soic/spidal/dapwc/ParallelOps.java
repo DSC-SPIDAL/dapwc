@@ -414,14 +414,14 @@ public class ParallelOps {
         if (!isMmapHead){
             boolean dataReady = false;
             while (!dataReady) {
-               /* recvLock.busyLockLong(LOCK);
+                recvLock.busyLockLong(LOCK);
                 dataReady = recvLock.readBoolean(FLAG);
                 if (dataReady){
                     int offset = extent*(mmapProcRank - 1);
                     recv.copyFrom(offset, mmapXReadByteBuffer);
                     recvLock.writeBoolean(FLAG, false);
                 }
-                recvLock.unlockLong(LOCK);*/
+                recvLock.unlockLong(LOCK);
             }
         }
     }
