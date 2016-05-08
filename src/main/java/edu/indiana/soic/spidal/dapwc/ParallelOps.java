@@ -429,6 +429,7 @@ public class ParallelOps {
                 recvLock.unlockLong(LOCK);
             }
         }
+        worldProcsComm.barrier();
         System.out.println("Rank: " + worldProcRank  + " came here");
     }
 
