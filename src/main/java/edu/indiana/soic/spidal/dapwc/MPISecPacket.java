@@ -37,17 +37,17 @@ public class MPISecPacket implements Serializable
         }
 
         buffer.position(offset);
-        this.buffer.putInt(firstPointOffset, buffer.getInt(offset));
-        this.buffer.putInt(numberOfPointsOffset, buffer.getInt(offset+Integer.BYTES));
-        for (int i = 0; i < (extent - 2*Integer.BYTES); ++i){
-            this.buffer.putDouble(buffer.getDouble(mArrayOffset+i*Double.BYTES));
+        this.buffer.putInt(firstPointOffset, buffer.getInt(offset+firstPointOffset));
+        this.buffer.putInt(numberOfPointsOffset, buffer.getInt(offset+numberOfPointsOffset));
+        for (int i = 0; i < 2*length; ++i){
+            this.buffer.putDouble(mArrayOffset+i*Double.BYTES, buffer.getDouble(offset+mArrayOffset+i*Double.BYTES));
         }
     }
 
     public void copyTo(int offset, Bytes buffer){
-        buffer.writeInt(offset+firstPointOffset, this.buffer.get(firstPointOffset));
-        buffer.writeInt(offset+numberOfPointsOffset, this.buffer.get(numberOfPointsOffset));
-        for (int i = 0; i < (extent - 2*Integer.BYTES); ++i){
+        buffer.writeInt(offset+firstPointOffset, this.buffer.getInt(firstPointOffset));
+        buffer.writeInt(offset+numberOfPointsOffset, this.buffer.getInt(numberOfPointsOffset));
+        for (int i = 0; i < 2*arrayLength; ++i){
             try {
                 buffer.writeDouble(offset+mArrayOffset+i*Double.BYTES, this.buffer.getDouble(mArrayOffset+i*Double.BYTES));
             } catch (Exception e) {
