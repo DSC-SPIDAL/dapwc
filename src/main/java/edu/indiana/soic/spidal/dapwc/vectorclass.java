@@ -674,7 +674,7 @@ public class vectorclass
             } // End communicationloop
 
             /* TODO - debugs*/
-            System.out.println("Rank: " + ParallelOps.worldProcRank + " done comms at power itr " + NumPowerIterations + " of " + Program.PowerIterationLimit);
+//            System.out.println("Rank: " + ParallelOps.worldProcRank + " done comms at power itr " + NumPowerIterations + " of " + Program.PowerIterationLimit);
 
 			MandBset = true;
 			GlobalReductions.FindVectorDoubleSum Find_sum_t0 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
