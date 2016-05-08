@@ -393,6 +393,7 @@ public class ParallelOps {
 
         if (!isMmapTail) {
             sendLock.busyLockLong(LOCK);
+            System.out.println("Rank: " + worldProcRank + " acquired send lock");
             int offset = extent * mmapProcRank;
             send.copyTo(offset, mmapXWriteBytes);
             sendLock.writeBoolean(FLAG, true);
@@ -409,14 +410,14 @@ public class ParallelOps {
         if (!isMmapHead){
             boolean dataReady = false;
             while (!dataReady) {
-                recvLock.busyLockLong(LOCK);
+               /* recvLock.busyLockLong(LOCK);
                 dataReady = recvLock.readBoolean(FLAG);
                 if (dataReady){
                     int offset = extent*(mmapProcRank - 1);
                     recv.copyFrom(offset, mmapXReadByteBuffer);
                     recvLock.writeBoolean(FLAG, false);
                 }
-                recvLock.unlockLong(LOCK);
+                recvLock.unlockLong(LOCK);*/
             }
         }
     }
