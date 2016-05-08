@@ -44,6 +44,7 @@ public class MPISecPacket implements Serializable
             buffer.position(offset);
         }catch (Exception e){
             System.out.println("Rank: " + ParallelOps.worldProcRank + " offset: " + offset + " buffer size: " + buffer.position(0).remaining());
+            throw e;
         }
         this.buffer.putInt(firstPointOffset, buffer.readInt(
                 offset + firstPointOffset));

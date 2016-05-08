@@ -316,6 +316,11 @@ public class ParallelOps {
             int mmapXReadByteExtent = (2 * Integer.BYTES +
                     2 * Program.maxNcent * PWCUtility.PointCount_Largest *
                             Double.BYTES) * (mmapProcsCount - 1);
+            /* TODO - debug*/
+            if (worldProcRank == 0){
+                System.out.println("*** mmapXReadByteExtent: "  + mmapXReadByteExtent);
+            }
+
             long mmapXReadByteOffset = 0L;
             int mmapXWriteByteExtent = mmapXReadByteExtent;
             long
@@ -414,7 +419,11 @@ public class ParallelOps {
                 if (dataReady){
                     int offset = extent*(mmapProcRank - 1);
 //                    recv.copyFrom(offset, mmapXReadByteBuffer);
-                    recv.copyFrom(offset, mmapXWriteBytes);
+                    try {
+                        recv.copyFrom(offset, mmapXWriteBytes);
+                    } catch (Exception e) {
+                        System.out.println("Rank: " + worldProcRank + " extent: " + extent + " mmapRank: " + mmapProcRank + " fromMmapRank: " + (mmapProcRank-1) + " offset: " + offset + " mmapXWriteBytes.size: " + mmapXWriteBytes.position(0).remaining());
+                    }
                     recvLock.writeBoolean(FLAG, false);
                 }
                 recvLock.unlockLong(LOCK);
