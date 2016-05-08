@@ -27,11 +27,38 @@ public class MPISecPacket implements Serializable
         this.buffer = buffer;
     }
 
-    public void copyFrom(int offset, ByteBuffer buffer){
+    public void copyFrom(int offset, Bytes buffer){
         copyFrom(offset, arrayLength, buffer);
     }
 
-    public void copyFrom(int offset, int length, ByteBuffer buffer){
+   /* public void copyFrom(int offset, ByteBuffer buffer){
+        copyFrom(offset, arrayLength, buffer);
+    }*/
+
+    public void copyFrom(int offset, int length, Bytes buffer){
+        if (length != this.arrayLength){
+            throw new RuntimeException("Array lengths should be equal!");
+        }
+
+        try {
+            buffer.position(offset);
+        }catch (IllegalArgumentException e){
+            System.out.println("Rank: " + ParallelOps.worldProcRank + " offset: " + offset + " buffer size: " + buffer.position(0).remaining());
+        }
+        this.buffer.putInt(firstPointOffset, buffer.readInt(
+                offset + firstPointOffset));
+        this.buffer.putInt(numberOfPointsOffset, buffer.readInt(
+                offset + numberOfPointsOffset));
+        for (int i = 0; i < 2 * length; ++i) {
+            this.buffer.putDouble(
+                    mArrayOffset + i * Double.BYTES, buffer.readDouble(
+                            offset + mArrayOffset + i * Double.BYTES));
+        }
+
+
+    }
+
+    /*public void copyFrom(int offset, int length, ByteBuffer buffer){
         if (length != this.arrayLength){
             throw new RuntimeException("Array lengths should be equal!");
         }
@@ -52,7 +79,7 @@ public class MPISecPacket implements Serializable
             }
 
 
-    }
+    }*/
 
     public void copyTo(int offset, Bytes buffer){
         buffer.writeInt(offset+firstPointOffset, this.buffer.getInt(firstPointOffset));

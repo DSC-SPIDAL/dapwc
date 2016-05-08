@@ -418,7 +418,8 @@ public class ParallelOps {
                 dataReady = recvLock.readBoolean(FLAG);
                 if (dataReady){
                     int offset = extent*(mmapProcRank - 1);
-                    recv.copyFrom(offset, mmapXReadByteBuffer);
+//                    recv.copyFrom(offset, mmapXReadByteBuffer);
+                    recv.copyFrom(offset, mmapXWriteBytes);
                     recvLock.writeBoolean(FLAG, false);
                 }
                 recvLock.unlockLong(LOCK);
