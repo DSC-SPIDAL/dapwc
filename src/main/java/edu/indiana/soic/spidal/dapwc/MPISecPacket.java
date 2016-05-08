@@ -48,7 +48,11 @@ public class MPISecPacket implements Serializable
         buffer.writeInt(offset+firstPointOffset, this.buffer.get(firstPointOffset));
         buffer.writeInt(offset+numberOfPointsOffset, this.buffer.get(numberOfPointsOffset));
         for (int i = 0; i < (extent - 2*Integer.BYTES); ++i){
-            buffer.writeDouble(offset+mArrayOffset+i*Double.BYTES, this.buffer.getDouble(mArrayOffset+i*Double.BYTES));
+            try {
+                buffer.writeDouble(offset+mArrayOffset+i*Double.BYTES, this.buffer.getDouble(mArrayOffset+i*Double.BYTES));
+            } catch (Exception e) {
+                System.out.println("Rank: " + ParallelOps.worldProcRank + " current write offset: " + (offset+mArrayOffset+i*Double.BYTES));
+            }
         }
     }
 
