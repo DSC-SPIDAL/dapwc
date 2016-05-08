@@ -42,7 +42,7 @@ public class MPISecPacket implements Serializable
 
         try {
             buffer.position(offset);
-        }catch (IllegalArgumentException e){
+        }catch (Exception e){
             System.out.println("Rank: " + ParallelOps.worldProcRank + " offset: " + offset + " buffer size: " + buffer.position(0).remaining());
         }
         this.buffer.putInt(firstPointOffset, buffer.readInt(
