@@ -180,6 +180,8 @@ public class MPISecPacket implements Serializable
     }
 
     public boolean equals(MPISecPacket o){
+        if (extent != o.extent) return  false;
+        if (buffer.position(0).remaining() != o.buffer.position(0).remaining()) return  false;
         if (arrayLength != o.arrayLength) return  false;
         if (o.getFirstPoint() != getFirstPoint()) return  false;
         if (o.getNumberOfPoints() != getNumberOfPoints()) return  false;
