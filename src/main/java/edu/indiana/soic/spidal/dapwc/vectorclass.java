@@ -462,7 +462,7 @@ public class vectorclass
 												"wrong:NumPoints:" +
 												fromafarMandBTemp.getNumberOfPoints());
 							} else {
-                                MPISecPacket.memberCopy(fromafarMandB, fromafarMandBTemp);
+//                                MPISecPacket.memberCopy(fromafarMandB, fromafarMandBTemp);
 							}
                         } catch (InterruptedException e) {
                             e.printStackTrace();
