@@ -449,7 +449,7 @@ public class vectorclass
                         // TODO - changing to mmap call
                         try {
                             ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandBTemp, fromprocess, receivetag);
-                            System.out.println("Rank: "+ ParallelOps.worldProcRank +" sendrecv mismatch itr: " + NumPowerIterations);
+                            System.out.println("Rank: "+ ParallelOps.worldProcRank +" sendrecv mismatch itr: " + NumPowerIterations + " mmapRank: " + ParallelOps.mmapProcRank);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
