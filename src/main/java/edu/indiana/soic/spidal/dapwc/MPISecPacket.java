@@ -178,4 +178,18 @@ public class MPISecPacket implements Serializable
                 ", buffer.capacity=" + buffer.capacity() +
                 '}';
     }
+
+    public boolean equals(MPISecPacket o){
+        if (arrayLength != o.arrayLength) return  false;
+        if (o.getFirstPoint() != getFirstPoint()) return  false;
+        if (o.getNumberOfPoints() != getNumberOfPoints()) return  false;
+        for (int i = 0; i < arrayLength; ++i){
+            if (o.getMArrayDoubleAt(i) != getMArrayDoubleAt(i)) return  false;
+        }
+
+        for (int i = 0; i < arrayLength; ++i){
+            if (o.getBArrayDoubleAt(i) != getBArrayDoubleAt(i)) return  false;
+        }
+        return true;
+    }
 }

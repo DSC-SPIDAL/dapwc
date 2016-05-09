@@ -304,6 +304,8 @@ public class vectorclass
 		}
 		final boolean Subtract_twiceDuplicatedCenter = (Methodology != 1) && (Methodology != 4);
 
+        // TODO - debugs
+		MPISecPacket fromafarMandBTemp = new MPISecPacket(MaxlengthMandB);
 		MPISecPacket fromafarMandB = new MPISecPacket(MaxlengthMandB);
 		MPISecPacket toafarMandB = new MPISecPacket(MaxlengthMandB);
 		MPISecPacket myownMandB = new MPISecPacket(MaxlengthMandB);
@@ -443,10 +445,11 @@ public class vectorclass
 					PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 					if (!MandBset)
 					{
-                        /*fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);*/
+                        fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);
                         // TODO - changing to mmap call
                         try {
-                            ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);
+                            ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandBTemp, fromprocess, receivetag);
+                            System.out.println("Rank: "+ ParallelOps.worldProcRank +" sendrecv mismatch itr: " + NumPowerIterations);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -672,9 +675,6 @@ public class vectorclass
                     PWCUtility.printAndThrowRuntimeException(e.getMessage());
                 }
             } // End communicationloop
-
-            /* TODO - debugs*/
-//            System.out.println("Rank: " + ParallelOps.worldProcRank + " done comms at power itr " + NumPowerIterations + " of " + Program.PowerIterationLimit);
 
 			MandBset = true;
 			GlobalReductions.FindVectorDoubleSum Find_sum_t0 = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, localNcent);
