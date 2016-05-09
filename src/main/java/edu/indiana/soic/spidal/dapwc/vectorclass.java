@@ -462,8 +462,6 @@ public class vectorclass
 												"wrong:NumPoints:" +
 												fromafarMandBTemp.getNumberOfPoints());
 							} else {
-                                System.out.println("Rank: " + ParallelOps.worldProcRank +
-                                        " sendrecv match");
                                 MPISecPacket.memberCopy(fromafarMandBTemp, fromafarMandB);
 							}
                         } catch (InterruptedException e) {
