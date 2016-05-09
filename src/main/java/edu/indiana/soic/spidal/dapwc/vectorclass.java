@@ -461,6 +461,8 @@ public class vectorclass
 
 												"wrong:NumPoints:" +
 												fromafarMandBTemp.getNumberOfPoints());
+							} else {
+								fromafarMandB = fromafarMandBTemp;
 							}
                         } catch (InterruptedException e) {
                             e.printStackTrace();
