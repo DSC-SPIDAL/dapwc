@@ -304,8 +304,6 @@ public class vectorclass
 		}
 		final boolean Subtract_twiceDuplicatedCenter = (Methodology != 1) && (Methodology != 4);
 
-        // TODO - debugs
-		MPISecPacket fromafarMandBTemp = new MPISecPacket(MaxlengthMandB);
 		MPISecPacket fromafarMandB = new MPISecPacket(MaxlengthMandB);
 		MPISecPacket toafarMandB = new MPISecPacket(MaxlengthMandB);
 		MPISecPacket myownMandB = new MPISecPacket(MaxlengthMandB);

@@ -310,19 +310,13 @@ public class ParallelOps {
                      fullXFname),
                      StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
 
-
             /* we need buffer space only for (mmapProcsCount - 1)
             *  because mmap tails don't need any buffers.*/
             int mmapXReadByteExtent = (2 * Integer.BYTES +
                     2 * Program.maxNcent * PWCUtility.PointCount_Largest *
                             Double.BYTES) * (mmapProcsCount - 1);
-            /* TODO - debug*/
-            if (worldProcRank == 0){
-                System.out.println("*** mmapXReadByteExtent: "  + mmapXReadByteExtent);
-            }
 
             long mmapXReadByteOffset = 0L;
-            int mmapXWriteByteExtent = mmapXReadByteExtent;
             long
                     mmapXWriteByteOffset = 0L;
             int fullXByteExtent = globalRowCount * targetDimension * Double.BYTES;
@@ -336,18 +330,16 @@ public class ParallelOps {
 
             mmapXReadBytes.position(0);
             mmapXWriteBytes = mmapXReadBytes.slice(mmapXWriteByteOffset,
-                    mmapXWriteByteExtent);
+                    mmapXReadByteExtent);
 
             /* Send receive locks */
             if (!isMmapTail){
-                FileChannel fc = new RandomAccessFile(new File(mmapScratchDir, sendLockFname), "rw").getChannel();
-                MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, 64); // 64 for cache line size
+                MappedByteBuffer mbb = createMMapLockBuffer(sendLockFname);
                 sendLock = ByteBufferBytes.wrap(mbb);
             }
 
             if (!isMmapHead){
-                FileChannel fc = new RandomAccessFile(new File(mmapScratchDir, recvLockFname), "rw").getChannel();
-                MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, 64); // 64 for cache line size
+                MappedByteBuffer mbb = createMMapLockBuffer(recvLockFname);
                 recvLock = ByteBufferBytes.wrap(mbb);
             }
 
@@ -369,12 +361,8 @@ public class ParallelOps {
             mmapAllReduceChunkSizeInBytes = Math.max(Program.maxNcent, 1000)*Double.BYTES;
             int mmapAllReduceReadByteExtent = mmapProcsCount * mmapAllReduceChunkSizeInBytes;
             long mmapAllReduceReadByteOffset = 0L;
-            /*int mmapAllReduceWriteByteExtent = mmapAllReduceChunkSizeInBytes;
-            mmapAllReduceWriteByteOffset = mmapProcRank * mmapAllReduceChunkSizeInBytes;*/
-            // TODO - this will help to do column wise storage for better access
-            int mmapAllReduceWriteByteExtent = mmapAllReduceReadByteExtent;
-            mmapAllReduceWriteByteOffset = 0L;
 
+            mmapAllReduceWriteByteOffset = 0L;
 
             mmapAllReduceReadBytes = ByteBufferBytes.wrap(mmapAllReduceFc.map(
                     FileChannel.MapMode.READ_WRITE, mmapAllReduceReadByteOffset,
@@ -385,8 +373,15 @@ public class ParallelOps {
 
             mmapAllReduceReadBytes.position(0);
             mmapAllReduceWriteBytes = mmapAllReduceReadBytes.slice(mmapAllReduceWriteByteOffset,
-                    mmapAllReduceWriteByteExtent);
+                    mmapAllReduceReadByteExtent);
         }
+    }
+
+    private static MappedByteBuffer createMMapLockBuffer(String lockFname) throws IOException {
+        File lockFile = new File(mmapScratchDir, lockFname);
+        lockFile.deleteOnExit();
+        FileChannel fc = new RandomAccessFile(lockFile, "rw").getChannel();
+        return fc.map(FileChannel.MapMode.READ_WRITE, 0, 64);
     }
 
     /* to rank is my successor, from rank is my predecessor */
@@ -417,21 +412,14 @@ public class ParallelOps {
                 recvLock.busyLockLong(LOCK);
                 dataReady = recvLock.readBoolean(FLAG);
                 if (dataReady){
+                    /* Assumes receives are from previous ranks, i.e. the nature of pipeline */
                     int offset = extent*(mmapProcRank - 1);
-//                    recv.copyFrom(offset, mmapXReadByteBuffer);
-                    try {
-                        recv.copyFrom(offset, mmapXWriteBytes);
-                    } catch (Exception e) {
-                        System.out.println("Rank: " + worldProcRank + " extent: " + extent + " mmapRank: " + mmapProcRank + " fromMmapRank: " + (mmapProcRank-1) + " offset: " + offset + " mmapXWriteBytes.size: " + mmapXWriteBytes.position(0).remaining());
-                    }
+                    recv.copyFrom(offset, mmapXWriteBytes);
                     recvLock.writeBoolean(FLAG, false);
                 }
                 recvLock.unlockLong(LOCK);
             }
         }
-        /* TODO - debugs*/
-        worldProcsComm.barrier();
-//        System.out.println("Rank: " + worldProcRank  + " came here");
     }
 
     private static void printInOrder(String str) throws MPIException {
