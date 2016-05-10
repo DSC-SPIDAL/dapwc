@@ -379,7 +379,7 @@ public class ParallelOps {
 
     private static MappedByteBuffer createMMapLockBuffer(String lockFname) throws IOException {
         File lockFile = new File(mmapScratchDir, lockFname);
-        lockFile.deleteOnExit();
+//        lockFile.deleteOnExit();
         FileChannel fc = new RandomAccessFile(lockFile, "rw").getChannel();
         return fc.map(FileChannel.MapMode.READ_WRITE, 0, 64);
     }
