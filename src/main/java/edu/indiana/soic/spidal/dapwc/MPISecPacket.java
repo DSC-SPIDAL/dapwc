@@ -40,12 +40,7 @@ public class MPISecPacket implements Serializable
             throw new RuntimeException("Array lengths should be equal!");
         }
 
-        try {
-            buffer.position(offset);
-        }catch (Exception e){
-            System.out.println("Rank: " + ParallelOps.worldProcRank + " offset: " + offset + " buffer size: " + buffer.position(0).remaining());
-            throw e;
-        }
+        buffer.position(offset);
         this.buffer.putInt(firstPointOffset, buffer.readInt(
                 offset + firstPointOffset));
         this.buffer.putInt(numberOfPointsOffset, buffer.readInt(
@@ -112,11 +107,20 @@ public class MPISecPacket implements Serializable
 
 	public static void memberCopy(MPISecPacket from, MPISecPacket to)
 	{
-        to.buffer = from.buffer;
+        if (to.extent < from.extent){
+            PWCUtility.printAndThrowRuntimeException("member copy failed due to insufficient space");
+        }
         to.arrayLength = from.arrayLength;
         to.bArrayOffset = from.bArrayOffset;
         to.extent = from.extent;
-	}
+
+        for (int i = 0; i < 2 * from.arrayLength; ++i) {
+            to.buffer.putDouble(
+                    to.mArrayOffset + i * Double.BYTES, from.buffer.getDouble(
+                            from.mArrayOffset + i * Double.BYTES));
+        }
+
+    }
 
     public static MPISecPacket loadMPISecPacket(ByteBuffer buffer, int extent){
         return new MPISecPacket((extent - 2*Integer.BYTES)/(2*Double.BYTES), buffer);

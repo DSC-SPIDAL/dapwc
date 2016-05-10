@@ -445,11 +445,11 @@ public class vectorclass
 					PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 					if (!MandBset)
 					{
-                        fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);
+                        /*fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);*/
                         // TODO - changing to mmap call
                         try {
-                            ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandBTemp, fromprocess, receivetag);
-                            if (!fromafarMandB.equals(fromafarMandBTemp)) {
+                            ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);
+                            /*if (!fromafarMandB.equals(fromafarMandBTemp)) {
 								System.out.println(
 										"Rank: " + ParallelOps.worldProcRank +
 												" sendrecv mismatch itr: " +
@@ -463,7 +463,7 @@ public class vectorclass
 												fromafarMandBTemp.getNumberOfPoints());
 							} else {
                                 MPISecPacket.memberCopy(fromafarMandB, fromafarMandBTemp);
-							}
+							}*/
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
