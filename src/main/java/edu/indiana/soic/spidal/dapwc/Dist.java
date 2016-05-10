@@ -54,7 +54,7 @@ public class Dist
 	 * The basic function in the program. It implements all steps of the pairwiseDA algorithm.
 	 *  
 	 */
-	public final void getDist() throws MPIException {
+	public final void getDist() throws MPIException, InterruptedException {
 
 		//allocate memory on first and indeed only call
 		if (!initialized)
@@ -1037,7 +1037,8 @@ public class Dist
 
     } // End Restore previous task that should be split but we needed to converge current cluster configuration first
 
-	public final void JiggleClusters() throws MPIException { // Jiggle Values of Epsilon -- leaving other Cluster Parameters
+	public final void JiggleClusters() throws MPIException,
+			InterruptedException { // Jiggle Values of Epsilon -- leaving other Cluster Parameters
 
 
 		if (Dist.RunningPWC.Ncent == 1)
@@ -1139,7 +1140,8 @@ public class Dist
 	// ClustertoSplit is cluster number of this
 	// D is distance matrix
 	//  Skip first time this happens as initialize to two clusters
-	public final boolean shouldweSplit() throws MPIException {
+	public final boolean shouldweSplit() throws MPIException,
+            InterruptedException {
 		//	Calculate Cluster with minimum eigenvalue -- find cluster number and eigenvalue (which could be positive)
 		Dist.Numberthatcanbesplit = 0;
 		int LimitonSplits = Math.min(Program.MaxNumberSplitClusters, Dist.ActualMaxNcent - Dist.RunningPWC.Ncent);

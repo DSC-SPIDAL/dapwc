@@ -241,7 +241,8 @@ public class Program
      *             The options may also be given as longer names
      *             --configFile, --threadCount, and --nodeCount respectively
      */
-	public static void main(String[] args) throws MPIException, IOException {
+	public static void main(String[] args) throws MPIException, IOException,
+			InterruptedException {
         Optional<CommandLine> parserResult = parseCommandLineArguments(args, programOptions);
         if (!parserResult.isPresent()){
             System.out.println(Constants.ERR_PROGRAM_ARGUMENTS_PARSING_FAILED);

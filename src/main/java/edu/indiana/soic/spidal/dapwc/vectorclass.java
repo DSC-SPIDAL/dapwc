@@ -45,7 +45,7 @@ public class vectorclass
 	public static int MaxlengthMandB;
 
 	// Find the minimum eigenvalue of second derivative matrix -- called from shouldSplit
-	public final void getEigenvalues(int Methodology, double[][] localMalpha_k_, double[] localA_k_, double[][] localBalpha_k_, double[] localC_k_, int localNcent) throws MPIException {
+	public final void getEigenvalues(int Methodology, double[][] localMalpha_k_, double[] localA_k_, double[][] localBalpha_k_, double[] localC_k_, int localNcent) throws MPIException, InterruptedException {
 		int cachelinesize = Program.cachelinesize;
 
 		if (Ax == null)
@@ -196,7 +196,7 @@ public class vectorclass
 	// Set ClustertoSplitin Methodology 3 CONSISTENT with Dist.ClusterSelected[ClustertoSplit]=1 being only ONE value
 	// Set Dist.PlaceforEigsforMultipleCluster in Methodology 4 to indicate where results stored
 
-	private void PairwiseThread_SecDrv(int Methodology, int PassIndicator, double[][] localMalpha_k_, double[] localA_k_, double[][] localBalpha_k_, double[] localC_k_, int localNcent) throws MPIException {
+	private void PairwiseThread_SecDrv(int Methodology, int PassIndicator, double[][] localMalpha_k_, double[] localA_k_, double[][] localBalpha_k_, double[] localC_k_, int localNcent) throws MPIException, InterruptedException {
 		double T = Dist.RunningPWC.Temperature;
         int[] UsethisCluster = new int[localNcent];
 		double[] AxPattern = new double[localNcent];
@@ -443,28 +443,7 @@ public class vectorclass
 					PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 					if (!MandBset)
 					{
-                        /*fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);*/
-                        // TODO - changing to mmap call
-                        try {
-                            ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);
-                            /*if (!fromafarMandB.equals(fromafarMandBTemp)) {
-								System.out.println(
-										"Rank: " + ParallelOps.worldProcRank +
-												" sendrecv mismatch itr: " +
-												NumPowerIterations +
-												" mmapRank: " +
-												ParallelOps.mmapProcRank +
-												" correct:NumPoints:" +
-												fromafarMandB.getNumberOfPoints() +
-
-												"wrong:NumPoints:" +
-												fromafarMandBTemp.getNumberOfPoints());
-							} else {
-                                MPISecPacket.memberCopy(fromafarMandB, fromafarMandBTemp);
-							}*/
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);
                         MPISecPacket.memberCopy(fromafarMandB, MandBRepository[MPICommunicationSteps]);
 					}
 					else
