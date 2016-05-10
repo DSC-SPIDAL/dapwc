@@ -421,7 +421,7 @@ public class ParallelOps {
             }
         }
 
-        worldProcsComm.barrier();
+//        worldProcsComm.barrier();
     }
 
     private static void printInOrder(String str) throws MPIException {
