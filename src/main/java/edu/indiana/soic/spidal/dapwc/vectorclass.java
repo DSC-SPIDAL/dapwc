@@ -450,7 +450,8 @@ public class vectorclass
 					{
 						fromafarMandB = MandBRepository[MPICommunicationSteps];
 					}
-                    fromafarAxarray = PWCUtility.mpiOps.sendReceive(toafarAxarray, toprocess, sendtag, fromprocess, receivetag);
+                    /*fromafarAxarray = PWCUtility.mpiOps.sendReceive(toafarAxarray, toprocess, sendtag, fromprocess, receivetag);*/
+                    ParallelOps.sendRecvPipeLine(toafarAxarray, toprocess, sendtag, fromafarAxarray, fromprocess, receivetag);
 					PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 				}
 

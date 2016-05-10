@@ -81,6 +81,8 @@ public class ParallelOps {
 
     public static Bytes mmapXReadBytes;
     public static ByteBuffer mmapXReadByteBuffer;
+    public static ByteBuffer mmapXInterSendByteBuffer;
+    public static ByteBuffer mmapXInterRecvByteBuffer;
     public static Bytes mmapXWriteBytes;
     public static Bytes sendLock;
     public static Bytes recvLock;
@@ -313,10 +315,15 @@ public class ParallelOps {
             /* we need buffer space only for (mmapProcsCount - 1) to do internal
              * communication. Then we need 2 extra to do MPI send/receive at the
              * boundaries. These extra 2 are needed only when internal data is
-             * represented as arrays and not direct buffers like in sendrecv<double[]> */
-            int mmapXReadByteExtent = (2 * Integer.BYTES +
+             * represented as arrays and not direct buffers like in sendrecv<double[]>
+             *
+             * We'll use last chunk to do inter-process receive (of head mmap)
+             * and the one before the last to do inter-process send (of tail mmap)*/
+
+            int chunkSize = 2 * Integer.BYTES +
                     2 * Program.maxNcent * PWCUtility.PointCount_Largest *
-                            Double.BYTES) * (mmapProcsCount + 1);
+                            Double.BYTES;
+            int mmapXReadByteExtent = chunkSize * (mmapProcsCount + 1);
 
             long mmapXReadByteOffset = 0L;
             long
@@ -333,6 +340,15 @@ public class ParallelOps {
             mmapXReadBytes.position(0);
             mmapXWriteBytes = mmapXReadBytes.slice(mmapXWriteByteOffset,
                     mmapXReadByteExtent);
+
+            /* Send recv buffers for mmap tail and mmap head */
+            if (isMmapTail) {
+                mmapXInterSendByteBuffer = mmapXReadBytes.slice(mmapProcRank*chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterSendByteBuffer);
+            }
+            if (isMmapHead) {
+                mmapXInterRecvByteBuffer = mmapXReadBytes.slice(mmapProcsCount*chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterRecvByteBuffer);
+            }
+
 
             /* Send receive locks */
             if (!isMmapTail){
@@ -426,28 +442,29 @@ public class ParallelOps {
     }
 
     /* to rank is my successor, from rank is my predecessor */
-    /*public static void sendRecvPipeLine(double[] send, int to, int sendTag, double[] recv, int from, int recvTag) throws MPIException, InterruptedException {
-        long size = send.length;
-        long extent = size*Double.BYTES;
+    public static void sendRecvPipeLine(double[] send, int to, int sendTag, double[] recv, int from, int recvTag) throws MPIException, InterruptedException {
+        int size = send.length;
+        int extent = size*Double.BYTES;
         if (extent != recv.length*Double.BYTES){
             PWCUtility.printAndThrowRuntimeException("Send and recv extents should match");
         }
 
+        long offset = extent * mmapProcRank;
         if (!isMmapTail) {
             sendLock.busyLockLong(LOCK);
-            long offset = extent * mmapProcRank;
-            for (int i = 0; i < size; ++i){
-                mmapXWriteBytes.writeDouble(offset+(i*Double.BYTES), send[i]);
-            }
+            copyToBuffer(send, mmapXWriteBytes, size, offset);
             sendLock.writeBoolean(FLAG, true);
             sendLock.unlockLong(LOCK);
+        } else {
+            // If tail, no need of locks
+            copyToBuffer(send, mmapXWriteBytes, size, offset);
         }
 
         if (isMmapHead){
-            *//* mmap heads receive from tails of the previous mamps (or last mmap)*//*
-            worldProcsComm.recv(recv.getBuffer(), extent, MPI.BYTE, from, recvTag);
+            /* mmap heads receive from tails of the previous mamps (or last mmap)*/
+            worldProcsComm.recv(mmapXInterRecvByteBuffer, extent, MPI.BYTE, from, recvTag);
         } else if (isMmapTail) {
-            worldProcsComm.send(send.getBuffer(), extent, MPI.BYTE, to, sendTag);
+            worldProcsComm.send(mmapXInterSendByteBuffer, extent, MPI.BYTE, to, sendTag);
         }
 
         if (!isMmapHead){
@@ -456,20 +473,33 @@ public class ParallelOps {
                 recvLock.busyLockLong(LOCK);
                 dataReady = recvLock.readBoolean(FLAG);
                 if (dataReady){
-                    *//* Assumes receives are from previous ranks, i.e. the nature of pipeline *//*
-                    long offset = extent*(mmapProcRank - 1);
-                    recv.copyFrom(offset, mmapXWriteBytes);
-                    for (int i = 0; i < size; ++i){
-                        mmapXWriteBytes.writeDouble(offset+(i*Double.BYTES), send[i]);
-                    }
+                    /* Assumes receives are from previous ranks, i.e. the nature of pipeline */
+                    offset = extent*(mmapProcRank - 1);
+                    copyFromBuffer(recv, mmapXWriteBytes, size, offset);
                     recvLock.writeBoolean(FLAG, false);
                 }
                 recvLock.unlockLong(LOCK);
             }
+        } else {
+            // If head, no need of locks
+            offset = extent*mmapProcsCount;
+            copyFromBuffer(recv, mmapXWriteBytes, size, offset);
         }
-        *//* Important functional barrier for correctness *//*
+        /* Important functional barrier for correctness */
         worldProcsComm.barrier();
-    }*/
+    }
+
+    private static void copyToBuffer(double[] array, Bytes to, long size, long offset) {
+        for (int i = 0; i < size; ++i){
+            to.writeDouble(offset+(i*Double.BYTES), array[i]);
+        }
+    }
+
+    private static void copyFromBuffer(double[] array, Bytes from, long size, long offset) {
+        for (int i = 0; i < size; ++i){
+            array[i] = from.readDouble(offset+(i*Double.BYTES));
+        }
+    }
 
     private static void printInOrder(String str) throws MPIException {
         for (int i = 0; i < worldProcsCount; ++i){
