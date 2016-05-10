@@ -385,6 +385,7 @@ public class ParallelOps {
 
     /* to rank is my successor, from rank is my predecessor */
     public static void sendRecvPipeLine(MPISecPacket send, int to, int sendTag, MPISecPacket recv, int from, int recvTag) throws MPIException, InterruptedException {
+        System.out.println("Rank: " + worldProcRank + " came here");
         int extent = send.getExtent();
         if (extent != recv.getExtent()){
             PWCUtility.printAndThrowRuntimeException("Send and recv extents should match");
