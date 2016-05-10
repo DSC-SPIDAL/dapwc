@@ -9,7 +9,8 @@ with idx or max with idx
 3. Broadcast <int[]>; pointCountGlobal
    Boradcast <double[]>; MaxNCent (from config)
 
-4. SendReceive <double[]>; PointCountLargest (for a proc)
+4. SendReceive <double[]>; PointCountLargest (for a proc) * localNCent (or
+less if some clusters are not used)
 
 5. SendReceive <MPISecPacket<double[], double[]>>;
 RunningPWC.NCent*PointCountLargest (for each array)
