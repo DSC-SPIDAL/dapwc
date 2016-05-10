@@ -379,7 +379,6 @@ public class ParallelOps {
 
     private static MappedByteBuffer createMMapLockBuffer(String lockFname) throws IOException {
         File lockFile = new File(mmapScratchDir, lockFname);
-//        lockFile.deleteOnExit();
         FileChannel fc = new RandomAccessFile(lockFile, "rw").getChannel();
         return fc.map(FileChannel.MapMode.READ_WRITE, 0, 64);
     }
@@ -421,7 +420,7 @@ public class ParallelOps {
             }
         }
 
-        worldProcsComm.barrier();
+//        worldProcsComm.barrier();
     }
 
     private static void printInOrder(String str) throws MPIException {
