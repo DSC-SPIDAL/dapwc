@@ -114,6 +114,8 @@ public class MPISecPacket implements Serializable
         to.bArrayOffset = from.bArrayOffset;
         to.extent = from.extent;
 
+        to.buffer.putInt(to.firstPointOffset, from.buffer.getInt(from.firstPointOffset));
+        to.buffer.putInt(to.numberOfPointsOffset, from.buffer.getInt(from.numberOfPointsOffset));
         for (int i = 0; i < 2 * from.arrayLength; ++i) {
             to.buffer.putDouble(
                     to.mArrayOffset + i * Double.BYTES, from.buffer.getDouble(
