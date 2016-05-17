@@ -368,7 +368,7 @@ public class ParallelOps {
             fullXByteBuffer = fullXBytes.sliceAsByteBuffer(fullXByteBuffer);
         }
 
-        /* Allocate memory maps for single double valued communications like AllReduce */
+        /* Allocate memory maps for double valued communications like AllReduce */
         final String mmapAllReduceFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapAllReduce.bin";
         try (FileChannel mmapAllReduceFc = FileChannel
                 .open(Paths.get(mmapScratchDir, mmapAllReduceFname),
