@@ -537,7 +537,7 @@ public class vectorclass
                             for (int betalocal = 0; betalocal < betatotal; betalocal++)
                             {
                                 int betafull = betastart + betalocal;
-                                double dijforthiscase = PWCUtility.PointDistances[ProcessPointIndex][betafull]* PWCUtility.INV_SHORT_MAX;
+                                double dijforthiscase = PWCUtility.PointDistances[ProcessPointIndex*PWCUtility.PointCount_Global+betafull]* PWCUtility.INV_SHORT_MAX;
                                 boolean PointIndicesEqual = (betafull == (ProcessPointIndex + PWCUtility.PointStart_Process));
                                 for (int CenterVectorMu = 0; CenterVectorMu < localNcent; CenterVectorMu++)
                                 {

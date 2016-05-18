@@ -293,7 +293,7 @@ public class FindCenters
                         if (group1 != group2) {
                             continue;
                         }
-                        double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                        double tmp = PWCUtility.PointDistances[index*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                         if (tmp > PWCUtility.MinimumDistanceCut) {
                             if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                 ++Countlinks;
@@ -430,6 +430,7 @@ public class FindCenters
                 double Avg_CoGcenters = 0.0;
                 int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
                 if (owner == PWCUtility.MPI_Rank) {
+                    int procLocalRow = GlobalPointIndex1 - PWCUtility.PointStart_Process;
                     for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                         int GlobalPointIndex2 = GroupIndexfromMinMeans[group][CenterIndex2];
                         if (GlobalPointIndex2 < 0) {
@@ -439,7 +440,7 @@ public class FindCenters
                         }
                         double tmp;
                         if (CenterIndex1 != CenterIndex2) {
-                            tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                            tmp = PWCUtility.PointDistances[procLocalRow*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                             if (CenterIndex1 == 0) {
                                 TopMeanDistance[CenterIndex2] = tmp;
                             }
@@ -548,7 +549,7 @@ public class FindCenters
                     double Avg_Internal = 0.0;
                     int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
                     if (owner == PWCUtility.MPI_Rank) {
-
+                        int procLocalRow = GlobalPointIndex1 - PWCUtility.PointStart_Process;
                         for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                             int GlobalPointIndex2 = GroupIndexfromMDSMinMeans[group][CenterIndex2];
                             if (GlobalPointIndex2 < 0) {
@@ -565,7 +566,7 @@ public class FindCenters
                                 Avg_Internal = Avg_Internal + tmp;
                             }
                             GlobalPointIndex2 = GroupIndexfromMinMeans[group][CenterIndex2];
-                            tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                            tmp = PWCUtility.PointDistances[procLocalRow*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                             Avg_MeanMethod = Avg_MeanMethod + tmp;
                             if (CenterIndex2 == 0) {
                                 TopMeanDistance[CenterIndex1] = tmp;
@@ -658,7 +659,7 @@ public class FindCenters
                     double Avg_Internal = 0.0;
                     int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
                     if (owner == PWCUtility.MPI_Rank) {
-
+                        int procLocalRow = GlobalPointIndex1 - PWCUtility.PointStart_Process;
                         for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                             int GlobalPointIndex2 = GroupIndexfromMDSCoG[group][CenterIndex2];
                             if (GlobalPointIndex2 < 0) {
@@ -680,7 +681,7 @@ public class FindCenters
                                     TopMeanDistance[CenterIndex1] = 0.0;
                                 }
                             } else {
-                                tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                                tmp = PWCUtility.PointDistances[procLocalRow*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                 Avg_MeanMethod = Avg_MeanMethod + tmp;
                                 ++Num_MeanMethod;
                                 if (CenterIndex2 == 0) {
@@ -773,7 +774,7 @@ public class FindCenters
                                 if (group2 != groupLoopVar) {
                                     continue;
                                 }
-                                double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                                double tmp = PWCUtility.PointDistances[index*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                 if (tmp > PWCUtility.MinimumDistanceCut) {
                                     if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                         int itmp = (int) Math.floor(tmp * fudge);
@@ -839,7 +840,7 @@ public class FindCenters
                                 if (groupLoopVar != group2) {
                                     continue;
                                 }
-                                double tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                                double tmp = PWCUtility.PointDistances[index*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                 if (tmp > PWCUtility.MinimumDistanceCut) {
                                     if (LabelsAvailable && (SequenceLengths[GlobalPointIndex2] > PWCUtility.LengthCut2)) {
                                         for (int BucketIndex = 0; BucketIndex < PWCUtility.NumberofBuckets; BucketIndex++) {
@@ -915,6 +916,7 @@ public class FindCenters
                         int Num_MeanMethod = 0;
                         int owner = PWCParallelism.OwnerforThisPoint(GlobalPointIndex1);
                         if (owner == PWCUtility.MPI_Rank) {
+                            int procLocalRow = GlobalPointIndex1 - PWCUtility.PointStart_Process;
                             for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                                 int GlobalPointIndex2 =
                                         FindCentersbybuckets[BucketIndex].OrderedIndexValue[CenterIndex2];
@@ -925,7 +927,7 @@ public class FindCenters
                                 }
                                 double tmp;
                                 if (CenterIndex1 != CenterIndex2) {
-                                    tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                                    tmp = PWCUtility.PointDistances[procLocalRow*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                     if (CenterIndex1 == 0) {
                                         TopBucketDistance[CenterIndex2] = tmp;
                                     }
@@ -938,7 +940,7 @@ public class FindCenters
                                         TopMeanDistance[CenterIndex1] = 0.0;
                                     }
                                 } else {
-                                    tmp = PWCUtility.PointDistances[GlobalPointIndex1 - PWCUtility.PointStart_Process][GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
+                                    tmp = PWCUtility.PointDistances[procLocalRow*PWCUtility.PointCount_Global+GlobalPointIndex2]* PWCUtility.INV_SHORT_MAX;
                                     Avg_MeanMethod = Avg_MeanMethod + tmp;
                                     ++Num_MeanMethod;
                                     if (CenterIndex2 == 0) {

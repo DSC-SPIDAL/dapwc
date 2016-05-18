@@ -864,7 +864,7 @@ public class Dist
                         {
                             double tmp;
                             int betafull = betastart + betalocal;
-                            double dijforthiscase = PWCUtility.PointDistances[ProcessPointIndex][betafull] * PWCUtility.INV_SHORT_MAX;
+                            double dijforthiscase = PWCUtility.PointDistances[ProcessPointIndex*PWCUtility.PointCount_Global+betafull] * PWCUtility.INV_SHORT_MAX;
                             for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                             {
                                 if (MPICommunicationStepsLoopVar == 0)
@@ -1676,7 +1676,7 @@ public class Dist
                         {
                             continue;
                         }
-						double placevalue = PWCUtility.PointDistances[GlobalIndex - PWCUtility.PointStart_Process][PointIndex1]* PWCUtility.INV_SHORT_MAX;
+						double placevalue = PWCUtility.PointDistances[ProcessPointIndex*PWCUtility.PointCount_Global+PointIndex1]* PWCUtility.INV_SHORT_MAX;
 						DistanceSum += placevalue;
 						STDSum += placevalue * placevalue;
 						NumberSum += 1.0;

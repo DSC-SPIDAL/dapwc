@@ -705,6 +705,7 @@ public class Program
         PWCUtility.dataTypeSize = config.getDataTypeSize();
         PWCUtility.endianness = config.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
         PWCUtility.isMemoryMapped = config.isMemoryMapped();
+		PWCUtility.repetitions = config.getRepetitions();
 	}
     public static void WriteClusterFile(String file, int[] labels, int dataPoints, int startPosition, boolean append){
         WriteClusterFile(file, i -> labels[i], dataPoints, startPosition, append);
