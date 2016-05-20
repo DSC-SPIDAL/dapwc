@@ -515,32 +515,40 @@ public class ParallelOps {
         }
     }
 
-    private static int getMaxBufferSize(){
-        /*Calls with RunningPWC.NCent are replaced with
-        * MaxNCent in calculating max buffer size*/
 
-        int count = 10;
-        int [] sizesInBytes = new int[count];
-        IntStream.range(0, count).forEach(i -> sizesInBytes[i] = 0);
+    public static void broadcast(int[] values, int root) throws MPIException {
+        int mmapLeaderCgProcCommRankOfRoot = 0;
+        if (isMmapLead){
+            // Let's find the cgProcComm rank of root's mmap leader
+            mmapLeaderCgProcCommRankOfRoot = isRankWithinMmap(root) ? cgProcRank : 0;
+            intBuffer.put(0, mmapLeaderCgProcCommRankOfRoot);
+            cgProcComm.allReduce(intBuffer, 1, MPI.INT, MPI.SUM);
+            mmapLeaderCgProcCommRankOfRoot = intBuffer.get(0);
+        }
 
-        /*AllReduce calls require mmapProcsCount copies per mmap group*/
-        // AllReduce<int[]>
-        sizesInBytes[0] = Program.maxNcent*mmapProcsCount*Integer.BYTES;
-        // Allreduce<double[]>
-        sizesInBytes[1] = 1000;
-        // Allreduce<double[]>
-        sizesInBytes[2] = Program.maxNcent*mmapProcsCount*Double.BYTES;
-        // AllReduce<MPIReducePlusIndex>
-        sizesInBytes[3] = (Integer.BYTES+Double.BYTES)*mmapProcsCount;
+        if (root == worldProcRank){
+            mmapCollectiveWriteBytes.position(0);
+            for (int i = 0; i < values.length; ++i){
+                mmapCollectiveWriteBytes.writeInt(i*Integer.BYTES, values[i]);
+            }
+        }
+        worldProcsComm.barrier();
 
-        /*Broadcast requires just one copy for an mmap group*/
-        // Broadcast<int[]>
-        sizesInBytes[4] = globalColCount * Integer.BYTES;
-        //Broadcast<double[]>
-        sizesInBytes[5] = Program.maxNcent * Double.BYTES;
+        if (ParallelOps.isMmapLead){
+            cgProcComm.bcast(mmapCollectiveReadByteBuffer, values.length, MPI.INT, mmapLeaderCgProcCommRankOfRoot);
+        }
 
+        worldProcsComm.barrier();
 
-        return 0;
+        if (root != worldProcRank){
+            for (int i = 0; i < values.length; ++i){
+                values[i] = mmapCollectiveReadBytes.readInt(i*Integer.BYTES);
+            }
+        }
+    }
+
+    private static boolean isRankWithinMmap(int rank){
+        return (mmapLeadWorldRank <= rank && rank <= (mmapLeadWorldRank+mmapProcsCount));
     }
 
     public static void allReduceSum(int[] values) throws MPIException {
@@ -574,11 +582,6 @@ public class ParallelOps {
             cgProcComm.allReduce(mmapCollectiveReadByteBuffer, values.length, MPI.INT,MPI.SUM);
         }
 
-        // Each process in a memory group waits here.
-        // It's not necessary to wait for a process
-        // in another memory map group, hence the use of mmapProcComm.
-        // However it's cleaner for any timings to have everyone sync here,
-        // so will use worldProcsComm instead.
         ParallelOps.worldProcsComm.barrier();
         ParallelOps.mmapCollectiveReadBytes.position(0);
         for (int i = 0; i < values.length; ++i){
@@ -617,11 +620,6 @@ public class ParallelOps {
             cgProcComm.allReduce(mmapCollectiveReadByteBuffer, values.length, MPI.DOUBLE,MPI.SUM);
         }
 
-        // Each process in a memory group waits here.
-        // It's not necessary to wait for a process
-        // in another memory map group, hence the use of mmapProcComm.
-        // However it's cleaner for any timings to have everyone sync here,
-        // so will use worldProcsComm instead.
         ParallelOps.worldProcsComm.barrier();
         ParallelOps.mmapCollectiveReadBytes.position(0);
         for (int i = 0; i < values.length; ++i){
