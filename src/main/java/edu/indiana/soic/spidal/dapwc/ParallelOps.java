@@ -519,7 +519,17 @@ public class ParallelOps {
     public static void broadcast(int[] values, int root) throws MPIException {
         // TODO - debugs
         if (root == worldProcRank){
-            System.out.println("Rank: " + worldProcRank + " " + Arrays.toString(values));
+            int c0 = 0;
+            int c1 = 0;
+            for (int i = 0; i < values.length; ++i){
+                if (values[i] == 0){
+                    c0++;
+                } else {
+                    c1++;
+                }
+            }
+
+            System.out.println("Rank: " + worldProcRank + " c0: " + c0 + " c1: " + c1);
         }
         int mmapLeaderCgProcCommRankOfRoot = 0;
         if (isMmapLead){
