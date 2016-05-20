@@ -545,6 +545,7 @@ public class ParallelOps {
                 values[i] = mmapCollectiveReadBytes.readInt(i*Integer.BYTES);
             }
         }
+        worldProcsComm.barrier();
     }
 
     private static boolean isRankWithinMmap(int rank){
