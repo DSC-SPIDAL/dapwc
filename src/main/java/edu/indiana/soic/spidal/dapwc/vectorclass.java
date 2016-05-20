@@ -450,7 +450,9 @@ public class vectorclass
 					{
 						fromafarMandB = MandBRepository[MPICommunicationSteps];
 					}
-                    ParallelOps.sendRecvPipeLine(toafarAxarray, toprocess, sendtag, fromafarAxarray, fromprocess, receivetag);
+					// TODO - changing to mmap call
+                    fromafarAxarray = PWCUtility.mpiOps.sendReceive(toafarAxarray, toprocess, sendtag, fromprocess, receivetag);
+                    /*ParallelOps.sendRecvPipeLine(toafarAxarray, toprocess, sendtag, fromafarAxarray, fromprocess, receivetag);*/
 					PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 				}
 
