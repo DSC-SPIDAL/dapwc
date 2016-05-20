@@ -517,6 +517,10 @@ public class ParallelOps {
 
 
     public static void broadcast(int[] values, int root) throws MPIException {
+        // TODO - debugs
+        if (root == worldProcRank){
+            System.out.println("Rank: " + worldProcRank + " " + Arrays.toString(values));
+        }
         int mmapLeaderCgProcCommRankOfRoot = 0;
         if (isMmapLead){
             // Let's find the cgProcComm rank of root's mmap leader
