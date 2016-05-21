@@ -448,6 +448,12 @@ public class ParallelOps {
     public static void sendRecvPipeLine(double[] send, int to, int sendTag, double[] recv, int from, int recvTag) throws MPIException, InterruptedException {
         int size = send.length;
         int extent = size*Double.BYTES;
+
+        // TODO - debugs
+        if (extent*(mmapProcsCount+1) > mmapXWriteBytes.position(0).remaining()){
+            PWCUtility.printAndThrowRuntimeException("**Not enough buffer");
+        }
+
         if (extent != recv.length*Double.BYTES){
             PWCUtility.printAndThrowRuntimeException("Send and recv extents should match");
         }
