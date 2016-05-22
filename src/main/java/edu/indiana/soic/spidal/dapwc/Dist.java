@@ -821,8 +821,8 @@ public class Dist
 				PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVETiming);
                 // Note - MPI Call - SendRecv - MPIPacket
                 // TODO - changing to mmap call
-                /*fromafar = PWCUtility.mpiOps.sendReceive(toafar,toprocess,sendtag,fromprocess,receivetag, MPIPacket.Type.Double);*/
-				ParallelOps.sendRecvPipeLine(toafar,toprocess,sendtag,fromafar, fromprocess,receivetag);
+                fromafar = PWCUtility.mpiOps.sendReceive(toafar,toprocess,sendtag,fromprocess,receivetag, MPIPacket.Type.Double);
+				/*ParallelOps.sendRecvPipeLine(toafar,toprocess,sendtag,fromafar, fromprocess,receivetag);*/
 				PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVETiming);
 			}
 

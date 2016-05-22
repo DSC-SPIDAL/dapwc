@@ -443,7 +443,9 @@ public class vectorclass
 					PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 					if (!MandBset)
 					{
-                        ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);
+						// TODO - changing to mmap call
+                        fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);
+                        /*ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);*/
                         MPISecPacket.memberCopy(fromafarMandB, MandBRepository[MPICommunicationSteps]);
 					}
 					else
@@ -451,8 +453,8 @@ public class vectorclass
 						fromafarMandB = MandBRepository[MPICommunicationSteps];
 					}
 					// TODO - changing to mmap call
-                    /*fromafarAxarray = PWCUtility.mpiOps.sendReceive(toafarAxarray, toprocess, sendtag, fromprocess, receivetag);*/
-                    ParallelOps.sendRecvPipeLine(toafarAxarray, toprocess, sendtag, fromafarAxarray, fromprocess, receivetag);
+                    fromafarAxarray = PWCUtility.mpiOps.sendReceive(toafarAxarray, toprocess, sendtag, fromprocess, receivetag);
+                    /*ParallelOps.sendRecvPipeLine(toafarAxarray, toprocess, sendtag, fromafarAxarray, fromprocess, receivetag);*/
 					PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 				}
 
