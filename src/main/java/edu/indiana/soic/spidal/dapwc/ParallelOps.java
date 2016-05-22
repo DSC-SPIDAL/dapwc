@@ -471,7 +471,8 @@ public class ParallelOps {
 
         if (isMmapHead){
             /* mmap heads receive from tails of the previous mamps (or last mmap)*/
-            worldProcsComm.recv(mmapXInterRecvByteBuffer, extent, MPI.BYTE, from, recvTag);
+            /*worldProcsComm.recv(mmapXInterRecvByteBuffer, extent, MPI.BYTE, from, recvTag);*/
+            worldProcsComm.recv(mmapXInterRecvByteBuffer, recv.length, MPI.DOUBLE, from, recvTag);
             /*worldProcsComm.recv(recv, recv.length, MPI.DOUBLE, from, recvTag);*/
         } else if (isMmapTail) {
             /*worldProcsComm.send(mmapXInterSendByteBuffer, extent, MPI.BYTE, to, sendTag);*/
