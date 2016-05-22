@@ -558,6 +558,38 @@ public class ParallelOps {
         /*worldProcsComm.barrier();*/
     }
 
+    public static void broadcast(double[] values, int root) throws MPIException {
+        int mmapLeaderCgProcCommRankOfRoot = 0;
+        if (isMmapLead){
+            // Let's find the cgProcComm rank of root's mmap leader
+            mmapLeaderCgProcCommRankOfRoot = isRankWithinMmap(root) ? cgProcRank : 0;
+            intBuffer.put(0, mmapLeaderCgProcCommRankOfRoot);
+            cgProcComm.allReduce(intBuffer, 1, MPI.INT, MPI.SUM);
+            mmapLeaderCgProcCommRankOfRoot = intBuffer.get(0);
+        }
+
+        if (root == worldProcRank){
+            mmapCollectiveWriteBytes.position(0);
+            for (int i = 0; i < values.length; ++i){
+                mmapCollectiveWriteBytes.writeDouble(i*Double.BYTES, values[i]);
+            }
+        }
+        worldProcsComm.barrier();
+
+        if (ParallelOps.isMmapLead){
+            cgProcComm.bcast(mmapCollectiveReadByteBuffer, values.length, MPI.DOUBLE, mmapLeaderCgProcCommRankOfRoot);
+        }
+
+        worldProcsComm.barrier();
+
+        if (root != worldProcRank){
+            for (int i = 0; i < values.length; ++i){
+                values[i] = mmapCollectiveReadBytes.readDouble(i*Double.BYTES);
+            }
+        }
+        /*worldProcsComm.barrier();*/
+    }
+
     private static boolean isRankWithinMmap(int rank){
         return (mmapLeadWorldRank <= rank && rank <= (mmapLeadWorldRank+mmapProcsCount));
     }
