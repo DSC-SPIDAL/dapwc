@@ -81,6 +81,7 @@ public class ParallelOps {
 
     public static Bytes mmapXReadBytes;
     public static ByteBuffer mmapXReadByteBuffer;
+    public static Bytes mmapXInterSendBytes;
     public static ByteBuffer mmapXInterSendByteBuffer;
     public static Bytes mmapXInterRecvBytes;
     public static ByteBuffer mmapXInterRecvByteBuffer;
@@ -344,8 +345,8 @@ public class ParallelOps {
 
             /* Send recv buffers for mmap tail and mmap head */
             if (isMmapTail) {
-                mmapXInterSendByteBuffer = mmapXReadBytes.slice(mmapProcRank *
-                        chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterSendByteBuffer);
+                mmapXInterSendBytes = mmapXReadBytes.slice(mmapProcRank * chunkSize, chunkSize);
+                mmapXInterSendByteBuffer = mmapXInterSendBytes.sliceAsByteBuffer(mmapXInterSendByteBuffer);
             }
             if (isMmapHead) {
                 mmapXInterRecvBytes = mmapXReadBytes.slice(mmapProcsCount * chunkSize, chunkSize);
@@ -467,19 +468,16 @@ public class ParallelOps {
             copyToBuffer(send, mmapXWriteBytes, size, offset);
             sendLock.writeBoolean(FLAG, true);
             sendLock.unlockLong(LOCK);
-        }/* else {
+        } else {
             // If tail, no need of locks
-            copyToBuffer(send, mmapXWriteBytes, size, offset);
-        }*/
+            copyToBuffer(send, mmapXInterSendBytes, size, 0);
+        }
 
         if (isMmapHead){
             /* mmap heads receive from tails of the previous mamps (or last mmap)*/
-            /*worldProcsComm.recv(mmapXInterRecvByteBuffer, extent, MPI.BYTE, from, recvTag);*/
-            worldProcsComm.recv(mmapXInterRecvByteBuffer, recv.length, MPI.DOUBLE, from, recvTag);
-            /*worldProcsComm.recv(recv, recv.length, MPI.DOUBLE, from, recvTag);*/
+            worldProcsComm.recv(mmapXInterRecvByteBuffer, extent, MPI.BYTE, from, recvTag);
         } else if (isMmapTail) {
-            /*worldProcsComm.send(mmapXInterSendByteBuffer, extent, MPI.BYTE, to, sendTag);*/
-            worldProcsComm.send(send, send.length, MPI.DOUBLE, to, sendTag);
+            worldProcsComm.send(mmapXInterSendByteBuffer, extent, MPI.BYTE, to, sendTag);
         }
 
         if (!isMmapHead){
@@ -497,10 +495,7 @@ public class ParallelOps {
             }
         } else {
             // If head, no need of locks
-            /*offset = extent*mmapProcsCount;*/
-            offset = 0;
-            /*copyFromBuffer(recv, mmapXWriteBytes, size, offset);*/
-            copyFromBuffer(recv, mmapXInterRecvBytes, size, (int)offset);
+            copyFromBuffer(recv, mmapXInterRecvBytes, size, 0);
         }
         /* Important functional barrier for correctness */
         worldProcsComm.barrier();
