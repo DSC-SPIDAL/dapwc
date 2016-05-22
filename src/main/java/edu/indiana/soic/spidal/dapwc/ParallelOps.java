@@ -82,6 +82,7 @@ public class ParallelOps {
     public static Bytes mmapXReadBytes;
     public static ByteBuffer mmapXReadByteBuffer;
     public static ByteBuffer mmapXInterSendByteBuffer;
+    public static Bytes mmapXInterRecvBytes;
     public static ByteBuffer mmapXInterRecvByteBuffer;
     public static Bytes mmapXWriteBytes;
     public static Bytes sendLock;
@@ -347,8 +348,8 @@ public class ParallelOps {
                         chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterSendByteBuffer);
             }
             if (isMmapHead) {
-                mmapXInterRecvByteBuffer = mmapXReadBytes.slice(mmapProcsCount *
-                        chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterRecvByteBuffer);
+                mmapXInterRecvBytes = mmapXReadBytes.slice(mmapProcsCount * chunkSize, chunkSize);
+                mmapXInterRecvByteBuffer = mmapXInterRecvBytes.sliceAsByteBuffer(mmapXInterRecvByteBuffer);
             }
 
 
@@ -499,7 +500,7 @@ public class ParallelOps {
             /*offset = extent*mmapProcsCount;*/
             offset = 0;
             /*copyFromBuffer(recv, mmapXWriteBytes, size, offset);*/
-            copyFromBuffer(recv, mmapXInterRecvByteBuffer, size, (int)offset);
+            copyFromBuffer(recv, mmapXInterRecvBytes, size, (int)offset);
         }
         /* Important functional barrier for correctness */
         worldProcsComm.barrier();
