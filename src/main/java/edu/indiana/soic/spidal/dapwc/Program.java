@@ -714,7 +714,7 @@ public class Program
         PWCUtility.dataTypeSize = config.getDataTypeSize();
         PWCUtility.endianness = config.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
         PWCUtility.isMemoryMapped = config.isMemoryMapped();
-
+		PWCUtility.repetitions = config.getRepetitions();
 		ParallelOps.mmapsPerNode = cmd.hasOption(Constants.CMD_OPTION_SHORT_MMAPS) ? Integer.parseInt(cmd.getOptionValue(Constants.CMD_OPTION_SHORT_MMAPS)) : 1;
 		ParallelOps.mmapScratchDir = cmd.hasOption(Constants.CMD_OPTION_SHORT_MMAP_SCRATCH_DIR) ? cmd.getOptionValue(Constants.CMD_OPTION_SHORT_MMAP_SCRATCH_DIR) : ".";
         ParallelOps.nodeCount = PWCUtility.NodeCount;

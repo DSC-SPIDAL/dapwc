@@ -1,5 +1,6 @@
 package edu.indiana.soic.spidal.dapwc;
 
+import edu.indiana.soic.spidal.common.BinaryReader1D;
 import edu.indiana.soic.spidal.common.BinaryReader2D;
 import edu.indiana.soic.spidal.mpi.MpiOps;
 import mpi.MPI;
@@ -112,37 +113,16 @@ public class PWCParallelism
 	// Total space m(m+1)/2 if lower triangular store (checkerboard =1)
 	public static void ReadDataFromFile(String fname)
 	{
-		//	First divide points among processes
-		Range[] processRanges = RangePartitioner.Partition(PWCUtility.PointCount_Global, PWCUtility.MPI_Size);
-		Range processRange = processRanges[PWCUtility.MPI_Rank];
-
-		PWCUtility.PointCount_Process = processRange.getLength();
-		PWCUtility.PointStart_Process = processRange.getStartIndex();
-		PWCUtility.PointCount_Largest = Integer.MIN_VALUE;
-
-		for (Range r : processRanges)
-		{
-			PWCUtility.PointCount_Largest = Math.max(r.getLength(), PWCUtility.PointCount_Largest);
-		}
-
-		//	Now divide points among threads
-		Range[] threadRanges = RangePartitioner.Partition(processRange, PWCUtility.ThreadCount);
-		PWCUtility.StartPointperThread = new int[PWCUtility.ThreadCount];
-		PWCUtility.PointsperThread = new int[PWCUtility.ThreadCount];
-
-		for (int i = 0; i < PWCUtility.ThreadCount; i++)
-		{
-			PWCUtility.StartPointperThread[i] = threadRanges[i].getStartIndex();
-			PWCUtility.PointsperThread[i] = threadRanges[i].getLength();
-		}
-
 		// Note - read binary distance data from file
         final edu.indiana.soic.spidal.common.Range range =
             new edu.indiana.soic.spidal.common.Range(
                 PWCUtility.PointStart_Process,
                 (PWCUtility.PointStart_Process + PWCUtility.PointCount_Process
                  - 1));
-        PWCUtility.PointDistances = BinaryReader2D.readRowRange(fname, range, PWCUtility.PointCount_Global, PWCUtility.endianness, true, null);
+		PWCUtility.PointDistances = new short[PWCUtility.PointCount_Process*PWCUtility.PointCount_Global];
+		BinaryReader1D.readRowRange(fname, range,
+				PWCUtility.PointCount_Global, PWCUtility.endianness, true,
+				null, PWCUtility.repetitions, PWCUtility.PointDistances);
 
 	} //  End routine controlling reading of data
 
