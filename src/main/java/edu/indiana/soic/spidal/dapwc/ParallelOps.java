@@ -463,18 +463,16 @@ public class ParallelOps {
             copyToBuffer(send, mmapXWriteBytes, size, offset);
             sendLock.writeBoolean(FLAG, true);
             sendLock.unlockLong(LOCK);
-        } /*else {
+        } else {
             // If tail, no need of locks
             copyToBuffer(send, mmapXInterSendBytes, size, 0);
-        }*/
+        }
 
         if (isMmapHead){
             /* mmap heads receive from tails of the previous mamps (or last mmap)*/
-            /*worldProcsComm.recv(mmapXInterRecvByteBuffer, extent, MPI.BYTE, from, recvTag);*/
-            worldProcsComm.recv(recv, recv.length, MPI.DOUBLE, from, recvTag);
+            worldProcsComm.recv(mmapXInterRecvByteBuffer, extent, MPI.BYTE, from, recvTag);
         } else if (isMmapTail) {
-            /*worldProcsComm.send(mmapXInterSendByteBuffer, extent, MPI.BYTE, to, sendTag);*/
-            worldProcsComm.send(send, send.length, MPI.DOUBLE, to, sendTag);
+            worldProcsComm.send(mmapXInterSendByteBuffer, extent, MPI.BYTE, to, sendTag);
         }
 
         if (!isMmapHead){
@@ -490,10 +488,10 @@ public class ParallelOps {
                 }
                 recvLock.unlockLong(LOCK);
             }
-        } /*else {
+        } else {
             // If head, no need of locks
             copyFromBuffer(recv, mmapXInterRecvBytes, size, 0);
-        }*/
+        }
         /* Important functional barrier for correctness */
         worldProcsComm.barrier();
     }
