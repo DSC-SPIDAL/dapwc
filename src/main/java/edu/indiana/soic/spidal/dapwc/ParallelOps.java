@@ -449,6 +449,46 @@ public class ParallelOps {
     }
 
     /* to rank is my successor, from rank is my predecessor */
+    public static void sendRecvPipeLine(MPIPacket send, int to, int sendTag, MPIPacket recv, int from, int recvTag) throws MPIException, InterruptedException {
+        int extent = send.getExtent();
+        if (extent != recv.getExtent()){
+            PWCUtility.printAndThrowRuntimeException("Send and recv extents should match");
+        }
+
+        if (!isMmapTail) {
+            sendLock.busyLockLong(LOCK);
+            int offset = extent * mmapProcRank;
+            send.copyTo(offset, mmapXWriteBytes);
+            sendLock.writeBoolean(FLAG, true);
+            sendLock.unlockLong(LOCK);
+        }
+
+        if (isMmapHead){
+            /* mmap heads receive from tails of the previous mamps (or last mmap)*/
+            worldProcsComm.recv(recv.getBuffer(), extent, MPI.BYTE, from, recvTag);
+        } else if (isMmapTail) {
+            worldProcsComm.send(send.getBuffer(), extent, MPI.BYTE, to, sendTag);
+        }
+
+        if (!isMmapHead){
+            boolean dataReady = false;
+            while (!dataReady) {
+                recvLock.busyLockLong(LOCK);
+                dataReady = recvLock.readBoolean(FLAG);
+                if (dataReady){
+                    /* Assumes receives are from previous ranks, i.e. the nature of pipeline */
+                    int offset = extent*(mmapProcRank - 1);
+                    recv.copyFrom(offset, mmapXWriteBytes);
+                    recvLock.writeBoolean(FLAG, false);
+                }
+                recvLock.unlockLong(LOCK);
+            }
+        }
+        /* Important functional barrier for correctness */
+        worldProcsComm.barrier();
+    }
+
+    /* to rank is my successor, from rank is my predecessor */
     public static void sendRecvPipeLine(double[] send, int to, int sendTag, double[] recv, int from, int recvTag) throws MPIException, InterruptedException {
         int size = send.length;
         int extent = size*Double.BYTES;

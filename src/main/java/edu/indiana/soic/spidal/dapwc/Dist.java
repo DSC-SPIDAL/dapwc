@@ -555,7 +555,8 @@ public class Dist
 		PWCUtility.SALSAPrint(1, " ");
 	} // End diagnosticsplitprint
 
-	public final void PairwiseThread() throws MPIException {
+	public final void PairwiseThread() throws MPIException,
+            InterruptedException {
 		Diff_Epsilon_k_ = new double[Dist.RunningPWC.Ncent];
 
 		GlobalReductions.FindVectorDoubleSum Find_C_k_ = new GlobalReductions.FindVectorDoubleSum(PWCUtility.ThreadCount, Dist.RunningPWC.Ncent);
@@ -745,7 +746,7 @@ public class Dist
 
 
 	//	Perform multiple parallel steps calculating A_k_, Balpha_k_, epsi and differences
-	public final void calculateEpsi(double[][] localMalpha_k_, double[] localA_k_, double[][] localBalpha_k_, double[] localC_k_, double[][] localepsi, int localNcent) throws MPIException {
+	public final void calculateEpsi(double[][] localMalpha_k_, double[] localA_k_, double[][] localBalpha_k_, double[] localC_k_, double[][] localepsi, int localNcent) throws MPIException, InterruptedException {
 
 		int sendtag = 0;
 		int receivetag = 0;
@@ -819,7 +820,9 @@ public class Dist
 			{
 				PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVETiming);
                 // Note - MPI Call - SendRecv - MPIPacket
-                fromafar = PWCUtility.mpiOps.sendReceive(toafar,toprocess,sendtag,fromprocess,receivetag, MPIPacket.Type.Double);
+                // TODO - changing to mmap call
+                /*fromafar = PWCUtility.mpiOps.sendReceive(toafar,toprocess,sendtag,fromprocess,receivetag, MPIPacket.Type.Double);*/
+				ParallelOps.sendRecvPipeLine(toafar,toprocess,sendtag,fromafar, fromprocess,receivetag);
 				PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVETiming);
 			}
 

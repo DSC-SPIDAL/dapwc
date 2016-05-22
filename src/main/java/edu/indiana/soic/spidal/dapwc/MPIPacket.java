@@ -1,6 +1,7 @@
 package edu.indiana.soic.spidal.dapwc;
 
 import mpi.MPI;
+import net.openhft.lang.io.Bytes;
 
 import java.nio.ByteBuffer;
 
@@ -40,6 +41,27 @@ public abstract class MPIPacket
                 this.buffer.putInt(mArrayOffset+idx*this.shift, value);
             }
 
+            public void copyTo(int offset, Bytes buffer){
+                buffer.writeInt(offset+firstPointOffset, this.buffer.getInt(firstPointOffset));
+                buffer.writeInt(offset+numberOfPointsOffset, this.buffer.getInt(numberOfPointsOffset));
+                for (int i = 0; i < mArrayLength; ++i){
+                    buffer.writeInt(offset+mArrayOffset+i*Integer.BYTES, this.buffer.getInt(mArrayOffset+i*Integer.BYTES));
+                }
+            }
+
+            public void copyFrom(int offset, Bytes buffer) {
+                buffer.position(offset);
+                this.buffer.putInt(firstPointOffset, buffer.readInt(
+                        offset + firstPointOffset));
+                this.buffer.putInt(numberOfPointsOffset, buffer.readInt(
+                        offset + numberOfPointsOffset));
+                for (int i = 0; i < mArrayLength; ++i) {
+                    this.buffer.putInt(
+                            mArrayOffset + i * Integer.BYTES, buffer.readInt(
+                                    offset + mArrayOffset + i * Integer.BYTES));
+                }
+            }
+
             @Override
             public void Clear() {
                 setFirstPoint(0);
@@ -70,6 +92,27 @@ public abstract class MPIPacket
                 this.buffer.putDouble(mArrayOffset + idx * this.shift, value);
             }
 
+            public void copyTo(int offset, Bytes buffer){
+                buffer.writeInt(offset+firstPointOffset, this.buffer.getInt(firstPointOffset));
+                buffer.writeInt(offset+numberOfPointsOffset, this.buffer.getInt(numberOfPointsOffset));
+                for (int i = 0; i < mArrayLength; ++i){
+                    buffer.writeDouble(offset+mArrayOffset+i*Double.BYTES, this.buffer.getDouble(mArrayOffset+i*Double.BYTES));
+                }
+            }
+
+            public void copyFrom(int offset, Bytes buffer){
+                buffer.position(offset);
+                this.buffer.putInt(firstPointOffset, buffer.readInt(
+                        offset + firstPointOffset));
+                this.buffer.putInt(numberOfPointsOffset, buffer.readInt(
+                        offset + numberOfPointsOffset));
+                for (int i = 0; i < mArrayLength; ++i) {
+                    this.buffer.putDouble(
+                            mArrayOffset + i * Double.BYTES, buffer.readDouble(
+                                    offset + mArrayOffset + i * Double.BYTES));
+                }
+            }
+
             @Override
             public void Clear() {
                 setFirstPoint(0);
@@ -98,6 +141,14 @@ public abstract class MPIPacket
     }
 
     public void setMArrayDoubleAt(int idx, double value){
+        throw new UnsupportedOperationException();
+    }
+
+    public void copyTo(int offset, Bytes to){
+        throw new UnsupportedOperationException();
+    }
+
+    public void copyFrom(int offset, Bytes from){
         throw new UnsupportedOperationException();
     }
 
