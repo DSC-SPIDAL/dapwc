@@ -343,10 +343,12 @@ public class ParallelOps {
 
             /* Send recv buffers for mmap tail and mmap head */
             if (isMmapTail) {
-                mmapXInterSendByteBuffer = mmapXReadBytes.slice(mmapProcRank*chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterSendByteBuffer);
+                mmapXInterSendByteBuffer = mmapXReadBytes.slice(mmapProcRank *
+                        chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterSendByteBuffer);
             }
             if (isMmapHead) {
-                mmapXInterRecvByteBuffer = mmapXReadBytes.slice(mmapProcsCount*chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterRecvByteBuffer);
+                mmapXInterRecvByteBuffer = mmapXReadBytes.slice(mmapProcsCount *
+                        chunkSize, chunkSize).sliceAsByteBuffer(mmapXInterRecvByteBuffer);
             }
 
 
@@ -494,8 +496,10 @@ public class ParallelOps {
             }
         } else {
             // If head, no need of locks
-            offset = extent*mmapProcsCount;
-            copyFromBuffer(recv, mmapXWriteBytes, size, offset);
+            /*offset = extent*mmapProcsCount;*/
+            offset = 0;
+            /*copyFromBuffer(recv, mmapXWriteBytes, size, offset);*/
+            copyFromBuffer(recv, mmapXInterRecvByteBuffer, size, (int)offset);
         }
         /* Important functional barrier for correctness */
         worldProcsComm.barrier();
@@ -510,6 +514,12 @@ public class ParallelOps {
     private static void copyFromBuffer(double[] array, Bytes from, long size, long offset) {
         for (int i = 0; i < size; ++i){
             array[i] = from.readDouble(offset+(i*Double.BYTES));
+        }
+    }
+
+    private static void copyFromBuffer(double[] array, ByteBuffer from, int size, int offset) {
+        for (int i = 0; i < size; ++i){
+            array[i] = from.getDouble(offset+(i*Double.BYTES));
         }
     }
 
