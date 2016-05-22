@@ -453,11 +453,6 @@ public class ParallelOps {
         int size = send.length;
         int extent = size*Double.BYTES;
 
-        // TODO - debugs
-        if (extent*(mmapProcsCount+1) > mmapXWriteBytes.position(0).remaining()){
-            PWCUtility.printAndThrowRuntimeException("**Not enough buffer");
-        }
-
         if (extent != recv.length*Double.BYTES){
             PWCUtility.printAndThrowRuntimeException("Send and recv extents should match");
         }
@@ -532,20 +527,6 @@ public class ParallelOps {
 
 
     public static void broadcast(int[] values, int root) throws MPIException {
-        // TODO - debugs
-        if (root == worldProcRank){
-            int c0 = 0;
-            int c1 = 0;
-            for (int i = 0; i < values.length; ++i){
-                if (values[i] == 0){
-                    c0++;
-                } else {
-                    c1++;
-                }
-            }
-
-            System.out.println("Rank: " + worldProcRank + " c0: " + c0 + " c1: " + c1);
-        }
         int mmapLeaderCgProcCommRankOfRoot = 0;
         if (isMmapLead){
             // Let's find the cgProcComm rank of root's mmap leader
