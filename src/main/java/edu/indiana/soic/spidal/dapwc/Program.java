@@ -657,7 +657,7 @@ public class Program
         // TODO - changing to mmap broadcast call
 		/*PWCUtility.mpiOps.broadcast(Program.ClusterAssignments, 0);*/
         ParallelOps.broadcast(Program.ClusterAssignments, 0);
-		PWCUtility.mpiOps.barrier();
+		/*PWCUtility.mpiOps.barrier();*/
         if (!PWCUtility.timingCompleted){ // If PWCUtility.EndTiming() has been called then no need to reset the precise timer
             /* Restart Timer - requires reset and start */
             PWCUtility.PreciseTimer.reset();
