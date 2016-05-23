@@ -549,12 +549,15 @@ public class Program
                 for (int index = beginpoint; index < indexlen + beginpoint; index++)
                 {
                     double distmin = 9999999999999.0;
+					double tmp;
                     int knear = 0;
                     for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
                     {
-                        if (Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex] < distmin)
+                        // Note - changing to 1D arrays
+                        tmp = Dist.RunningPWC.Epsilonalpha_k_[index*ClusteringSolution.MaximumNumberClusters+ClusterIndex];
+                        if (tmp < distmin)
                         {
-                            distmin = Dist.RunningPWC.Epsilonalpha_k_[index][ClusterIndex];
+                            distmin = tmp;
                             knear = ClusterIndex;
                         }
                     }
