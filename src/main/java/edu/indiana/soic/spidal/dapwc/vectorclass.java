@@ -462,9 +462,9 @@ public class vectorclass
                                 System.out.println("****** " + fromafarMandB.equals(p) + " fromExtent " + fromafarMandB.getExtent() + " pExtent " + p.getExtent());
 
                             }
-//                            if (ParallelOps.worldProcRank == 0){
+                            if (ParallelOps.worldProcRank == 0){
                                 System.out.println("++++++ Rank " + ParallelOps.worldProcRank +  " toExtent " + toafarMandB.getExtent());
-//                            }
+                            }
                         }
 					}
 					else
