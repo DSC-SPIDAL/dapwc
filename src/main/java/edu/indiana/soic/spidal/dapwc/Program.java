@@ -543,6 +543,7 @@ public class Program
         try {
             forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
             {
+				int pointIdx;
                 Arrays.fill(partialsum_OccupationCounts[threadIndex], 0, Dist.RunningPWC.Ncent, 0);
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -554,7 +555,10 @@ public class Program
                     for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
                     {
                         // Note - changing to 1D arrays
-                        tmp = Dist.RunningPWC.Epsilonalpha_k_[index*ClusteringSolution.MaximumNumberClusters+ClusterIndex];
+                        pointIdx = index *
+                                ClusteringSolution.MaximumNumberClusters +
+                                ClusterIndex;
+                        tmp = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)];
                         if (tmp < distmin)
                         {
                             distmin = tmp;

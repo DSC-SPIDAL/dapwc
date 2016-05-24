@@ -589,6 +589,7 @@ public class Dist
             try {
                 forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) ->
                         {
+                            int pointIdx;
                             //	Start Code setting Malpha_k_ and partialsum_C_k_
                             int localNcent = Dist.RunningPWC.Ncent;
                             double[] Accum_C_k_ = new double[localNcent];
@@ -614,7 +615,10 @@ public class Dist
                                     double Minepsi = 0.0;
                                     for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
                                         // Note - changing to 1D arrays
-                                        double tmpepsi = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex];
+                                        pointIdx = ProcessPointIndex *
+                                                ClusteringSolution.MaximumNumberClusters +
+                                                ClusterIndex;
+                                        double tmpepsi = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)];
                                         if (ClusterIndex == 0) {
                                             Minepsi = tmpepsi;
                                         } else {
@@ -624,7 +628,10 @@ public class Dist
                                     double tmp = 0.0;
                                     for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
                                         // Note - changing to 1D arrays
-                                        double tmpepsi = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex];
+                                        pointIdx = ProcessPointIndex *
+                                                ClusteringSolution.MaximumNumberClusters +
+                                                ClusterIndex;
+                                        double tmpepsi = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)];
                                         Dist.RunningPWC.Malpha_k_[ProcessPointIndex][ClusterIndex] = Math.exp(
                                                 -(tmpepsi - Minepsi) / Dist.RunningPWC.Temperature);
                                         if (Program.ContinuousClustering) {
@@ -932,6 +939,7 @@ public class Dist
         try {
             forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
             {
+                int pointIdx;
                 double[] Local_EpsiDiff = new double[localNcent];
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
@@ -941,12 +949,16 @@ public class Dist
                     {
                         double tmp = localBalpha_k_[ProcessPointIndex][ClusterIndex] + localA_k_[ClusterIndex];
                         // Note. changing to 1D arrays
-                        localepsi[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex] = tmp;
+                        pointIdx = ProcessPointIndex *
+                                ClusteringSolution.MaximumNumberClusters +
+                                ClusterIndex;
+                        localepsi[(pointIdx)] = tmp;
                         if (Dist.oldepsiset > 0)
                         {
-                            Local_EpsiDiff[ClusterIndex] = Math.abs(Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] - tmp);
+                            Local_EpsiDiff[ClusterIndex] = Math.abs(Dist
+                                    .RunningPWC.Old_Epsilonalpha_k_[(pointIdx)] - tmp);
                         }
-                            Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = tmp;
+                        Dist.RunningPWC.Old_Epsilonalpha_k_[(pointIdx)] = tmp;
                     }
                     if (Dist.oldepsiset > 0)
                     {
@@ -1087,6 +1099,7 @@ public class Dist
         try {
             forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
             {
+                int pointIdx;
                 double[] NewMalpha_k_ = new double[Dist.RunningPWC.Ncent];
                 double[] partialsum_NewC_k_ = new double[Dist.RunningPWC.Ncent];
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -1107,8 +1120,12 @@ public class Dist
                             perturb = vectorclass.oldAx[ProcessPointIndex][ClusterIndex];
                         }
                         // Note - changing to 1D arrays
-                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex] += perturb * Program.JigglePerturbationFactor * Dist.RunningPWC.Temperature;
-                        NewMalpha_k_[ClusterIndex] = Math.exp(-Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex] / Dist.RunningPWC.Temperature);
+                        pointIdx = ProcessPointIndex *
+                                ClusteringSolution.MaximumNumberClusters +
+                                ClusterIndex;
+                        Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)] += perturb * Program.JigglePerturbationFactor * Dist.RunningPWC.Temperature;
+                        NewMalpha_k_[ClusterIndex] = Math.exp(-Dist
+                                .RunningPWC.Epsilonalpha_k_[(pointIdx)] / Dist.RunningPWC.Temperature);
                         tmp += NewMalpha_k_[ClusterIndex];
                     }
                     for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
@@ -1246,16 +1263,23 @@ public class Dist
                 try {
                     forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                     {
+                        int pointIdx1, pointIdx2;
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         // Note - changing to 1D arrays
                         double tmp;
                         for (int index = beginpoint; index < indexlen + beginpoint; index++)
                         {
-                            tmp = Dist.RunningPWC.Epsilonalpha_k_[index*
-                                    ClusteringSolution.MaximumNumberClusters+Dist.RunningPWC.ClustertoSplit];
-                            Dist.RunningPWC.Epsilonalpha_k_[index*ClusteringSolution.MaximumNumberClusters+Dist.RunningPWC.Ncent] = tmp;
-                            Dist.RunningPWC.Old_Epsilonalpha_k_[index][Dist.RunningPWC.Ncent] = tmp;
+                            pointIdx1 = index *
+                                    ClusteringSolution.MaximumNumberClusters +
+                                    Dist.RunningPWC.ClustertoSplit;
+                            pointIdx2 = index *
+                                    ClusteringSolution.MaximumNumberClusters +
+                                    Dist.RunningPWC.Ncent;
+
+                            tmp = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx1)];
+                            Dist.RunningPWC.Epsilonalpha_k_[(pointIdx2)] = tmp;
+                            Dist.RunningPWC.Old_Epsilonalpha_k_[(pointIdx2)] = tmp;
                         }
                     }
                    );
@@ -1298,6 +1322,7 @@ public class Dist
             try {
                 forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                 {
+                    int pointIdx;
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                     for (int index = beginpoint; index < indexlen + beginpoint; index++)
@@ -1307,10 +1332,13 @@ public class Dist
                         double tmp;
                         for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
                         {
-                            tmp = Dist.RunningPWC.Epsilonalpha_k_[index*ClusteringSolution.MaximumNumberClusters+ClusterIndex];
-                            Dist.RunningPWC.Master_Epsilonalpha_k_[index][ClusterIndex] = tmp;
-                            Dist.RunningPWC.Best_Epsilonalpha_k_[index][ClusterIndex] = tmp;
-                            Dist.RunningPWC.Old_Epsilonalpha_k_[index][ClusterIndex] = tmp;
+                            pointIdx = index *
+                                    ClusteringSolution.MaximumNumberClusters +
+                                    ClusterIndex;
+                            tmp = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)];
+                            Dist.RunningPWC.Master_Epsilonalpha_k_[(pointIdx)] = tmp;
+                            Dist.RunningPWC.Best_Epsilonalpha_k_[(pointIdx)] = tmp;
+                            Dist.RunningPWC.Old_Epsilonalpha_k_[(pointIdx)] = tmp;
                         }
                     }
                 }
@@ -1391,6 +1419,8 @@ public class Dist
                 try {
                     forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                     {
+						double tmp;
+                        int pointIdx;
                         int indexlen = PWCUtility.PointsperThread[threadIndex];
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
@@ -1398,19 +1428,24 @@ public class Dist
                             for (int ClusterIndex = 0; ClusterIndex < Dist.RunningPWC.Ncent; ClusterIndex++)
                             {
                                 // Note. changing to 1D arrays
+                                pointIdx = ProcessPointIndex *
+                                        ClusteringSolution.MaximumNumberClusters +
+                                        ClusterIndex;
                                 if (Dist.RunningPWC.ClustertoSplit == ClusterToRefineLoopVar)
                                 {
-                                    Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex];
+                                    Dist.RunningPWC.Best_Epsilonalpha_k_[(pointIdx)] = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)];
                                 }
                                 if (ClusterToRefineLoopVar < Dist.RunningPWC.Ncent - 1)
                                 {
-                                    Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex] = Dist.RunningPWC.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                                    Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                    tmp = Dist.RunningPWC.Master_Epsilonalpha_k_[(pointIdx)];
+                                    Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)] = tmp;
+                                    Dist.RunningPWC.Old_Epsilonalpha_k_[(pointIdx)] = tmp;
                                 }
                                 else
                                 {
-                                    Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+ClusterIndex] = Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                                    Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = Dist.RunningPWC.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
+                                    tmp = Dist.RunningPWC.Best_Epsilonalpha_k_[(pointIdx)];
+                                    Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)] = tmp;
+                                    Dist.RunningPWC.Old_Epsilonalpha_k_[(pointIdx)] = tmp;
                                 }
                             }
                         }
@@ -1437,11 +1472,19 @@ public class Dist
                         int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                         // Note. changing to 1D arrays
                         double tmp;
+                        int pointIdx1, pointIdx2;
                         for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
                         {
-                            tmp = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+Dist.RunningPWC.ClustertoSplit];
-                            Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+Dist.RunningPWC.Ncent] = tmp;
-                            Dist.RunningPWC.Old_Epsilonalpha_k_[ProcessPointIndex][Dist.RunningPWC.Ncent] = tmp;
+                            pointIdx1 = ProcessPointIndex *
+                                    ClusteringSolution.MaximumNumberClusters +
+                                    Dist.RunningPWC.ClustertoSplit;
+                            pointIdx2 = ProcessPointIndex *
+                                    ClusteringSolution.MaximumNumberClusters +
+                                    Dist.RunningPWC.Ncent;
+
+                            tmp = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx1)];
+                            Dist.RunningPWC.Epsilonalpha_k_[(pointIdx2)] = tmp;
+                            Dist.RunningPWC.Old_Epsilonalpha_k_[(pointIdx2)] = tmp;
                         }
                     }
                    );
@@ -1505,6 +1548,7 @@ public class Dist
             try {
                 forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
                 {
+                    int pointIdx;
                     int indexlen = PWCUtility.PointsperThread[threadIndex];
                     int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                     for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
@@ -1517,7 +1561,11 @@ public class Dist
                         }
                             double tmp1 = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor;
                         // Note - changing to 1D arrays
-                        double tmp2 = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+Dist.RunningPWC.ClustertoSplit];
+                        pointIdx = ProcessPointIndex *
+                                ClusteringSolution.MaximumNumberClusters +
+                                Dist.RunningPWC.ClustertoSplit;
+
+                        double tmp2 = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx)];
                             SumoverShifts.addapoint(threadIndex, tmp);
                             ShiftNorm.addapoint(threadIndex, tmp1 * tmp1);
                             EpsNorm.addapoint(threadIndex, tmp2 * tmp2);
@@ -1625,6 +1673,7 @@ public class Dist
         try {
             forallChunked(0, PWCUtility.ThreadCount-1, (threadIndex) ->
             {
+                int pointIdx1, pointIdx2;
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++)
@@ -1644,9 +1693,16 @@ public class Dist
                     {
                         double perturb = vectorclass.oldAx[ProcessPointIndex][Dist.RunningPWC.ClustertoSplit] * Program.SplitPerturbationFactor * PerturbationNormFactorLoopVar;
                         // Note - changing to 1D arrays
-                        double original = Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+Dist.RunningPWC.ClustertoSplit];
-                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+Dist.RunningPWC.ClustertoSplit] = original + perturb;
-                        Dist.RunningPWC.Epsilonalpha_k_[ProcessPointIndex*ClusteringSolution.MaximumNumberClusters+(Dist.RunningPWC.Ncent - 1)] = original - perturb;
+                        pointIdx1 = ProcessPointIndex *
+                                ClusteringSolution.MaximumNumberClusters +
+                                Dist.RunningPWC.ClustertoSplit;
+                        pointIdx2 = ProcessPointIndex *
+                                ClusteringSolution.MaximumNumberClusters +
+                                (Dist.RunningPWC.Ncent - 1);
+
+                        double original = Dist.RunningPWC.Epsilonalpha_k_[(pointIdx1)];
+                        Dist.RunningPWC.Epsilonalpha_k_[(pointIdx1)] = original + perturb;
+                        Dist.RunningPWC.Epsilonalpha_k_[(pointIdx2)] = original - perturb;
                     }
                 }
             }

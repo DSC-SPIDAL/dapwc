@@ -117,11 +117,11 @@ import static edu.rice.hj.Module1.forallChunked;
 
 public class ClusteringSolution
 {
-	public double[][] Old_Epsilonalpha_k_; // Previous value of Epsilon
-	// Note - changing to 1D arrays
+    // Note - changing to 1D arrays
+    public double[] Old_Epsilonalpha_k_; // Previous value of Epsilon
     public double[] Epsilonalpha_k_; // Epsilon
-	public double[][] Best_Epsilonalpha_k_; // best Epsilon in loop over Clusters Duplicated
-	public double[][] Master_Epsilonalpha_k_; // Master Epsilon in loop over Clusters Duplicated
+    public double[] Best_Epsilonalpha_k_; // best Epsilon in loop over Clusters Duplicated
+	public double[] Master_Epsilonalpha_k_; // Master Epsilon in loop over Clusters Duplicated
 	public double[][] Malpha_k_; // Probability that point in Cluster k
 	public double[][] Previous_Malpha_k_; // Previous value of Malpha_k_ used to test converge of p(k) Malpha(k) loop
 	public double[][] Balpha_k_; // B(alpha,k) = sum_N d(ClusterCenter, a) M_i(k) / C(k)
@@ -165,11 +165,14 @@ public class ClusteringSolution
             PWCUtility.printAndThrowRuntimeException("NumberofPointsinProcess Unset");
         }
         // Note - changing to 1D arrays
-        /*Epsilonalpha_k_ = new double[NumberofPointsinProcess][];*/
-        Epsilonalpha_k_ = new double[NumberofPointsinProcess*MaximumNumberClusters];
+        /*Epsilonalpha_k_ = new double[NumberofPointsinProcess][];
         Old_Epsilonalpha_k_ = new double[NumberofPointsinProcess][];
         Best_Epsilonalpha_k_ = new double[NumberofPointsinProcess][];
-        Master_Epsilonalpha_k_ = new double[NumberofPointsinProcess][];
+        Master_Epsilonalpha_k_ = new double[NumberofPointsinProcess][];*/
+        Epsilonalpha_k_ = new double[NumberofPointsinProcess*MaximumNumberClusters];
+        Old_Epsilonalpha_k_ = new double[NumberofPointsinProcess*MaximumNumberClusters];
+        Best_Epsilonalpha_k_ = new double[NumberofPointsinProcess*MaximumNumberClusters];
+        Master_Epsilonalpha_k_ = new double[NumberofPointsinProcess*MaximumNumberClusters];
         Malpha_k_ = new double[NumberofPointsinProcess][];
         Previous_Malpha_k_ = new double[NumberofPointsinProcess][];
         Balpha_k_ = new double[NumberofPointsinProcess][];
@@ -184,10 +187,10 @@ public class ClusteringSolution
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
                     // Note - changing to 1D arrays
-                    /*Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];*/
+                    /*Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
                     Old_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
                     Best_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
-                    Master_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
+                    Master_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];*/
                     Malpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
                     Previous_Malpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
                     Balpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
@@ -196,7 +199,7 @@ public class ClusteringSolution
                     for (int ClusterIndex = 0; ClusterIndex < Program.maxNcent; ClusterIndex++) {
                         // Note - changing to 1D arrays
                         /*Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = 0.0;*/
-                        Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = 0.0;
+                        /*Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] = 0.0;*/
                     }
                 }
             });
@@ -239,6 +242,9 @@ public class ClusteringSolution
         // Note - parallel for
         // Note - changing to 1D arrays
         System.arraycopy(From.Epsilonalpha_k_, 0, To.Epsilonalpha_k_, 0, PWCUtility.PointCount_Process);
+        System.arraycopy(From.Old_Epsilonalpha_k_, 0, To.Old_Epsilonalpha_k_, 0, PWCUtility.PointCount_Process);
+        System.arraycopy(From.Best_Epsilonalpha_k_, 0, To.Best_Epsilonalpha_k_, 0, PWCUtility.PointCount_Process);
+        System.arraycopy(From.Master_Epsilonalpha_k_, 0, To.Master_Epsilonalpha_k_, 0, PWCUtility.PointCount_Process);
         try {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
@@ -247,14 +253,14 @@ public class ClusteringSolution
                     for (int ClusterIndex = 0; ClusterIndex < NumberClusters; ClusterIndex++) {
                         // Note - changing to 1D arrays
                         /*To.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                                From.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];*/
+                                From.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
                         To.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
                                 From.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
                         To.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
                                 From.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
                         To.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
                                 From.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex];
-                        To.Malpha_k_[ProcessPointIndex][ClusterIndex] = From.Malpha_k_[ProcessPointIndex][ClusterIndex];
+                        To.Malpha_k_[ProcessPointIndex][ClusterIndex] = From.Malpha_k_[ProcessPointIndex][ClusterIndex];*/
                         To.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex] =
                                 From.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex];
                         To.Balpha_k_[ProcessPointIndex][ClusterIndex] = From.Balpha_k_[ProcessPointIndex][ClusterIndex];
@@ -291,18 +297,26 @@ public class ClusteringSolution
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                int pointIdx1, pointIdx2;
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
                     for (int ClusterIndex = 0; ClusterIndex < Changing.Ncent; ClusterIndex++) {
                         // Note - changing to 1D arrays
                         /*Changing.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
                                 Changing.Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] + 1;*/
-                        ++Changing.Epsilonalpha_k_[ProcessPointIndex*MaximumNumberClusters+ClusterIndex];
-                        Changing.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                                Changing.Old_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                        Changing.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                                Changing.Best_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
-                        Changing.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex] =
-                                Changing.Master_Epsilonalpha_k_[ProcessPointIndex][ClusterIndex + 1];
+
+                        pointIdx1 = ProcessPointIndex * MaximumNumberClusters +
+                                ClusterIndex;
+                        pointIdx2 = ProcessPointIndex * MaximumNumberClusters +
+                                (ClusterIndex + 1);
+                        ++Changing.Epsilonalpha_k_[(pointIdx1)];
+
+                        Changing.Old_Epsilonalpha_k_[(pointIdx1)] =
+                                Changing.Old_Epsilonalpha_k_[(pointIdx2)];
+                        Changing.Best_Epsilonalpha_k_[(pointIdx1)] =
+                                Changing.Best_Epsilonalpha_k_[(pointIdx2)];
+                        Changing.Master_Epsilonalpha_k_[(pointIdx1)] =
+                                Changing.Master_Epsilonalpha_k_[(pointIdx2)];
+
                         Changing.Malpha_k_[ProcessPointIndex][ClusterIndex] =
                                 Changing.Malpha_k_[ProcessPointIndex][ClusterIndex + 1];
                         Changing.Previous_Malpha_k_[ProcessPointIndex][ClusterIndex] =
