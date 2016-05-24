@@ -20,6 +20,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
@@ -406,6 +407,34 @@ public class ParallelOps {
         File lockFile = new File(mmapScratchDir, lockFname);
         FileChannel fc = new RandomAccessFile(lockFile, "rw").getChannel();
         return fc.map(FileChannel.MapMode.READ_WRITE, 0, 64);
+    }
+
+    public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
+        int offset = packet.getExtent() * mmapProcRank;
+        packet.copyTo(offset, mmapXWriteBytes);
+
+        worldProcsComm.barrier();
+        if(isMmapLead){
+            cgProcComm.allGather(mmapXReadByteBuffer, packet.getExtent(), MPI.BYTE);
+        }
+        worldProcsComm.barrier();
+
+        return new Iterator<MPISecPacket>() {
+            int idx = 0;
+            int extent = packet.getExtent();
+            @Override
+            public boolean hasNext() {
+                mmapXReadBytes.position(idx*extent);
+                return mmapXReadBytes.remaining() > extent;
+            }
+
+            @Override
+            public MPISecPacket next() {
+                packet.mapAt(idx*extent, extent, mmapXReadByteBuffer);
+                ++idx;
+                return packet;
+            }
+        };
     }
 
     /* to rank is my successor, from rank is my predecessor */

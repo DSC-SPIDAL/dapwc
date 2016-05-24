@@ -4,6 +4,7 @@ import edu.rice.hj.api.SuspendableException;
 import mpi.MPIException;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import static edu.rice.hj.Module1.forallChunked;
 
@@ -447,6 +448,21 @@ public class vectorclass
                         fromafarMandB = PWCUtility.mpiOps.sendReceive(toafarMandB, toprocess, sendtag, fromprocess, receivetag);
                         /*ParallelOps.sendRecvPipeLine(toafarMandB, toprocess, sendtag, fromafarMandB, fromprocess, receivetag);*/
                         MPISecPacket.memberCopy(fromafarMandB, MandBRepository[MPICommunicationSteps]);
+
+                        // TODO - Test code to see if allgather MPISecPacket works
+                        MPISecPacket packet = new MPISecPacket(toafarMandB.getExtent());
+                        if (MPICommunicationSteps == 1){
+                            Iterator<MPISecPacket> itr = ParallelOps.allGather(toafarMandB);
+                            if (ParallelOps.worldProcRank == 1) {
+                                // p should be the one from rank 0
+                                MPISecPacket p = itr.next();
+                                // now, packet is a clone of p (because p internally is just a mapping)
+                                MPISecPacket.memberCopy(p, packet);
+                                // packet should be equal to what I received from send/recv
+                                System.out.println("******" + fromafarMandB.equals(packet));
+
+                            }
+                        }
 					}
 					else
 					{
