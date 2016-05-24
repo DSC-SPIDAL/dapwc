@@ -450,7 +450,7 @@ public class vectorclass
                         MPISecPacket.memberCopy(fromafarMandB, MandBRepository[MPICommunicationSteps]);
 
                         // TODO - Test code to see if allgather MPISecPacket works
-                        MPISecPacket packet = new MPISecPacket(toafarMandB.getExtent());
+                        /*MPISecPacket packet = new MPISecPacket(toafarMandB.getExtent());
                         if (MPICommunicationSteps == 1){
                             Iterator<MPISecPacket> itr = ParallelOps.allGather(toafarMandB);
                             if (ParallelOps.worldProcRank == 1) {
@@ -465,7 +465,7 @@ public class vectorclass
                             if (ParallelOps.worldProcRank == 0){
                                 System.out.println("++++++ Rank " + ParallelOps.worldProcRank +  " toExtent " + toafarMandB.getExtent());
                             }
-                        }
+                        }*/
 					}
 					else
 					{
