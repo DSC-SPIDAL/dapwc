@@ -162,7 +162,7 @@ public class MPISecPacket implements Serializable
         return getBArrayLength();
     }
 
-    public int equals(MPISecPacket o){
+    /*public int equals(MPISecPacket o){
         int reason = 0;
         if (extent != o.extent) {
             reason = 1;
@@ -200,45 +200,21 @@ public class MPISecPacket implements Serializable
         }
 
         return reason;
-    }
-
-    /*public boolean equals(MPISecPacket o){
-        int reason = -1;
-        if (extent != o.extent) {
-            reason = 1;
-            return reason;
-        }
-        if (buffer.position(0).remaining() != o.buffer.position(0).remaining()) {
-            reason = 2;
-            return reason;
-        }
-        if (arrayLength != o.arrayLength) {
-            reason = 3;
-            return reason;
-        }
-        if (o.getFirstPoint() != getFirstPoint()) {
-            reason = 4;
-            return reason;
-        }
-        if (o.getNumberOfPoints() != getNumberOfPoints()) {
-            reason = 5;
-            return reason;
-        }
-            
-        for (int i = 0; i < arrayLength; ++i){
-            if (o.getMArrayDoubleAt(i) != getMArrayDoubleAt(i)) {
-                reason = 6;
-                return reason;
-            }
-        }
-
-        for (int i = 0; i < arrayLength; ++i){
-            if (o.getBArrayDoubleAt(i) != getBArrayDoubleAt(i)) {
-                reason = 7;
-                return reason;
-            }
-        }
-        
-        return true;
     }*/
+
+    public boolean equals(MPISecPacket o){
+        if (extent != o.extent) return  false;
+        if (buffer.position(0).remaining() != o.buffer.position(0).remaining()) return  false;
+        if (arrayLength != o.arrayLength) return  false;
+        if (o.getFirstPoint() != getFirstPoint()) return  false;
+        if (o.getNumberOfPoints() != getNumberOfPoints()) return  false;
+        for (int i = 0; i < arrayLength; ++i){
+            if (o.getMArrayDoubleAt(i) != getMArrayDoubleAt(i)) return  false;
+        }
+
+        for (int i = 0; i < arrayLength; ++i){
+            if (o.getBArrayDoubleAt(i) != getBArrayDoubleAt(i)) return  false;
+        }
+        return true;
+    }
 }
