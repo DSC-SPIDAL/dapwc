@@ -326,7 +326,9 @@ public class ParallelOps {
             int chunkSize = 2 * Integer.BYTES +
                     2 * Program.maxNcent * PWCUtility.PointCount_Largest *
                             Double.BYTES;
-            int mmapXReadByteExtent = chunkSize * (mmapProcsCount + 1);
+            /*int mmapXReadByteExtent = chunkSize * (mmapProcsCount + 1);*/
+            // TODO - debugs for MPISecPacket allGather
+            int mmapXReadByteExtent = chunkSize * (worldProcsCount);
 
             long mmapXReadByteOffset = 0L;
             long
