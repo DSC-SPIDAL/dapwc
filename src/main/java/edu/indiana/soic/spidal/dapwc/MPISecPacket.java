@@ -158,6 +158,10 @@ public class MPISecPacket implements Serializable
                 '}';
     }
 
+    public int getArrayLength(){
+        return getBArrayLength();
+    }
+
     public int equals(MPISecPacket o){
         int reason = 0;
         if (extent != o.extent) {

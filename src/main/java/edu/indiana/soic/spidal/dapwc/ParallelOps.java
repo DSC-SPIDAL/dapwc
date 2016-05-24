@@ -424,6 +424,7 @@ public class ParallelOps {
         return new Iterator<MPISecPacket>() {
             int idx = 0;
             int extent = packet.getExtent();
+            int length = packet.getArrayLength();
             @Override
             public boolean hasNext() {
                 mmapXReadBytes.position(idx*extent);
@@ -432,11 +433,11 @@ public class ParallelOps {
 
             @Override
             public MPISecPacket next() {
-                /*packet.mapAt(idx*extent, extent, mmapXReadByteBuffer);*/
-                MPISecPacket p = new MPISecPacket(packet.getBArrayLength());
-                p.copyFrom(idx*extent, mmapXReadBytes);
+                packet.mapAt(idx*extent, length, mmapXReadByteBuffer);
+                /*MPISecPacket p = new MPISecPacket(packet.getBArrayLength());
+                p.copyFrom(idx*extent, mmapXReadBytes);*/
                 ++idx;
-                return p;
+                return packet;
             }
         };
     }
