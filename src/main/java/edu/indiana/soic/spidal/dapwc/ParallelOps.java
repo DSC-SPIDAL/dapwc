@@ -415,7 +415,7 @@ public class ParallelOps {
 
         worldProcsComm.barrier();
         if(isMmapLead){
-            cgProcComm.allGather(mmapXReadByteBuffer, packet.getExtent(), MPI.BYTE);
+            cgProcComm.allGather(mmapXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
