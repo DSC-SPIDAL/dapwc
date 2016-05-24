@@ -86,11 +86,12 @@ public class ParallelOps {
     public static ByteBuffer mmapXInterSendByteBuffer;
     public static Bytes mmapXInterRecvBytes;
     public static ByteBuffer mmapXInterRecvByteBuffer;
-    public static Bytes mmapXWriteBytes;
+    /*public static Bytes mmapXReadBytes;*/
     public static Bytes sendLock;
     public static Bytes recvLock;
     public static Bytes fullXBytes;
     public static ByteBuffer fullXByteBuffer;
+    public static double[] fullXArray;
 
     private static int LOCK = 0;
     private static int FLAG = Long.BYTES;
@@ -329,11 +330,10 @@ public class ParallelOps {
             /*int mmapXReadByteExtent = chunkSize * (mmapProcsCount + 1);*/
             // TODO - debugs for MPISecPacket allGather
             int mmapXReadByteExtent = chunkSize * (worldProcsCount);
+            int fullXByteExtent = Program.maxNcent * PWCUtility.PointCount_Largest *
+                    Double.BYTES * worldProcsCount;
 
             long mmapXReadByteOffset = 0L;
-            long
-                    mmapXWriteByteOffset = 0L;
-            int fullXByteExtent = globalRowCount * targetDimension * Double.BYTES;
             long fullXByteOffset = 0L;
 
             mmapXReadBytes = ByteBufferBytes.wrap(mmapXFc.map(
@@ -341,10 +341,6 @@ public class ParallelOps {
                     mmapXReadByteExtent));
             mmapXReadByteBuffer = mmapXReadBytes.sliceAsByteBuffer(
                     mmapXReadByteBuffer);
-
-            mmapXReadBytes.position(0);
-            mmapXWriteBytes = mmapXReadBytes.slice(mmapXWriteByteOffset,
-                    mmapXReadByteExtent);
 
             /* Send recv buffers for mmap tail and mmap head */
             if (isMmapTail) {
@@ -355,7 +351,6 @@ public class ParallelOps {
                 mmapXInterRecvBytes = mmapXReadBytes.slice(mmapProcsCount * chunkSize, chunkSize);
                 mmapXInterRecvByteBuffer = mmapXInterRecvBytes.sliceAsByteBuffer(mmapXInterRecvByteBuffer);
             }
-
 
             /* Send receive locks */
             if (!isMmapTail){
@@ -368,6 +363,7 @@ public class ParallelOps {
                 recvLock = ByteBufferBytes.wrap(mbb);
             }
 
+            fullXArray = new double[fullXByteExtent/Double.BYTES];
             fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode
                             .READ_WRITE,
                     fullXByteOffset,
@@ -411,9 +407,21 @@ public class ParallelOps {
         return fc.map(FileChannel.MapMode.READ_WRITE, 0, 64);
     }
 
+    public static double[] allGather(double[] array) throws MPIException{
+        int offset = array.length*Double.BYTES*mmapProcRank;
+        copyToBuffer(array, fullXBytes, array.length, offset);
+        worldProcsComm.barrier();
+        if (isMmapLead){
+            cgProcComm.allGather(fullXByteBuffer, array.length*mmapProcsCount, MPI.DOUBLE);
+        }
+        worldProcsComm.barrier();
+        copyFromBuffer(fullXArray, fullXBytes, array.length*worldProcsCount, 0);
+        return fullXArray;
+    }
+
     public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapXWriteBytes);
+        packet.copyTo(offset, mmapXReadBytes);
 
         worldProcsComm.barrier();
         if(isMmapLead){
@@ -452,7 +460,7 @@ public class ParallelOps {
         if (!isMmapTail) {
             sendLock.busyLockLong(LOCK);
             int offset = extent * mmapProcRank;
-            send.copyTo(offset, mmapXWriteBytes);
+            send.copyTo(offset, mmapXReadBytes);
             sendLock.writeBoolean(FLAG, true);
             sendLock.unlockLong(LOCK);
         }
@@ -472,7 +480,7 @@ public class ParallelOps {
                 if (dataReady){
                     /* Assumes receives are from previous ranks, i.e. the nature of pipeline */
                     int offset = extent*(mmapProcRank - 1);
-                    recv.copyFrom(offset, mmapXWriteBytes);
+                    recv.copyFrom(offset, mmapXReadBytes);
                     recvLock.writeBoolean(FLAG, false);
                 }
                 recvLock.unlockLong(LOCK);
@@ -492,7 +500,7 @@ public class ParallelOps {
         if (!isMmapTail) {
             sendLock.busyLockLong(LOCK);
             int offset = extent * mmapProcRank;
-            send.copyTo(offset, mmapXWriteBytes);
+            send.copyTo(offset, mmapXReadBytes);
             sendLock.writeBoolean(FLAG, true);
             sendLock.unlockLong(LOCK);
         }
@@ -512,7 +520,7 @@ public class ParallelOps {
                 if (dataReady){
                     /* Assumes receives are from previous ranks, i.e. the nature of pipeline */
                     int offset = extent*(mmapProcRank - 1);
-                    recv.copyFrom(offset, mmapXWriteBytes);
+                    recv.copyFrom(offset, mmapXReadBytes);
                     recvLock.writeBoolean(FLAG, false);
                 }
                 recvLock.unlockLong(LOCK);
@@ -534,7 +542,7 @@ public class ParallelOps {
         long offset = extent * mmapProcRank;
         if (!isMmapTail) {
             sendLock.busyLockLong(LOCK);
-            copyToBuffer(send, mmapXWriteBytes, size, offset);
+            copyToBuffer(send, mmapXReadBytes, size, offset);
             sendLock.writeBoolean(FLAG, true);
             sendLock.unlockLong(LOCK);
         } else {
@@ -557,7 +565,7 @@ public class ParallelOps {
                 if (dataReady){
                     /* Assumes receives are from previous ranks, i.e. the nature of pipeline */
                     offset = extent*(mmapProcRank - 1);
-                    copyFromBuffer(recv, mmapXWriteBytes, size, offset);
+                    copyFromBuffer(recv, mmapXReadBytes, size, offset);
                     recvLock.writeBoolean(FLAG, false);
                 }
                 recvLock.unlockLong(LOCK);
@@ -576,8 +584,8 @@ public class ParallelOps {
         }
     }
 
-    private static void copyFromBuffer(double[] array, Bytes from, long size, long offset) {
-        for (int i = 0; i < size; ++i){
+    private static void copyFromBuffer(double[] array, Bytes from, long length, long offset) {
+        for (int i = 0; i < length; ++i){
             array[i] = from.readDouble(offset+(i*Double.BYTES));
         }
     }
