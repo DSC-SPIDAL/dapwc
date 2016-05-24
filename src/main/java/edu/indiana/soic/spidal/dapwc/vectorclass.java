@@ -459,7 +459,7 @@ public class vectorclass
                                 // now, packet is a clone of p (because p internally is just a mapping)
                                 MPISecPacket.memberCopy(p, packet);
                                 // packet should be equal to what I received from send/recv
-                                System.out.println("******" + fromafarMandB.equals(p));
+                                System.out.println("******" + fromafarMandB.equals(p) + " firstPoint" + p.getFirstPoint());
 
                             }
                         }
