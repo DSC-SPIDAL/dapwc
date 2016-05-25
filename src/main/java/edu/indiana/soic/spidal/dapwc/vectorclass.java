@@ -398,7 +398,7 @@ public class vectorclass
             /*****************************************************************/
             /* TODO - test code to make the following into a collective call */
 
-			/*double tmpDouble;
+			double tmpDouble;
             for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
                 int Acount = 0;
                 for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
@@ -406,11 +406,11 @@ public class vectorclass
 
                     tmpDouble = localMalpha_k_[ProcessPointIndex][ClusterIndex];
                     myownMandB.setMArrayDoubleAt(bigindex, tmpDouble);
-                    *//*toafarMandB.setMArrayDoubleAt(bigindex, tmp);*//*
+                    //toafarMandB.setMArrayDoubleAt(bigindex, tmp);
 
                     tmpDouble = localBalpha_k_[ProcessPointIndex][ClusterIndex];
                     myownMandB.setBArrayDoubleAt(bigindex, tmpDouble);
-                    *//*toafarMandB.setBArrayDoubleAt(bigindex, tmp);*//*
+                    //toafarMandB.setBArrayDoubleAt(bigindex, tmp);
 
                     if (UsethisCluster[ClusterIndex] == 0) {
                         continue;
@@ -418,11 +418,11 @@ public class vectorclass
                     int Aindex = ProcessPointIndex * NumberofAVectorsUsed + Acount;
 
                     tmpDouble = oldAx[ProcessPointIndex][ClusterIndex];
-                    *//*toafarAxarray[Aindex] = tmp;*//*
+                    //toafarAxarray[Aindex] = tmp;
 					myownAxarray[Aindex] = tmpDouble;
 					++Acount;
 				}
-            }*/
+            }
 
            /* toafarMandB.setFirstPoint(PWCUtility.PointStart_Process);
             toafarMandB.setNumberOfPoints(PWCUtility.PointCount_Process);
@@ -443,7 +443,7 @@ public class vectorclass
                 }
             }*/
 
-            /*if (!MandBset){
+            if (!MandBset){
                 Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
                 int count = 0;
                 while (count < ParallelOps.worldProcsCount && iterator.hasNext()){
@@ -454,7 +454,7 @@ public class vectorclass
             }
             double[] farAxarrays = ParallelOps.allGather(myownAxarray);
             // TODO - debugs
-            if (ParallelOps.worldProcRank == 53){
+           /* if (ParallelOps.worldProcRank == 53){
                 System.out.println("*** myownAxarray.length " + myownAxarray.length);
             }*/
 
@@ -466,7 +466,7 @@ public class vectorclass
             {
                 /*************************************************************/
                 /* TODO - test code to make the following into a collective call */
-                /*if (MPICommunicationSteps > 0)
+                if (MPICommunicationSteps > 0)
                 {
                     int idx = ParallelOps.worldProcRank - MPICommunicationSteps;
                     if (idx < 0){
@@ -475,11 +475,11 @@ public class vectorclass
 
                     fromafarMandB = MandBRepository[idx];
                     System.arraycopy(farAxarrays, idx*myownAxarray.length, fromafarAxarray, 0, myownAxarray.length);
-                }*/
+                }
 
                 /**************************END TEST CODE**********************/
 
-                if (MPICommunicationSteps == 1)
+                /*if (MPICommunicationSteps == 1)
                 {
                     toafarMandB.setFirstPoint(PWCUtility.PointStart_Process);
                     toafarMandB.setNumberOfPoints(PWCUtility.PointCount_Process);
@@ -539,14 +539,14 @@ public class vectorclass
                     fromafarAxarray = PWCUtility.mpiOps.sendReceive(toafarAxarray, toprocess, sendtag, fromprocess, receivetag);
                     //ParallelOps.sendRecvPipeLine(toafarAxarray, toprocess, sendtag, fromafarAxarray, fromprocess, receivetag);
                     PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
-                }
+                }*/
 
                 // Communication finished -- now update A vector
                 final int MPICommunicationStepsLoopVar = MPICommunicationSteps;
                 final int NumberofAVectorsUsedLoopVar = NumberofAVectorsUsed;
-                final double [] toafarAxarrayLoopVar = toafarAxarray;
+                /*final double [] toafarAxarrayLoopVar = toafarAxarray;*/
                 final double [] fromafarAxarrayLoopVar = fromafarAxarray;
-                final double [] myownAxarrayLoopVar = myownAxarray;
+                /*final double [] myownAxarrayLoopVar = myownAxarray;*/
                 final double MfudgeLoopVar = Mfudge;
                 MPISecPacket fromafarMandBLoopVar = fromafarMandB;
                 // Note - parallel for
@@ -568,10 +568,10 @@ public class vectorclass
                             {
                                 betatotal = PWCUtility.PointCount_Process;
                                 betastart = PWCUtility.PointStart_Process;
-                                int Acount = 0;
+                                /*int Acount = 0;*/
                                 for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                                 {
-                                    int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
+                                    /*int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
                                     myownMandB.setMArrayDoubleAt(bigindex, localMalpha_k_[ProcessPointIndex][ClusterIndex]);
                                     myownMandB.setBArrayDoubleAt(bigindex, localBalpha_k_[ProcessPointIndex][ClusterIndex]);
                                     toafarMandB.setMArrayDoubleAt(bigindex, localMalpha_k_[ProcessPointIndex][ClusterIndex]);
@@ -583,7 +583,7 @@ public class vectorclass
                                     int Aindex = ProcessPointIndex * NumberofAVectorsUsedLoopVar + Acount;
                                     ++Acount;
                                     toafarAxarrayLoopVar[Aindex] = oldAx[ProcessPointIndex][ClusterIndex];
-                                    myownAxarrayLoopVar[Aindex] = oldAx[ProcessPointIndex][ClusterIndex];
+                                    myownAxarrayLoopVar[Aindex] = oldAx[ProcessPointIndex][ClusterIndex];*/
                                     vectorclass.Ax[ProcessPointIndex][ClusterIndex] = 0.0;
                                 }
                             }
@@ -591,7 +591,7 @@ public class vectorclass
                             {
                                 betatotal = fromafarMandBLoopVar.getNumberOfPoints();
                                 betastart = fromafarMandBLoopVar.getFirstPoint();
-                                if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
+                               /* if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
                                 {
                                     int Acount = 0;
                                     for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
@@ -607,7 +607,7 @@ public class vectorclass
                                         ++Acount;
                                         toafarAxarrayLoopVar[Aindex] = fromafarAxarrayLoopVar[Aindex];
                                     }
-                                }
+                                }*/
                             }
                             for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                             {
