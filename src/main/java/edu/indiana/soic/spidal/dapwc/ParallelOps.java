@@ -441,9 +441,12 @@ public class ParallelOps {
 
             @Override
             public MPISecPacket next() {
-                packet.mapAt(idx*extent, length, mmapXReadByteBuffer);
+//                packet.mapAt(idx*extent, length, mmapXReadByteBuffer);
+                MPISecPacket p = new MPISecPacket(length);
+                p.copyFrom(idx*extent, mmapXReadBytes);
                 ++idx;
-                return packet;
+                return p;
+//                return packet;
             }
         };
     }
