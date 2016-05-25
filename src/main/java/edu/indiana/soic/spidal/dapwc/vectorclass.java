@@ -541,6 +541,11 @@ public class vectorclass
 					PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
 				}
 
+                // TODO - debugs
+                if (ParallelOps.worldProcRank == 53 && MPICommunicationSteps == 5){
+                    System.out.println("***********fromafarAxarray.length " + fromafarAxarray);
+                }
+
 				// Communication finished -- now update A vector
                 final int MPICommunicationStepsLoopVar = MPICommunicationSteps;
                 final int NumberofAVectorsUsedLoopVar = NumberofAVectorsUsed;
