@@ -445,14 +445,14 @@ public class vectorclass
 
             if (!MandBset){
                 if (myownMandB.getNumberOfPoints() > 46){
-                    System.out.println("++++++Error before allgather " + myownMandB.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
+//                    System.out.println("++++++Error before allgather " + myownMandB.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
                 }
                 Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
                 int count = 0;
                 while (count < ParallelOps.worldProcsCount && iterator.hasNext()){
                     MPISecPacket next = iterator.next();
                     if (next.getNumberOfPoints() > 46){
-                        System.out.println("*********Error in allgather at " + count + " numpoints" + next.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
+//                        System.out.println("*********Error in allgather at " + count + " numpoints" + next.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
                     }
                     MPISecPacket.memberCopy(next, MandBRepository[count]);
                     ++count;
@@ -665,13 +665,13 @@ public class vectorclass
                                             try {
                                                 // TODO - debugs
                                                 if (ParallelOps.worldProcRank == 53 && MPICommunicationStepsLoopVar == 5){
-                                                    System.out.println("***********betalocal " + betalocal + " betatotal " + betatotal + " NumberofAVectorsUsedLoopVar " +NumberofAVectorsUsedLoopVar + " ALambdacount " + ALambdacount + " ALambdaindex" + ALambdaindex );
+//                                                    System.out.println("***********betalocal " + betalocal + " betatotal " + betatotal + " NumberofAVectorsUsedLoopVar " +NumberofAVectorsUsedLoopVar + " ALambdacount " + ALambdacount + " ALambdaindex" + ALambdaindex );
                                                 }
                                                 AxbetaLambda =
                                                         fromafarAxarrayLoopVar[ALambdaindex];
                                             } catch (Exception e) {
-                                                System.out
-                                                        .println("Rank: " + ParallelOps.worldProcRank + " tid: " + threadIndex + " comstep: " + MPICommunicationStepsLoopVar + " lenght: " + fromafarAxarrayLoopVar.length + " idx: " + ALambdaindex);
+//                                                System.out
+//                                                        .println("Rank: " + ParallelOps.worldProcRank + " tid: " + threadIndex + " comstep: " + MPICommunicationStepsLoopVar + " lenght: " + fromafarAxarrayLoopVar.length + " idx: " + ALambdaindex);
                                             }
                                         }
                                         double FirstTerm = 0;
