@@ -81,6 +81,7 @@ public class ParallelOps {
     public static LongBuffer mpiOnlyBuffer;
 
     public static Bytes mmapXReadBytes;
+    public static Bytes mmapXWriteBytes;
     public static ByteBuffer mmapXReadByteBuffer;
     public static Bytes mmapXInterSendBytes;
     public static ByteBuffer mmapXInterSendByteBuffer;
@@ -341,6 +342,7 @@ public class ParallelOps {
                     mmapXReadByteExtent));
             mmapXReadByteBuffer = mmapXReadBytes.sliceAsByteBuffer(
                     mmapXReadByteBuffer);
+            mmapXWriteBytes = mmapXReadBytes.slice(mmapXReadByteOffset, mmapXReadByteExtent);
 
             /* Send recv buffers for mmap tail and mmap head */
             if (isMmapTail) {
@@ -421,27 +423,25 @@ public class ParallelOps {
 
     public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapXReadBytes);
+        packet.copyTo(offset, mmapXWriteBytes);
         worldProcsComm.barrier();
 
         // TODO - debugs test code
-//        if (worldProcRank < 24) {
         if (packet.getExtent() != 744) {
             System.out.println(
                     "@@@ Rank: " + worldProcRank + " packet.extent " +
                             packet.getExtent() + " offset " + offset);
         }
-            MPISecPacket p = new MPISecPacket(packet.getArrayLength());
-            for (int i = 0; i < 24; ++i) {
-                p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
-                if (p.getNumberOfPoints() > 46) {
-                    System.out.println(
-                            "$$$$$ Rank: " + worldProcRank +
-                                    " error - numpoints " +
-                                    p.getNumberOfPoints());
-                }
+        MPISecPacket p = new MPISecPacket(packet.getArrayLength());
+        for (int i = 0; i < 24; ++i) {
+            p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
+            if (p.getNumberOfPoints() > 46) {
+                System.out.println(
+                        "$$$$$ Rank: " + worldProcRank +
+                                " error - numpoints " +
+                                p.getNumberOfPoints());
             }
-//        }
+        }
 
         if(isMmapLead){
             cgProcComm.allGather(mmapXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
