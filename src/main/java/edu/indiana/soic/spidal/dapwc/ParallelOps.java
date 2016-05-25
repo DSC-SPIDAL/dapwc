@@ -442,12 +442,12 @@ public class ParallelOps {
             @Override
             public MPISecPacket next() {
                 // TODO - debugs - if everything else works, check if this mapping will work with ByteBuffer and not Bytes
-//                packet.mapAt(idx*extent, length, mmapXReadByteBuffer);
-                MPISecPacket p = new MPISecPacket(length);
-                p.copyFrom(idx*extent, mmapXReadBytes);
+                packet.mapAt(idx*extent, length, mmapXReadByteBuffer);
+//                MPISecPacket p = new MPISecPacket(length);
+//                p.copyFrom(idx*extent, mmapXReadBytes);
                 ++idx;
-                return p;
-//                return packet;
+//                return p;
+                return packet;
             }
         };
     }
