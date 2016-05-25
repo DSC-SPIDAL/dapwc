@@ -1,6 +1,7 @@
 package edu.indiana.soic.spidal.dapwc;
 
 import edu.rice.hj.api.SuspendableException;
+import edu.rice.hj.runtime.baseruntime.ParallelDataDrivenFuture;
 import mpi.MPIException;
 
 import java.util.Arrays;
@@ -393,6 +394,70 @@ public class vectorclass
 			{
 				toprocess = 0;
 			}
+
+            /*****************************************************************/
+            /* TODO - test code to make the following into a collective call */
+
+			double tmpDouble;
+            for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
+                int Acount = 0;
+                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++) {
+                    int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
+
+                    tmpDouble = localMalpha_k_[ProcessPointIndex][ClusterIndex];
+                    myownMandB.setMArrayDoubleAt(bigindex, tmpDouble);
+                    /*toafarMandB.setMArrayDoubleAt(bigindex, tmp);*/
+
+                    tmpDouble = localBalpha_k_[ProcessPointIndex][ClusterIndex];
+                    myownMandB.setBArrayDoubleAt(bigindex, tmpDouble);
+                    /*toafarMandB.setBArrayDoubleAt(bigindex, tmp);*/
+
+                    if (UsethisCluster[ClusterIndex] == 0) {
+                        continue;
+                    }
+                    int Aindex = ProcessPointIndex * NumberofAVectorsUsed + Acount;
+
+                    tmpDouble = oldAx[ProcessPointIndex][ClusterIndex];
+                    /*toafarAxarray[Aindex] = tmp;*/
+					myownAxarray[Aindex] = tmpDouble;
+					++Acount;
+				}
+            }
+
+           /* toafarMandB.setFirstPoint(PWCUtility.PointStart_Process);
+            toafarMandB.setNumberOfPoints(PWCUtility.PointCount_Process);
+            if (PWCUtility.PointCount_Process < PWCUtility.PointCount_Largest)
+            {
+                int Acount = 0;
+                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
+                {
+                    int bigindex = PWCUtility.PointCount_Process * localNcent + ClusterIndex;
+                    toafarMandB.setMArrayDoubleAt(bigindex, myownMandB.getMArrayDoubleAt(bigindex));
+                    toafarMandB.setBArrayDoubleAt(bigindex,myownMandB.getBArrayDoubleAt(bigindex));
+                    if (UsethisCluster[ClusterIndex] == 0)
+                    {
+                        continue;
+                    }
+                    toafarAxarray[PWCUtility.PointCount_Process * NumberofAVectorsUsed + Acount] = myownAxarray[PWCUtility.PointCount_Process * NumberofAVectorsUsed + Acount];
+                    ++Acount;
+                }
+            }*/
+
+            if (!MandBset){
+                Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
+                int count = 0;
+                while (iterator.hasNext()){
+                    MPISecPacket.memberCopy(iterator.next(), MandBRepository[count]);
+                    ++count;
+                }
+                if (ParallelOps.worldProcRank == 0 ){
+                    System.out.println("Gathered " + count  + " packets");
+                }
+            }
+            double[] allAxarrays = ParallelOps.allGather(myownAxarray);
+
+
+            /*****************************************************************/
 
 			//	First communicationloop is local; then we have MPI_Size transfers of data in  a ring through processes
 			for (int MPICommunicationSteps = 0; MPICommunicationSteps < PWCUtility.MPI_Size; MPICommunicationSteps++)
