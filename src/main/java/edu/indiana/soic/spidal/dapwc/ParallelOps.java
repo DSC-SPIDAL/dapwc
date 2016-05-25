@@ -337,6 +337,14 @@ public class ParallelOps {
             long mmapXReadByteOffset = 0L;
             long fullXByteOffset = 0L;
 
+
+            // TODO - debug code to see if setting the same size as mmapCollective buffers will make things right
+            mmapXReadByteExtent = Math.max(
+                    mmapProcsCount * mmapAllReduceChunkSizeInBytes,
+                    (Math.max(
+                            Program.maxNcent * Double.BYTES,
+                            globalColCount*Integer.BYTES)));
+
             mmapXReadBytes = ByteBufferBytes.wrap(mmapXFc.map(
                     FileChannel.MapMode.READ_WRITE, mmapXReadByteOffset,
                     mmapXReadByteExtent));
