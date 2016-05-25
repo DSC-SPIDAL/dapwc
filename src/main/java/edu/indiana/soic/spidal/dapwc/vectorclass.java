@@ -444,19 +444,22 @@ public class vectorclass
             }*/
 
             if (!MandBset){
+                if (myownMandB.getNumberOfPoints() > 45){
+                    System.out.println("++++++Error before allgather");
+                }
                 Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
                 int count = 0;
                 while (count < ParallelOps.worldProcsCount && iterator.hasNext()){
                     MPISecPacket next = iterator.next();
+                    if (next.getNumberOfPoints() > 45){
+                        System.out.println("*********Error in allgather");
+                    }
                     MPISecPacket.memberCopy(next, MandBRepository[count]);
                     ++count;
                 }
             }
             double[] farAxarrays = ParallelOps.allGather(myownAxarray);
-            // TODO - debugs
-           /* if (ParallelOps.worldProcRank == 53){
-                System.out.println("*** myownAxarray.length " + myownAxarray.length);
-            }*/
+
 
 
             /*************************END TEST CODE***************************/
