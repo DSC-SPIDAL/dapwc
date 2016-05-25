@@ -646,7 +646,16 @@ public class vectorclass
                                                     else
                                                     {
                                                         MbetaLambda = fromafarMandBLoopVar.getMArrayDoubleAt(betalocal * localNcent + CenterVectorLambda);
-                                                        AxbetaLambda = fromafarAxarrayLoopVar[ALambdaindex];
+
+                                                        // TODO - debugs
+                                                        AxbetaLambda = 0;
+                                                        try {
+                                                            AxbetaLambda =
+                                                                        fromafarAxarrayLoopVar[ALambdaindex];
+                                                        } catch (Exception e) {
+                                                            System.out
+                                                                    .println("Rank: " + ParallelOps.worldProcRank + " tid: " + threadIndex + " comstep: " + MPICommunicationStepsLoopVar + " lenght: " + fromafarAxarrayLoopVar.length + " idx: " + ALambdaindex);
+                                                        }
                                                     }
                                                     double FirstTerm = 0;
                                                     if (PointIndicesEqual && (CenterVectorMu == CenterVectorLambda))
