@@ -464,7 +464,6 @@ public class vectorclass
                 /* TODO - test code to make the following into a collective call */
                 if (MPICommunicationSteps > 0)
                 {
-                    PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVEEigenTiming);
                     fromafarMandB = MandBRepository[MPICommunicationSteps];
                     System.arraycopy(farAxarrays, MPICommunicationSteps*myownAxarray.length, fromafarAxarray, 0, myownAxarray.length);
                 }
