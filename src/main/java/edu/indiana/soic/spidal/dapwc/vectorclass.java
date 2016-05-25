@@ -453,6 +453,10 @@ public class vectorclass
                 }
             }
             double[] farAxarrays = ParallelOps.allGather(myownAxarray);
+            // TODO - debugs
+            if (ParallelOps.worldProcRank == 46){
+                System.out.println("*** myownAxarray.length " + myownAxarray.length);
+            }
 
 
             /*************************END TEST CODE***************************/
