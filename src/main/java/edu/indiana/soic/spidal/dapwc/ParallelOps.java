@@ -423,7 +423,10 @@ public class ParallelOps {
 
     public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapXWriteBytes);
+        // TODO - test code to see if writing some numbers will work
+        mmapXWriteBytes.writeDouble(offset, worldProcRank);
+        mmapXWriteBytes.writeDouble(offset+Double.BYTES, 744);
+        /*packet.copyTo(offset, mmapXWriteBytes);*/
         worldProcsComm.barrier();
 
         // TODO - debugs test code
@@ -432,16 +435,22 @@ public class ParallelOps {
                     "@@@ Rank: " + worldProcRank + " packet.extent " +
                             packet.getExtent() + " offset " + offset);
         }
-        MPISecPacket p = new MPISecPacket(packet.getArrayLength());
-        for (int i = 0; i < 24; ++i) {
-            p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
+        /*MPISecPacket p = new MPISecPacket(packet.getArrayLength());*/
+        if (worldProcRank == 30) {
+            for (int i = 0; i < mmapProcsCount; ++i) {
+                double r = mmapXReadBytes.readDouble(i*packet.getExtent());
+                double v = mmapXReadBytes.readDouble(i*packet.getExtent()+Double.BYTES);
+                System.out.println("**** r " + r + " v " + v);
+           /* p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
             if (p.getNumberOfPoints() > 46) {
                 System.out.println(
                         "$$$$$ Rank: " + worldProcRank +
                                 " error - numpoints " +
                                 p.getNumberOfPoints());
+            }*/
             }
         }
+
 
         if(isMmapLead){
             cgProcComm.allGather(mmapXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
