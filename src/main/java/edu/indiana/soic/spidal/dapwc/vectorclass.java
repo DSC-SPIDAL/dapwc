@@ -447,7 +447,15 @@ public class vectorclass
                 Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
                 int count = 0;
                 while (iterator.hasNext()){
-                    MPISecPacket.memberCopy(iterator.next(), MandBRepository[count]);
+                    MPISecPacket next = null;
+                    try {
+                        next = iterator.next();
+                        MPISecPacket.memberCopy(next, MandBRepository[count]);
+                    } catch (Exception e) {
+                        if (ParallelOps.worldProcRank == 0){
+                            System.out.println("#############count " + count + " next " + next.getFirstPoint());
+                        }
+                    }
                     ++count;
                 }
                 if (ParallelOps.worldProcRank == 0 ){
