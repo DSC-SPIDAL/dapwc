@@ -424,19 +424,29 @@ public class ParallelOps {
         packet.copyTo(offset, mmapXReadBytes);
 
         worldProcsComm.barrier();
+
+        // TODO - debugs test code
+        MPISecPacket p = new MPISecPacket(packet.getArrayLength());
+        for (int i = 0; i < mmapProcsCount; ++i){
+            p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
+            if (p.getNumberOfPoints() > 46){
+                System.out.println("$$$$$ Rank: " + worldProcRank + " error at " + i + " numpoints " + p.getNumberOfPoints());
+            }
+        }
+
         if(isMmapLead){
             cgProcComm.allGather(mmapXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
-        // TODO - debugs test code
+        /*// TODO - debugs test code
         MPISecPacket p = new MPISecPacket(packet.getArrayLength());
         for (int i = 0; i < worldProcsCount; ++i){
             p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
             if (p.getNumberOfPoints() > 46){
                 System.out.println("$$$$$ Rank: " + worldProcRank + " error at " + i + " numpoints " + p.getNumberOfPoints());
             }
-        }
+        }*/
 
         return new Iterator<MPISecPacket>() {
             int idx = 0;
