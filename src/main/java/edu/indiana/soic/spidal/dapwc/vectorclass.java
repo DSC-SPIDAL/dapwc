@@ -543,7 +543,7 @@ public class vectorclass
 
                 // TODO - debugs
                 if (ParallelOps.worldProcRank == 53 && MPICommunicationSteps == 5){
-                    System.out.println("***********fromafarAxarray.length " + fromafarAxarray);
+                    System.out.println("***********fromafarAxarray.length " + fromafarAxarray.length);
                 }
 
 				// Communication finished -- now update A vector
