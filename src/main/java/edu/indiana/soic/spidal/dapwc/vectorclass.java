@@ -446,7 +446,7 @@ public class vectorclass
             if (!MandBset){
                 Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
                 int count = 0;
-                while (iterator.hasNext()){
+                while (count < ParallelOps.worldProcsCount && iterator.hasNext()){
                     MPISecPacket next = null;
                     try {
                         next = iterator.next();
