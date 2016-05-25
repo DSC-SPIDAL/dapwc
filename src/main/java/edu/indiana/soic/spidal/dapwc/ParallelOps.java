@@ -340,7 +340,7 @@ public class ParallelOps {
 
             // TODO - debug code to see if setting the same size as mmapCollective buffers will make things right
             mmapXReadByteExtent = Math.max(
-                    mmapProcsCount * mmapAllReduceChunkSizeInBytes,
+                    mmapProcsCount * Math.max(Program.maxNcent, 1000)*Double.BYTES,
                     (Math.max(
                             Program.maxNcent * Double.BYTES,
                             globalColCount*Integer.BYTES)));
