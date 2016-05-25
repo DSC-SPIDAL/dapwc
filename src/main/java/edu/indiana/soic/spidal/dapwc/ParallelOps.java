@@ -337,14 +337,6 @@ public class ParallelOps {
             long mmapXReadByteOffset = 0L;
             long fullXByteOffset = 0L;
 
-
-            // TODO - debug code to see if setting the same size as mmapCollective buffers will make things right
-            mmapXReadByteExtent = Math.max(
-                    mmapProcsCount * Math.max(Program.maxNcent, 1000)*Double.BYTES,
-                    (Math.max(
-                            Program.maxNcent * Double.BYTES,
-                            globalColCount*Integer.BYTES)));
-
             mmapXReadBytes = ByteBufferBytes.wrap(mmapXFc.map(
                     FileChannel.MapMode.READ_WRITE, mmapXReadByteOffset,
                     mmapXReadByteExtent));
@@ -396,8 +388,8 @@ public class ParallelOps {
                     (Math.max(
                             Program.maxNcent * Double.BYTES,
                             globalColCount*Integer.BYTES)));
-            long mmapCollectiveReadByteOffset = 0L;
 
+            long mmapCollectiveReadByteOffset = 0L;
             mmapCollectiveWriteByteOffset = 0L;
 
             mmapCollectiveReadBytes = ByteBufferBytes.wrap(mmapCollectiveFc.map(
@@ -433,8 +425,8 @@ public class ParallelOps {
     public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         // TODO - test code to see if writing some numbers will work
-        mmapXWriteBytes.writeDouble(offset, worldProcRank);
-        mmapXWriteBytes.writeDouble(offset+Double.BYTES, 744);
+        mmapCollectiveWriteBytes.writeDouble(offset, worldProcRank);
+        mmapCollectiveWriteBytes.writeDouble(offset+Double.BYTES, 744);
         /*packet.copyTo(offset, mmapXWriteBytes);*/
         worldProcsComm.barrier();
 
@@ -447,8 +439,8 @@ public class ParallelOps {
         /*MPISecPacket p = new MPISecPacket(packet.getArrayLength());*/
         if (worldProcRank == 30) {
             for (int i = 0; i < mmapProcsCount; ++i) {
-                double r = mmapXReadBytes.readDouble(i*packet.getExtent());
-                double v = mmapXReadBytes.readDouble(i*packet.getExtent()+Double.BYTES);
+                double r = mmapCollectiveWriteBytes.readDouble(i*packet.getExtent());
+                double v = mmapCollectiveWriteBytes.readDouble(i*packet.getExtent()+Double.BYTES);
                 System.out.println("**** r " + r + " v " + v);
            /* p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
             if (p.getNumberOfPoints() > 46) {
