@@ -444,14 +444,14 @@ public class vectorclass
             }*/
 
             if (!MandBset){
-                if (myownMandB.getNumberOfPoints() > 45){
+                if (myownMandB.getNumberOfPoints() > 46){
                     System.out.println("++++++Error before allgather " + myownMandB.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
                 }
                 Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
                 int count = 0;
                 while (count < ParallelOps.worldProcsCount && iterator.hasNext()){
                     MPISecPacket next = iterator.next();
-                    if (next.getNumberOfPoints() > 45){
+                    if (next.getNumberOfPoints() > 46){
                         System.out.println("*********Error in allgather at " + count + " numpoints" + next.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
                     }
                     MPISecPacket.memberCopy(next, MandBRepository[count]);
