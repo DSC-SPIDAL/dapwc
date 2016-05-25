@@ -452,7 +452,7 @@ public class vectorclass
                 while (count < ParallelOps.worldProcsCount && iterator.hasNext()){
                     MPISecPacket next = iterator.next();
                     if (next.getNumberOfPoints() > 45){
-                        System.out.println("*********Error in allgather at " + count + " numpoints" next.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
+                        System.out.println("*********Error in allgather at " + count + " numpoints" + next.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
                     }
                     MPISecPacket.memberCopy(next, MandBRepository[count]);
                     ++count;
