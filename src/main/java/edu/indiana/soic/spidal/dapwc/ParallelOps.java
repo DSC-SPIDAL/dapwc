@@ -371,12 +371,6 @@ public class ParallelOps {
         worldProcsComm.barrier();
     }
 
-    private static MappedByteBuffer createMMapLockBuffer(String lockFname) throws IOException {
-        File lockFile = new File(mmapScratchDir, lockFname);
-        FileChannel fc = new RandomAccessFile(lockFile, "rw").getChannel();
-        return fc.map(FileChannel.MapMode.READ_WRITE, 0, 64);
-    }
-
     public static double[] allGather(double[] array) throws MPIException{
         int offset = array.length*Double.BYTES*mmapProcRank;
         copyToBuffer(array, fullXBytes, array.length, offset);
@@ -412,12 +406,12 @@ public class ParallelOps {
             @Override
             public MPISecPacket next() {
                 // TODO - debugs - if everything else works, check if this mapping will work with ByteBuffer and not Bytes
-//                packet.mapAt(idx*extent, length, mmapCollectiveXReadByteBuffer);
-                MPISecPacket p = new MPISecPacket(length);
-                p.copyFrom(idx*extent, mmapCollectiveXReadBytes);
+                packet.mapAt(idx*extent, length, mmapCollectiveXReadByteBuffer);
+//                MPISecPacket p = new MPISecPacket(length);
+//                p.copyFrom(idx*extent, mmapCollectiveXReadBytes);
                 ++idx;
-                return p;
-//                return packet;
+//                return p;
+                return packet;
             }
         };
     }
