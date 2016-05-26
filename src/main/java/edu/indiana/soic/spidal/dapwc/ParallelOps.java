@@ -400,6 +400,21 @@ public class ParallelOps {
         }
     }
 
+    public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
+        int offset = packet.getExtent() * mmapProcRank;
+        packet.copyTo(offset, mmapCollectiveXReadBytes);
+        worldProcsComm.barrier();
+
+        if(isMmapLead){
+            cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+        }
+        worldProcsComm.barrier();
+
+        for (int i = 0; i < worldProcsCount; ++i){
+            packets[i].copyFrom(i*packet.getExtent(), mmapCollectiveXReadBytes);
+        }
+    }
+
     private static void copyToBuffer(double[] array, Bytes to, long size, long offset) {
         for (int i = 0; i < size; ++i){
             to.writeDouble(offset+(i*Double.BYTES), array[i]);

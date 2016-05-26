@@ -423,7 +423,8 @@ public class vectorclass
             }
             double[] farAxarrays = ParallelOps.allGather(myownAxarray);
 
-            //	First communicationloop is local; then we have MPI_Size transfers of data in  a ring through processes
+            // The ring communication is now done with an efficient collective call.
+            // The processing of collected elements follow the same loop.
             for (int MPICommunicationSteps = 0; MPICommunicationSteps < PWCUtility.MPI_Size; MPICommunicationSteps++)
             {
                 if (MPICommunicationSteps > 0)
