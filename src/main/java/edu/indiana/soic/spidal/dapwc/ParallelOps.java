@@ -80,13 +80,16 @@ public class ParallelOps {
     public static LongBuffer threadsAndMPIBuffer;
     public static LongBuffer mpiOnlyBuffer;
 
+    public static String fullXFname;
     public static Bytes fullXBytes;
     public static ByteBuffer fullXByteBuffer;
     public static double[] fullXArray;
 
+    public static String mmapCollectiveXFileName;
     public static Bytes mmapCollectiveXReadBytes;
     public static ByteBuffer mmapCollectiveXReadByteBuffer;
 
+    public static String mmapCollectiveFileName;
     public static Bytes mmapCollectiveReadBytes;
     public static ByteBuffer mmapCollectiveReadByteBuffer;
     public static Bytes mmapCollectiveWriteBytes;
@@ -235,6 +238,7 @@ public class ParallelOps {
     public static void tearDownParallelism() throws MPIException {
         // End MPI
         MPI.Finalize();
+
     }
 
     public static void setParallelDecomposition(int globalRowCount, int targetDimension)
@@ -289,7 +293,7 @@ public class ParallelOps {
 
         boolean status = new File(mmapScratchDir).mkdirs();
 
-        final String mmapCollectiveXFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollectiveX.bin";
+        mmapCollectiveXFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollectiveX.bin";
         try (FileChannel mmapCollectiveXFc = FileChannel
                 .open(Paths.get(mmapScratchDir, mmapCollectiveXFileName),
                         StandardOpenOption.CREATE, StandardOpenOption.READ,
@@ -307,10 +311,15 @@ public class ParallelOps {
                     mmapCollectiveXReadByteExtent));
             mmapCollectiveXReadByteBuffer = mmapCollectiveXReadBytes.sliceAsByteBuffer(
                     mmapCollectiveReadByteBuffer);
+
+            if (isMmapLead){
+                for (int i = 0; i < mmapCollectiveXReadByteExtent; ++i)
+                mmapCollectiveReadBytes.writeByte(0);
+            }
         }
 
 
-        final String fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
+        fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
         try (FileChannel fullXFc = FileChannel.open(Paths.get(mmapScratchDir,fullXFname),
                      StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
 
@@ -318,10 +327,15 @@ public class ParallelOps {
             fullXArray = new double[fullXByteExtent / Double.BYTES];
             fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode.READ_WRITE, 0L, fullXByteExtent));
             fullXByteBuffer = fullXBytes.sliceAsByteBuffer(fullXByteBuffer);
+
+            if (isMmapLead){
+                for (int i = 0; i < fullXByteExtent; ++i)
+                    fullXBytes.writeByte(0);
+            }
         }
 
         /* Allocate memory maps for collective communications like AllReduce and Broadcast */
-        final String mmapCollectiveFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollective.bin";
+        mmapCollectiveFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollective.bin";
         try (FileChannel mmapCollectiveFc = FileChannel
                 .open(Paths.get(mmapScratchDir, mmapCollectiveFileName),
                         StandardOpenOption.CREATE, StandardOpenOption.READ,
@@ -346,7 +360,15 @@ public class ParallelOps {
             mmapCollectiveReadBytes.position(0);
             mmapCollectiveWriteBytes = mmapCollectiveReadBytes.slice(0L,
                     mmapCollectiveReadByteExtent);
+
+            if (isMmapLead){
+                for (int i = 0; i < mmapCollectiveReadByteExtent; ++i)
+                    mmapCollectiveReadBytes.writeByte(0);
+            }
         }
+
+        // functional barrier
+        worldProcsComm.barrier();
     }
 
     private static MappedByteBuffer createMMapLockBuffer(String lockFname) throws IOException {
