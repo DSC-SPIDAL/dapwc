@@ -664,8 +664,8 @@ public class vectorclass
                                             AxbetaLambda = 0;
                                             try {
                                                 // TODO - debugs
-                                                if (ParallelOps.worldProcRank == 53 && MPICommunicationStepsLoopVar == 5){
-//                                                    System.out.println("***********betalocal " + betalocal + " betatotal " + betatotal + " NumberofAVectorsUsedLoopVar " +NumberofAVectorsUsedLoopVar + " ALambdacount " + ALambdacount + " ALambdaindex" + ALambdaindex );
+                                                if (ParallelOps.worldProcRank == 16  && threadIndex == 11 && MPICommunicationStepsLoopVar == 14){
+                                                    System.out.println("***********betalocal " + betalocal + " betatotal " + betatotal + " NumberofAVectorsUsedLoopVar " +NumberofAVectorsUsedLoopVar + " ALambdacount " + ALambdacount + " ALambdaindex" + ALambdaindex );
                                                 }
                                                 AxbetaLambda =
                                                         fromafarAxarrayLoopVar[ALambdaindex];
