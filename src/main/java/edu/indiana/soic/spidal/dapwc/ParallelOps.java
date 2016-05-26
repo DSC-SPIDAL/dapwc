@@ -89,14 +89,14 @@ public class ParallelOps {
     public static Bytes mmapCollectiveXReadBytes;
     public static ByteBuffer mmapCollectiveXReadByteBuffer;
 
-    public static String mmapCollectiveYFileName;
-    public static Bytes mmapCollectiveYReadBytes;
-    public static ByteBuffer mmapCollectiveYReadByteBuffer;
-
     public static String mmapCollectiveFileName;
     public static Bytes mmapCollectiveReadBytes;
     public static ByteBuffer mmapCollectiveReadByteBuffer;
     public static Bytes mmapCollectiveWriteBytes;
+
+    public static String ZmmapCollectiveFileName;
+    public static Bytes ZmmapCollectiveReadBytes;
+    public static ByteBuffer ZmmapCollectiveReadByteBuffer;
 
     public static MPISecPacket tmpMPISecPacket;
 
@@ -324,41 +324,6 @@ public class ParallelOps {
             }
         }
 
-        mmapCollectiveYFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapcy.bin";
-        try (FileChannel mmapCollectiveYFc = FileChannel
-                .open(Paths.get(mmapScratchDir, mmapCollectiveYFileName),
-                        StandardOpenOption.CREATE, StandardOpenOption.READ,
-                        StandardOpenOption.WRITE)) {
-
-            // See SharedMemoryCommunicatioNotes for more info on the number 1000
-           /* int chunkSize = 2 * Integer.BYTES +
-                    Program.maxNcent * PWCUtility.PointCount_Largest *
-                            Double.BYTES;
-            int mmapCollectiveYReadByteExtent = chunkSize * (worldProcsCount);*/
-
-            // TODO - debugs. with mmapCollectReadBytes things work, so why it doesn't work here. Let's see if using the same size works
-            int mmapAllReduceChunkSizeInBytes = Math.max(Program.maxNcent, 1000)*Double.BYTES;
-            int mmapCollectiveYReadByteExtent = Math.max(
-                    mmapProcsCount * mmapAllReduceChunkSizeInBytes,
-                    (Math.max(
-                            Program.maxNcent * Double.BYTES,
-                            globalColCount*Integer.BYTES)));
-
-            long mmapCollectiveYReadByteOffset = 0L;
-
-            mmapCollectiveYReadBytes = ByteBufferBytes.wrap(mmapCollectiveYFc.map(
-                    FileChannel.MapMode.READ_WRITE, mmapCollectiveYReadByteOffset,
-                    mmapCollectiveYReadByteExtent));
-            mmapCollectiveYReadByteBuffer = mmapCollectiveYReadBytes.sliceAsByteBuffer(
-                    mmapCollectiveYReadByteBuffer);
-
-            if (isMmapLead){
-                for (int i = 0; i < mmapCollectiveYReadByteExtent; ++i)
-                    mmapCollectiveYReadBytes.writeByte(0);
-            }
-        }
-
-
         fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
         try (FileChannel fullXFc = FileChannel.open(Paths.get(mmapScratchDir,fullXFname),
                      StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
@@ -404,6 +369,38 @@ public class ParallelOps {
             if (isMmapLead){
                 for (int i = 0; i < mmapCollectiveReadByteExtent; ++i)
                     mmapCollectiveReadBytes.writeByte(0);
+            }
+        }
+
+
+        /* Allocate memory maps for collective communications like AllReduce and Broadcast */
+        ZmmapCollectiveFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".ZmmapCollective.bin";
+        try (FileChannel ZmmapCollectiveFc = FileChannel
+                .open(Paths.get(mmapScratchDir, ZmmapCollectiveFileName),
+                        StandardOpenOption.CREATE, StandardOpenOption.READ,
+                        StandardOpenOption.WRITE)) {
+
+            // See SharedMemoryCommunicatioNotes for more info on the number 1000
+            int mmapAllReduceChunkSizeInBytes = Math.max(Program.maxNcent, 1000)*Double.BYTES;
+            int mmapCollectiveReadByteExtent = Math.max(
+                    mmapProcsCount * mmapAllReduceChunkSizeInBytes,
+                    (Math.max(
+                            Program.maxNcent * Double.BYTES,
+                            globalColCount*Integer.BYTES)));
+
+            long mmapCollectiveReadByteOffset = 0L;
+
+            ZmmapCollectiveReadBytes = ByteBufferBytes.wrap(ZmmapCollectiveFc.map(
+                    FileChannel.MapMode.READ_WRITE, mmapCollectiveReadByteOffset,
+                    mmapCollectiveReadByteExtent));
+            ZmmapCollectiveReadByteBuffer = ZmmapCollectiveReadBytes.sliceAsByteBuffer(
+                    ZmmapCollectiveReadByteBuffer);
+
+            ZmmapCollectiveReadBytes.position(0);
+
+            if (isMmapLead){
+                for (int i = 0; i < mmapCollectiveReadByteExtent; ++i)
+                    ZmmapCollectiveReadBytes.writeByte(0);
             }
         }
 
@@ -464,18 +461,18 @@ public class ParallelOps {
         }
 */
 
-        if(isMmapLead){
-            cgProcComm.allGather(mmapCollectiveYReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+        /*if(isMmapLead){
+            cgProcComm.allGather(ZmmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
-        worldProcsComm.barrier();
+        worldProcsComm.barrier();*/
 
-        for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveYReadBytes);
+        /*for (int i = 0; i < worldProcsCount; ++i){
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
             // TODO - debugs
-            /*if (worldProcRank == 176){
+            *//*if (worldProcRank == 176){
                 System.out.println("**** number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
-            }*/
-        }
+            }*//*
+        }*/
         worldProcsComm.barrier();
     }
 
