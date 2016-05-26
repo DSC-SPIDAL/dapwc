@@ -441,19 +441,19 @@ public class ParallelOps {
         worldProcsComm.barrier();
 
         // TODO - debugs
-        if (worldProcRank == 176) {
+        /*if (worldProcRank == 176) {
             for (int i = 0; i < mmapProcsCount; ++i) {
 
-/*                packets[i].copyFrom(i *
-                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*/
+*//*                packets[i].copyFrom(i *
+                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*//*
 
                 System.out.println("++++ mmapProcsCount " + mmapProcsCount + " r " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent())
                         + " v " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
             }
-        }
+        }*/
         worldProcsComm.barrier();
 
-       /* if(isMmapLead){
+        if(isMmapLead){
             cgProcComm.allGather(ZmmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
@@ -461,18 +461,15 @@ public class ParallelOps {
         // TODO - debugs
         if (worldProcRank == 176) {
             for (int i = 0; i < worldProcsCount; ++i) {
-                packets[i].copyFrom(i *
-                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
 
+/*                packets[i].copyFrom(i *
+                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*/
 
-                System.out.println("++++ number of points for " + i + " " +
-                        packets[i].getNumberOfPoints() + " frombuff " +
-                        ZmmapCollectiveReadBytes.readInt(
-                                i * packet.getExtent() + Integer.BYTES) +
-                        " i was sending " + packet.getNumberOfPoints());
+                System.out.println("++++  r " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent())
+                        + " v " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
             }
         }
-        worldProcsComm.barrier();*/
+        worldProcsComm.barrier();
 
 
         /*for (int i = 0; i < worldProcsCount; ++i){
