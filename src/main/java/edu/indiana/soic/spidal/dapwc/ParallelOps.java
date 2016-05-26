@@ -94,6 +94,8 @@ public class ParallelOps {
     public static ByteBuffer mmapCollectiveReadByteBuffer;
     public static Bytes mmapCollectiveWriteBytes;
 
+    public static MPISecPacket tmpMPISecPacket;
+
     public static void setupParallelism(String[] args) throws MPIException {
         MPI.Init(args);
         machineName = MPI.getProcessorName();
@@ -406,12 +408,12 @@ public class ParallelOps {
             @Override
             public MPISecPacket next() {
                 // TODO - debugs - if everything else works, check if this mapping will work with ByteBuffer and not Bytes
-                packet.mapAt(idx*extent, length, mmapCollectiveXReadByteBuffer);
-//                MPISecPacket p = new MPISecPacket(length);
-//                p.copyFrom(idx*extent, mmapCollectiveXReadBytes);
+//                packet.mapAt(idx*extent, length, mmapCollectiveXReadByteBuffer);
+                MPISecPacket p = new MPISecPacket(length);
+                p.copyFrom(idx*extent, mmapCollectiveXReadByteBuffer);
                 ++idx;
-//                return p;
-                return packet;
+                return p;
+//                return packet;
             }
         };
     }
