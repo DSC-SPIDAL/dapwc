@@ -326,8 +326,10 @@ public class ParallelOps {
                     FileChannel.MapMode.READ_WRITE, 0L,
                     mmapCollPackWriteByteExtent));
             mmapCollPackWriteByteBuffer = mmapCollPackWriteBytes.sliceAsByteBuffer(
-
                     mmapCollPackWriteByteBuffer);
+
+            int fullXArrayLength = Program.maxNcent * PWCUtility.PointCount_Largest * worldProcsCount;
+            fullXArray = new double[fullXArrayLength];
         }
 
         /* Allocate memory maps for collective communications like AllReduce and Broadcast */
