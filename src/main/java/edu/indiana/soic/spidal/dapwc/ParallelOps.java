@@ -97,6 +97,9 @@ public class ParallelOps {
     private static int LOCK = 0;
     private static int FLAG = Long.BYTES;
 
+    public static Bytes mmapCollectiveXReadBytes;
+    public static ByteBuffer mmapCollectiveXReadByteBuffer;
+
     public static Bytes mmapCollectiveReadBytes;
     public static ByteBuffer mmapCollectiveReadByteBuffer;
     public static Bytes mmapCollectiveWriteBytes;
@@ -301,6 +304,27 @@ public class ParallelOps {
 
         boolean status = new File(mmapScratchDir).mkdirs();
 
+        final String mmapCollectiveXFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollectiveX.bin";
+        try (FileChannel mmapCollectiveXFc = FileChannel
+                .open(Paths.get(mmapScratchDir, mmapCollectiveXFileName),
+                        StandardOpenOption.CREATE, StandardOpenOption.READ,
+                        StandardOpenOption.WRITE)) {
+
+            int chunkSize = 2 * Integer.BYTES +
+                    2 * Program.maxNcent * PWCUtility.PointCount_Largest *
+                            Double.BYTES;
+            int mmapCollectiveXReadByteExtent = chunkSize * (worldProcsCount);
+
+            long mmapCollectiveXReadByteOffset = 0L;
+
+            mmapCollectiveXReadBytes = ByteBufferBytes.wrap(mmapCollectiveXFc.map(
+                    FileChannel.MapMode.READ_WRITE, mmapCollectiveXReadByteOffset,
+                    mmapCollectiveXReadByteExtent));
+            mmapCollectiveXReadByteBuffer = mmapCollectiveXReadBytes.sliceAsByteBuffer(
+                    mmapCollectiveReadByteBuffer);
+        }
+
+
         final String mmapXFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapX.bin";
         /* Note, my send lock file name should match my successors recv lock file name */
         final String sendLockFname = machineName + ".mmapId." + mmapIdLocalToNode + ".lock." + worldProcRank + ".bin";
@@ -425,8 +449,8 @@ public class ParallelOps {
     public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         // TODO - test code to see if writing some numbers will work
-        mmapCollectiveReadBytes.writeDouble(offset, worldProcRank);
-        mmapCollectiveReadBytes.writeDouble(offset+Double.BYTES, 744);
+        mmapCollectiveXReadBytes.writeDouble(offset, worldProcRank);
+        mmapCollectiveXReadBytes.writeDouble(offset+Double.BYTES, 744);
         /*packet.copyTo(offset, mmapXWriteBytes);*/
         worldProcsComm.barrier();
 
@@ -439,8 +463,8 @@ public class ParallelOps {
         /*MPISecPacket p = new MPISecPacket(packet.getArrayLength());*/
         if (worldProcRank == 30) {
             for (int i = 0; i < mmapProcsCount; ++i) {
-                double r = mmapCollectiveReadBytes.readDouble(i*packet.getExtent());
-                double v = mmapCollectiveReadBytes.readDouble(i*packet.getExtent()+Double.BYTES);
+                double r = mmapCollectiveXReadBytes.readDouble(i*packet.getExtent());
+                double v = mmapCollectiveXReadBytes.readDouble(i*packet.getExtent()+Double.BYTES);
                 System.out.println("**** r " + r + " v " + v);
            /* p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
             if (p.getNumberOfPoints() > 46) {
