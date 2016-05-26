@@ -12,7 +12,6 @@ import net.openhft.lang.io.Bytes;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.*;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
@@ -20,7 +19,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
@@ -85,9 +83,10 @@ public class ParallelOps {
     public static ByteBuffer fullXByteBuffer;
     public static double[] fullXArray;
 
-    public static String mmapCollectiveXFileName;
-    public static Bytes mmapCollectiveXReadBytes;
-    public static ByteBuffer mmapCollectiveXReadByteBuffer;
+    public static Bytes mmapCollPackReadBytes;
+    public static ByteBuffer mmapCollPackReadByteBuffer;
+    public static Bytes mmapCollPackWriteBytes;
+    public static ByteBuffer mmapCollPackWriteByteBuffer;
 
     public static String mmapCollectiveFileName;
     public static Bytes mmapCollectiveReadBytes;
@@ -299,28 +298,45 @@ public class ParallelOps {
 
         boolean status = new File(mmapScratchDir).mkdirs();
 
-        mmapCollectiveXFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollectiveX.bin";
-        try (FileChannel mmapCollectiveXFc = FileChannel
-                .open(Paths.get(mmapScratchDir, mmapCollectiveXFileName),
+        String mmapCollPackReadFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollPackRead.bin";
+        String mmapCollPackWriteFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollPackWrite.bin";
+        try (FileChannel mmapCollPackReadFc = FileChannel
+                .open(Paths.get(mmapScratchDir, mmapCollPackReadFileName),
                         StandardOpenOption.CREATE, StandardOpenOption.READ,
-                        StandardOpenOption.WRITE)) {
+                        StandardOpenOption.WRITE);
+             FileChannel mmapCollPackWriteFc = FileChannel
+                     .open(Paths.get(mmapScratchDir, mmapCollPackWriteFileName),
+                             StandardOpenOption.CREATE, StandardOpenOption.READ,
+                             StandardOpenOption.WRITE)) {
 
-            int chunkSize = 2 * Integer.BYTES +
+            int packetSize = 2 * Integer.BYTES +
                     2 * Program.maxNcent * PWCUtility.PointCount_Largest *
                             Double.BYTES;
-            int mmapCollectiveXReadByteExtent = chunkSize * (worldProcsCount);
+            int mmapCollPackReadByteExtent = packetSize * (worldProcsCount);
+            int mmapCollPackWriteByteExtent = packetSize * (mmapProcsCount);
 
-            long mmapCollectiveXReadByteOffset = 0L;
+            mmapCollPackReadBytes = ByteBufferBytes.wrap(mmapCollPackReadFc.map(
+                    FileChannel.MapMode.READ_WRITE, 0L,
+                    mmapCollPackReadByteExtent));
+            mmapCollPackReadByteBuffer = mmapCollPackReadBytes.sliceAsByteBuffer(
 
-            mmapCollectiveXReadBytes = ByteBufferBytes.wrap(mmapCollectiveXFc.map(
-                    FileChannel.MapMode.READ_WRITE, mmapCollectiveXReadByteOffset,
-                    mmapCollectiveXReadByteExtent));
-            mmapCollectiveXReadByteBuffer = mmapCollectiveXReadBytes.sliceAsByteBuffer(
-                    mmapCollectiveXReadByteBuffer);
+                    mmapCollPackReadByteBuffer);
 
+            mmapCollPackWriteBytes = ByteBufferBytes.wrap(mmapCollPackWriteFc.map(
+                    FileChannel.MapMode.READ_WRITE, 0L,
+                    mmapCollPackWriteByteExtent));
+            mmapCollPackWriteByteBuffer = mmapCollPackWriteBytes.sliceAsByteBuffer(
+
+                    mmapCollPackWriteByteBuffer);
+
+            // TODO - this might not be necessary
             if (isMmapLead){
-                for (int i = 0; i < mmapCollectiveXReadByteExtent; ++i)
-                mmapCollectiveXReadBytes.writeByte(i,0);
+                for (int i = 0; i < mmapCollPackReadByteExtent; ++i) {
+                    mmapCollPackReadBytes.writeByte(i, 0);
+                }
+                for (int i = 0; i < mmapCollPackWriteByteExtent; ++i) {
+                    mmapCollPackWriteBytes.writeByte(i, 0);
+                }
             }
         }
 
@@ -373,7 +389,6 @@ public class ParallelOps {
         }
 
 
-        /* Allocate memory maps for collective communications like AllReduce and Broadcast */
         ZmmapCollectiveFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".ZmmapCollective.bin";
         try (FileChannel ZmmapCollectiveFc = FileChannel
                 .open(Paths.get(mmapScratchDir, ZmmapCollectiveFileName),
@@ -419,38 +434,40 @@ public class ParallelOps {
 
     /*public static void allGather(MPISecPacket packet, MPISecPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapCollectiveXReadBytes);
+        packet.copyTo(offset, mmapCollPackReadBytes);
         worldProcsComm.barrier();
 
         if(isMmapLead){
-            cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+            cgProcComm.allGather(mmapCollPackReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
         for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollPackReadBytes);
         }
     }*/
 
     // TODO - debugs
     public static void allGather(MPISecPacket packet, MPISecPacket[] packets) throws MPIException {
-       /* int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapCollectiveXReadBytes);
+        int offset = packet.getExtent() * mmapProcRank;
+        packet.copyTo(offset, mmapCollPackWriteBytes);
         worldProcsComm.barrier();
 
         if(isMmapLead){
-            cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+            cgProcComm.allGather(mmapCollPackWriteByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE, mmapCollPackReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
         for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
-        }*/
-
-        cgProcComm.allGather(packet.getBuffer(), packet.getExtent(), MPI.BYTE, mmapCollectiveXReadByteBuffer, packet.getExtent(), MPI.BYTE);
-        for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadByteBuffer);
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollPackReadBytes);
         }
+
+        /*cgProcComm.allGather(packet.getBuffer(), packet.getExtent(), MPI
+                .BYTE, mmapCollPackReadByteBuffer, packet.getExtent(), MPI.BYTE);
+        for (int i = 0; i < worldProcsCount; ++i){
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength()
+                    , mmapCollPackReadByteBuffer);
+        }*/
 
     }
 
