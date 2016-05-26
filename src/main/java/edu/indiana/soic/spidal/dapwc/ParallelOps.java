@@ -422,6 +422,11 @@ public class ParallelOps {
         packet.copyTo(offset, mmapCollectiveXReadBytes);
         worldProcsComm.barrier();
 
+        // TODO - debugs
+        if (worldProcRank == 176){
+            System.out.println("@@ r " + mmapCollectiveXReadByteBuffer.getInt(offset) + " v " + mmapCollectiveXReadByteBuffer.getInt(offset+Integer.BYTES));
+        }
+
         if(isMmapLead){
             cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
