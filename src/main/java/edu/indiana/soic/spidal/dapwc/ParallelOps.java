@@ -449,8 +449,8 @@ public class ParallelOps {
     public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         // TODO - test code to see if writing some numbers will work
-        mmapCollectiveXReadBytes.writeDouble(offset, worldProcRank);
-        mmapCollectiveXReadBytes.writeDouble(offset+Double.BYTES, 744);
+        fullXBytes.writeDouble(offset, worldProcRank);
+        fullXBytes.writeDouble(offset+Double.BYTES, 744);
         /*packet.copyTo(offset, mmapXWriteBytes);*/
         worldProcsComm.barrier();
 
@@ -463,8 +463,8 @@ public class ParallelOps {
         /*MPISecPacket p = new MPISecPacket(packet.getArrayLength());*/
         if (worldProcRank == 30) {
             for (int i = 0; i < mmapProcsCount; ++i) {
-                double r = mmapCollectiveXReadBytes.readDouble(i*packet.getExtent());
-                double v = mmapCollectiveXReadBytes.readDouble(i*packet.getExtent()+Double.BYTES);
+                double r = fullXBytes.readDouble(i*packet.getExtent());
+                double v = fullXBytes.readDouble(i*packet.getExtent()+Double.BYTES);
                 System.out.println("**** r " + r + " v " + v);
            /* p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
             if (p.getNumberOfPoints() > 46) {
