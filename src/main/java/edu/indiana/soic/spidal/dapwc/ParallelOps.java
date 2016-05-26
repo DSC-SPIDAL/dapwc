@@ -460,7 +460,7 @@ public class ParallelOps {
 
         // TODO - debugs
         if (worldProcRank == 176) {
-            for (int i = 0; i < mmapProcsCount; ++i) {
+            for (int i = 0; i < worldProcsCount; ++i) {
                 packets[i].copyFrom(i *
                         packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
 
