@@ -458,13 +458,30 @@ public class ParallelOps {
         }
         worldProcsComm.barrier();
 
-        for (int i = 0; i < worldProcsCount; ++i){
+        // TODO - debugs
+        if (worldProcRank == 176) {
+            for (int i = 0; i < mmapProcsCount; ++i) {
+                packets[i].copyFrom(i *
+                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
+
+
+                System.out.println("++++ number of points for " + i + " " +
+                        packets[i].getNumberOfPoints() + " frombuff " +
+                        ZmmapCollectiveReadBytes.readInt(
+                                i * packet.getExtent() + Integer.BYTES) +
+                        " i was sending " + packet.getNumberOfPoints());
+            }
+        }
+        worldProcsComm.barrier();
+
+
+        /*for (int i = 0; i < worldProcsCount; ++i){
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
             // TODO - debugs
             if (worldProcRank == 176){
                 System.out.println("**** number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
             }
-        }
+        }*/
         worldProcsComm.barrier();
     }
 
