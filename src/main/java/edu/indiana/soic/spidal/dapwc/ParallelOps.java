@@ -448,6 +448,7 @@ public class ParallelOps {
         }
 
         System.out.println("-- Rank: " + worldProcRank + " packets[rank].numpoints " + packets[worldProcRank].getNumberOfPoints());
+        worldProcsComm.barrier();
     }
 
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
