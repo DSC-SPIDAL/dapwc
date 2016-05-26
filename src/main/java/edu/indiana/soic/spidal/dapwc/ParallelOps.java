@@ -434,11 +434,11 @@ public class ParallelOps {
 
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapCollectiveReadBytes);
+        packet.copyTo(offset, ZmmapCollectiveReadBytes);
         worldProcsComm.barrier();
 
         // TODO - debugs
-        /*if (worldProcRank == 176) {
+        if (worldProcRank == 176) {
             for (int i = 0; i < mmapProcsCount; ++i) {
                 packets[i].copyFrom(i *
                         packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
@@ -451,10 +451,10 @@ public class ParallelOps {
                         " i was sending " + packet.getNumberOfPoints());
             }
         }
-        worldProcsComm.barrier();*/
+        worldProcsComm.barrier();
 
-        if(isMmapLead){
-            cgProcComm.allGather(mmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+       /* if(isMmapLead){
+            cgProcComm.allGather(ZmmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
@@ -462,17 +462,17 @@ public class ParallelOps {
         if (worldProcRank == 176) {
             for (int i = 0; i < worldProcsCount; ++i) {
                 packets[i].copyFrom(i *
-                        packet.getExtent(), packet.getArrayLength(), mmapCollectiveReadBytes);
+                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
 
 
                 System.out.println("++++ number of points for " + i + " " +
                         packets[i].getNumberOfPoints() + " frombuff " +
-                        mmapCollectiveReadBytes.readInt(
+                        ZmmapCollectiveReadBytes.readInt(
                                 i * packet.getExtent() + Integer.BYTES) +
                         " i was sending " + packet.getNumberOfPoints());
             }
         }
-        worldProcsComm.barrier();
+        worldProcsComm.barrier();*/
 
 
         /*for (int i = 0; i < worldProcsCount; ++i){
