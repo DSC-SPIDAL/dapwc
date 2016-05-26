@@ -806,7 +806,7 @@ public class Dist
 		}
 
         /********************TODO - Test code to replace pipeline *********/
-        for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
+        /*for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
             for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
             {
                 double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex];
@@ -815,7 +815,7 @@ public class Dist
             }
         }
 
-        ParallelOps.allGather(myown, fromafarAll);
+        ParallelOps.allGather(myown, fromafarAll);*/
         /********************TODO - END Test code to replace pipeline *********/
 
 		//	First communicationloop is local; then we have MPI_Size transfers of data in  a ring through processes
@@ -824,11 +824,11 @@ public class Dist
             /********************TODO - Test code to replace pipeline *********/
             if (MPICommunicationSteps > 0)
             {
-                int idx = ParallelOps.worldProcRank - MPICommunicationSteps;
+                /*int idx = ParallelOps.worldProcRank - MPICommunicationSteps;
                 if (idx < 0){
                     idx += ParallelOps.worldProcsCount;
                 }
-                fromafar = fromafarAll[idx];
+                fromafar = fromafarAll[idx];*/
                 // TODO - debugs
                 /*if (ParallelOps.worldProcRank == 176) {
                     for (int i = 0; i < ParallelOps.worldProcsCount; ++i) {
@@ -839,7 +839,7 @@ public class Dist
             /********************TODO - End Test code to replace pipeline *********/
 
 
-            /*if (MPICommunicationSteps == 1)
+            if (MPICommunicationSteps == 1)
 			{
 				toafar.setFirstPoint(PWCUtility.PointStart_Process);
 				toafar.setNumberOfPoints(PWCUtility.PointCount_Process);
@@ -871,7 +871,7 @@ public class Dist
                 // Note - MPI Call - SendRecv - MPIPacket
                 fromafar = PWCUtility.mpiOps.sendReceive(toafar,toprocess,sendtag,fromprocess,receivetag, MPIPacket.Type.Double);
 				PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVETiming);
-			}*/
+			}
 
             // Note - parallel for
             final int MPICommunicationStepsLoopVar = MPICommunicationSteps;
@@ -893,26 +893,26 @@ public class Dist
                             if (betatotal != fromafar.getNumberOfPoints()){
 //                                System.out.println("**** Rank " + ParallelOps.worldProcRank + " error betatoal " + betatotal + " != numberofpoints " + fromafar.getNumberOfPoints());
                             }
-                            /*for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
+                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                             {
                                 double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex];
                                 int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
                                 myown.setMArrayDoubleAt(bigindex, tmp);
                                 toafar.setMArrayDoubleAt(bigindex, tmp);
-                            }*/
+                            }
                         }
                         else
                         {
                             betatotal = fromafar.getNumberOfPoints();
                             betastart = fromafar.getFirstPoint();
-                            /*if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
+                            if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
                             {
                                 for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                                 {
                                     int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
                                     toafar.setMArrayDoubleAt(bigindex,fromafar.getMArrayDoubleAt(bigindex));
                                 }
-                            }*/
+                            }
                         }
                         for (int betalocal = 0; betalocal < betatotal; betalocal++)
                         {
