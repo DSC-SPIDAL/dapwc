@@ -447,7 +447,7 @@ public class ParallelOps {
 /*                packets[i].copyFrom(i *
                         packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*/
 
-                System.out.println("++++ r " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent())
+                System.out.println("++++ mmapProcsCount " + mmapProcsCount + " r " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent())
                         + " v " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
             }
         }
