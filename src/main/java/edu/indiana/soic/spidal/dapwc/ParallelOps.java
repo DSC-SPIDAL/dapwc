@@ -448,6 +448,13 @@ public class ParallelOps {
             }
         }
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
         if(isMmapLead){
             cgProcComm.allGather(mmapCollectiveXXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
