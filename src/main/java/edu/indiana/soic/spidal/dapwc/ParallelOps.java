@@ -104,7 +104,6 @@ public class ParallelOps {
     public static ByteBuffer mmapCollectiveReadByteBuffer;
     public static Bytes mmapCollectiveWriteBytes;
     public static int mmapAllReduceChunkSizeInBytes;
-    public static long mmapCollectiveWriteByteOffset;
 
     public static void setupParallelism(String[] args) throws MPIException {
         MPI.Init(args);
@@ -325,76 +324,13 @@ public class ParallelOps {
         }
 
 
-        final String mmapXFname = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapX.bin";
-        /* Note, my send lock file name should match my successors recv lock file name */
-        final String sendLockFname = machineName + ".mmapId." + mmapIdLocalToNode + ".lock." + worldProcRank + ".bin";
-        final String recvLockFname = machineName + ".mmapId." + mmapIdLocalToNode + ".lock." + (worldProcRank != 0 ? worldProcRank-1 : worldProcsCount-1) +".bin";
         final String fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
-        try (FileChannel mmapXFc = FileChannel.open(Paths.get(mmapScratchDir,
-                mmapXFname),
-                StandardOpenOption
-                        .CREATE,
-                StandardOpenOption.READ,
-                StandardOpenOption
-                        .WRITE);
-             FileChannel fullXFc = FileChannel.open(Paths.get(mmapScratchDir,
-                     fullXFname),
+        try (FileChannel fullXFc = FileChannel.open(Paths.get(mmapScratchDir,fullXFname),
                      StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
 
-            /* we need buffer space only for (mmapProcsCount - 1) to do internal
-             * communication. Then we need 2 extra to do MPI send/receive at the
-             * boundaries. These extra 2 are needed only when internal data is
-             * represented as arrays and not direct buffers like in sendrecv<double[]>
-             *
-             * We'll use last chunk to do inter-process receive (of head mmap)
-             * and the one before the last to do inter-process send (of tail mmap)*/
-
-            int chunkSize = 2 * Integer.BYTES +
-                    2 * Program.maxNcent * PWCUtility.PointCount_Largest *
-                            Double.BYTES;
-            /*int mmapXReadByteExtent = chunkSize * (mmapProcsCount + 1);*/
-            // TODO - debugs for MPISecPacket allGather
-            int mmapXReadByteExtent = chunkSize * (worldProcsCount);
-            int fullXByteExtent = Program.maxNcent * PWCUtility.PointCount_Largest *
-                    Double.BYTES * worldProcsCount;
-
-            long mmapXReadByteOffset = 0L;
-            long fullXByteOffset = 0L;
-
-            mmapXReadBytes = ByteBufferBytes.wrap(mmapXFc.map(
-                    FileChannel.MapMode.READ_WRITE, mmapXReadByteOffset,
-                    mmapXReadByteExtent));
-            mmapXReadByteBuffer = mmapXReadBytes.sliceAsByteBuffer(
-                    mmapXReadByteBuffer);
-            mmapXReadBytes.position(0);
-            mmapXWriteBytes = mmapXReadBytes.slice(mmapXReadByteOffset, mmapXReadByteExtent);
-
-            /* Send recv buffers for mmap tail and mmap head */
-            if (isMmapTail) {
-                mmapXInterSendBytes = mmapXReadBytes.slice(mmapProcRank * chunkSize, chunkSize);
-                mmapXInterSendByteBuffer = mmapXInterSendBytes.sliceAsByteBuffer(mmapXInterSendByteBuffer);
-            }
-            if (isMmapHead) {
-                mmapXInterRecvBytes = mmapXReadBytes.slice(mmapProcsCount * chunkSize, chunkSize);
-                mmapXInterRecvByteBuffer = mmapXInterRecvBytes.sliceAsByteBuffer(mmapXInterRecvByteBuffer);
-            }
-
-            /* Send receive locks */
-            if (!isMmapTail){
-                MappedByteBuffer mbb = createMMapLockBuffer(sendLockFname);
-                sendLock = ByteBufferBytes.wrap(mbb);
-            }
-
-            if (!isMmapHead){
-                MappedByteBuffer mbb = createMMapLockBuffer(recvLockFname);
-                recvLock = ByteBufferBytes.wrap(mbb);
-            }
-
-            fullXArray = new double[fullXByteExtent/Double.BYTES];
-            fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode
-                            .READ_WRITE,
-                    fullXByteOffset,
-                    fullXByteExtent));
+            int fullXByteExtent = Program.maxNcent * PWCUtility.PointCount_Largest * Double.BYTES * worldProcsCount;
+            fullXArray = new double[fullXByteExtent / Double.BYTES];
+            fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode.READ_WRITE, 0L, fullXByteExtent));
             fullXByteBuffer = fullXBytes.sliceAsByteBuffer(fullXByteBuffer);
         }
 
@@ -414,7 +350,6 @@ public class ParallelOps {
                             globalColCount*Integer.BYTES)));
 
             long mmapCollectiveReadByteOffset = 0L;
-            mmapCollectiveWriteByteOffset = 0L;
 
             mmapCollectiveReadBytes = ByteBufferBytes.wrap(mmapCollectiveFc.map(
                     FileChannel.MapMode.READ_WRITE, mmapCollectiveReadByteOffset,
@@ -423,7 +358,7 @@ public class ParallelOps {
                     mmapCollectiveReadByteBuffer);
 
             mmapCollectiveReadBytes.position(0);
-            mmapCollectiveWriteBytes = mmapCollectiveReadBytes.slice(mmapCollectiveWriteByteOffset,
+            mmapCollectiveWriteBytes = mmapCollectiveReadBytes.slice(0L,
                     mmapCollectiveReadByteExtent);
         }
     }
@@ -449,8 +384,8 @@ public class ParallelOps {
     public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         // TODO - test code to see if writing some numbers will work
-        fullXBytes.writeDouble(offset, worldProcRank);
-        fullXBytes.writeDouble(offset+Double.BYTES, 744);
+        mmapCollectiveXReadBytes.writeDouble(offset, worldProcRank);
+        mmapCollectiveXReadBytes.writeDouble(offset+Double.BYTES, 744);
         /*packet.copyTo(offset, mmapXWriteBytes);*/
         worldProcsComm.barrier();
 
@@ -463,8 +398,8 @@ public class ParallelOps {
         /*MPISecPacket p = new MPISecPacket(packet.getArrayLength());*/
         if (worldProcRank == 30) {
             for (int i = 0; i < mmapProcsCount; ++i) {
-                double r = fullXBytes.readDouble(i*packet.getExtent());
-                double v = fullXBytes.readDouble(i*packet.getExtent()+Double.BYTES);
+                double r = mmapCollectiveXReadBytes.readDouble(i*packet.getExtent());
+                double v = mmapCollectiveXReadBytes.readDouble(i*packet.getExtent()+Double.BYTES);
                 System.out.println("**** r " + r + " v " + v);
            /* p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapXReadBytes);
             if (p.getNumberOfPoints() > 46) {
