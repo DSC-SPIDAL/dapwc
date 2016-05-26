@@ -445,9 +445,9 @@ public class ParallelOps {
 
         for (int i = 0; i < worldProcsCount; ++i){
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
-            if (worldProcRank == 176){
+           /* if (worldProcRank == 176){
                 System.out.println("--- " + mmapCollectiveXReadBytes.readInt(i*packet.getExtent()) + "  " + packets[i].getNumberOfPoints());
-            }
+            }*/
         }
     }
 
