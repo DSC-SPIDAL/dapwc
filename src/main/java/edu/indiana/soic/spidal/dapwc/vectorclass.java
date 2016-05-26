@@ -670,8 +670,8 @@ public class vectorclass
                                                 AxbetaLambda =
                                                         fromafarAxarrayLoopVar[ALambdaindex];
                                             } catch (Exception e) {
-//                                                System.out
-//                                                        .println("Rank: " + ParallelOps.worldProcRank + " tid: " + threadIndex + " comstep: " + MPICommunicationStepsLoopVar + " lenght: " + fromafarAxarrayLoopVar.length + " idx: " + ALambdaindex);
+                                                System.out
+                                                        .println("Rank: " + ParallelOps.worldProcRank + " tid: " + threadIndex + " comstep: " + MPICommunicationStepsLoopVar + " lenght: " + fromafarAxarrayLoopVar.length + " idx: " + ALambdaindex);
                                             }
                                         }
                                         double FirstTerm = 0;
