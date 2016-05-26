@@ -396,7 +396,7 @@ public class ParallelOps {
         worldProcsComm.barrier();
 
         for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getExtent(), mmapCollectiveXReadBytes);
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
         }
     }
 
