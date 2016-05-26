@@ -440,7 +440,7 @@ public class ParallelOps {
 
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapCollectiveYReadBytes);
+        packet.copyTo(offset, mmapCollectiveReadBytes);
         // TODO - debugs
         /*if (worldProcRank == 176){
             packets[0].copyFrom(0, packet.getArrayLength(), mmapCollectiveXXReadBytes);
@@ -451,9 +451,9 @@ public class ParallelOps {
 
         // TODO - debugs
         for (int i = 0; i < mmapProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveYReadBytes);
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveReadBytes);
             if (worldProcRank == 176){
-                System.out.println("++++ number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveYReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
+                System.out.println("++++ number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
             }
         }
 
