@@ -320,7 +320,7 @@ public class ParallelOps {
 
             if (isMmapLead){
                 for (int i = 0; i < mmapCollectiveXReadByteExtent; ++i)
-                mmapCollectiveXReadBytes.writeByte(0);
+                mmapCollectiveXReadBytes.writeByte(i,0);
             }
         }
 
@@ -335,7 +335,7 @@ public class ParallelOps {
 
             if (isMmapLead){
                 for (int i = 0; i < fullXByteExtent; ++i)
-                    fullXBytes.writeByte(0);
+                    fullXBytes.writeByte(i,0);
             }
         }
 
@@ -368,7 +368,7 @@ public class ParallelOps {
 
             if (isMmapLead){
                 for (int i = 0; i < mmapCollectiveReadByteExtent; ++i)
-                    mmapCollectiveReadBytes.writeByte(0);
+                    mmapCollectiveReadBytes.writeByte(i,0);
             }
         }
 
@@ -397,7 +397,7 @@ public class ParallelOps {
 
             if (isMmapLead){
                 for (int i = 0; i < ZmmapCollectiveReadByteExtent; ++i)
-                    ZmmapCollectiveReadBytes.writeByte(0);
+                    ZmmapCollectiveReadBytes.writeByte(i,0);
             }
         }
 
