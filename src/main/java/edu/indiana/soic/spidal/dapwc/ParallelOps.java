@@ -417,6 +417,22 @@ public class ParallelOps {
         return fullXArray;
     }
 
+    /*public static void allGather(MPISecPacket packet, MPISecPacket[] packets) throws MPIException {
+        int offset = packet.getExtent() * mmapProcRank;
+        packet.copyTo(offset, mmapCollectiveXReadBytes);
+        worldProcsComm.barrier();
+
+        if(isMmapLead){
+            cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+        }
+        worldProcsComm.barrier();
+
+        for (int i = 0; i < worldProcsCount; ++i){
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
+        }
+    }*/
+
+    // TODO - debugs
     public static void allGather(MPISecPacket packet, MPISecPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         packet.copyTo(offset, mmapCollectiveXReadBytes);
@@ -429,6 +445,9 @@ public class ParallelOps {
 
         for (int i = 0; i < worldProcsCount; ++i){
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
+            if (worldProcRank == 176){
+                System.out.println("--- " + mmapCollectiveXReadBytes.readInt(i*packet.getExtent()));
+            }
         }
     }
 
@@ -465,12 +484,12 @@ public class ParallelOps {
 /*                packets[i].copyFrom(i *
                         packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*/
 
-                System.out.println("++++  r " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i)
-                        + " v " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i+Integer.BYTES));
+               /* System.out.println("++++  r " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i)
+                        + " v " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i+Integer.BYTES));*/
             }
-            System.out.println("DONE");
+//            System.out.println("DONE");
         }
-        
+
         worldProcsComm.barrier();
 
 
