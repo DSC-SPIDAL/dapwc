@@ -435,10 +435,10 @@ public class ParallelOps {
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         /*packet.copyTo(offset, ZmmapCollectiveReadBytes);*/
-        ZmmapCollectiveReadBytes.writeInt(offset, worldProcRank);
-        ZmmapCollectiveReadBytes.writeInt(offset+Integer.BYTES, 53);
+        mmapCollectiveReadBytes.writeInt(offset, worldProcRank);
+        mmapCollectiveReadBytes.writeInt(offset+Integer.BYTES, 53);
         if (worldProcRank == 176){
-            System.out.println("@@ r " + ZmmapCollectiveReadByteBuffer.getInt(offset) + " v " + ZmmapCollectiveReadByteBuffer.getInt(offset+Integer.BYTES));
+            System.out.println("@@ r " + mmapCollectiveReadByteBuffer.getInt(offset) + " v " + mmapCollectiveReadByteBuffer.getInt(offset+Integer.BYTES));
         }
         worldProcsComm.barrier();
 
