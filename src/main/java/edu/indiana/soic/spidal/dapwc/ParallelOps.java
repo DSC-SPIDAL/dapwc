@@ -435,8 +435,8 @@ public class ParallelOps {
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         /*packet.copyTo(offset, ZmmapCollectiveReadBytes);*/
-        ZmmapCollectiveReadBytes.writeInt(offset, worldProcRank);
-        ZmmapCollectiveReadBytes.writeInt(offset+Integer.BYTES, 53);
+        ZmmapCollectiveReadBytes.writeInt(2*Integer.BYTES*mmapProcRank, worldProcRank);
+        ZmmapCollectiveReadBytes.writeInt(2*Integer.BYTES*mmapProcRank+Integer.BYTES, 53);
 
         worldProcsComm.barrier();
 
@@ -454,7 +454,7 @@ public class ParallelOps {
         worldProcsComm.barrier();
 
         if(isMmapLead){
-            cgProcComm.allGather(ZmmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+            cgProcComm.allGather(ZmmapCollectiveReadByteBuffer, 2*Integer.BYTES*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
@@ -465,8 +465,8 @@ public class ParallelOps {
 /*                packets[i].copyFrom(i *
                         packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*/
 
-                System.out.println("++++  r " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent())
-                        + " v " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
+                System.out.println("++++  r " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i)
+                        + " v " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i+Integer.BYTES));
             }
         }
         worldProcsComm.barrier();
