@@ -49,13 +49,13 @@ public abstract class MPIPacket
                 }
             }
 
-            public void copyFrom(int offset, Bytes buffer) {
+            public void copyFrom(int offset, int length, Bytes buffer) {
                 buffer.position(offset);
                 this.buffer.putInt(firstPointOffset, buffer.readInt(
                         offset + firstPointOffset));
                 this.buffer.putInt(numberOfPointsOffset, buffer.readInt(
                         offset + numberOfPointsOffset));
-                for (int i = 0; i < mArrayLength; ++i) {
+                for (int i = 0; i < length; ++i) {
                     this.buffer.putInt(
                             mArrayOffset + i * Integer.BYTES, buffer.readInt(
                                     offset + mArrayOffset + i * Integer.BYTES));
@@ -100,13 +100,13 @@ public abstract class MPIPacket
                 }
             }
 
-            public void copyFrom(int offset, Bytes buffer){
+            public void copyFrom(int offset, int length, Bytes buffer){
                 buffer.position(offset);
                 this.buffer.putInt(firstPointOffset, buffer.readInt(
                         offset + firstPointOffset));
                 this.buffer.putInt(numberOfPointsOffset, buffer.readInt(
                         offset + numberOfPointsOffset));
-                for (int i = 0; i < mArrayLength; ++i) {
+                for (int i = 0; i < length; ++i) {
                     this.buffer.putDouble(
                             mArrayOffset + i * Double.BYTES, buffer.readDouble(
                                     offset + mArrayOffset + i * Double.BYTES));
@@ -148,7 +148,7 @@ public abstract class MPIPacket
         throw new UnsupportedOperationException();
     }
 
-    public void copyFrom(int offset, Bytes from){
+    public void copyFrom(int offset, int length,  Bytes from){
         throw new UnsupportedOperationException();
     }
 
@@ -174,6 +174,10 @@ public abstract class MPIPacket
 
     public void setNumberOfPoints(int numberOfPoints){
         buffer.putInt(numberOfPointsOffset, numberOfPoints);
+    }
+
+    public int getArrayLength() {
+        return mArrayLength;
     }
 
     public abstract void Clear();
