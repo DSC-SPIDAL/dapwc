@@ -434,21 +434,27 @@ public class ParallelOps {
 
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, ZmmapCollectiveReadBytes);
+        /*packet.copyTo(offset, ZmmapCollectiveReadBytes);*/
+        ZmmapCollectiveReadBytes.writeInt(offset, worldProcRank);
+        ZmmapCollectiveReadBytes.writeInt(offset+Integer.BYTES, 53);
+        if (worldProcRank == 176){
+            System.out.println("@@ r " + ZmmapCollectiveReadByteBuffer.getInt(offset) + " v " + ZmmapCollectiveReadByteBuffer.getInt(offset+Integer.BYTES));
+        }
         worldProcsComm.barrier();
 
         // TODO - debugs
         if (worldProcRank == 176) {
             for (int i = 0; i < mmapProcsCount; ++i) {
-                packets[i].copyFrom(i *
-                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);
+
+/*                packets[i].copyFrom(i *
+                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*/
 
 
-                System.out.println("++++ number of points for " + i + " " +
+                /*System.out.println("++++ number of points for " + i + " " +
                         packets[i].getNumberOfPoints() + " frombuff " +
                         ZmmapCollectiveReadByteBuffer.getInt(
                                 i * packet.getExtent() + Integer.BYTES) +
-                        " i was sending " + packet.getNumberOfPoints());
+                        " i was sending " + packet.getNumberOfPoints());*/
             }
         }
         worldProcsComm.barrier();
