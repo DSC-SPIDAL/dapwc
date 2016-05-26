@@ -324,7 +324,7 @@ public class ParallelOps {
             }
         }
 
-        mmapCollectiveYFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollectiveY.bin";
+        mmapCollectiveYFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapcy.bin";
         try (FileChannel mmapCollectiveYFc = FileChannel
                 .open(Paths.get(mmapScratchDir, mmapCollectiveYFileName),
                         StandardOpenOption.CREATE, StandardOpenOption.READ,
