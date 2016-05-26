@@ -468,7 +468,9 @@ public class ParallelOps {
                 System.out.println("++++  r " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i)
                         + " v " + ZmmapCollectiveReadBytes.readInt(2*Integer.BYTES*i+Integer.BYTES));
             }
+            System.out.println("DONE");
         }
+        
         worldProcsComm.barrier();
 
 
