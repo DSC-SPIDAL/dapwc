@@ -89,6 +89,10 @@ public class ParallelOps {
     public static Bytes mmapCollectiveXReadBytes;
     public static ByteBuffer mmapCollectiveXReadByteBuffer;
 
+    public static String mmapCollectiveXXFileName;
+    public static Bytes mmapCollectiveXXReadBytes;
+    public static ByteBuffer mmapCollectiveXXReadByteBuffer;
+
     public static String mmapCollectiveFileName;
     public static Bytes mmapCollectiveReadBytes;
     public static ByteBuffer mmapCollectiveReadByteBuffer;
@@ -312,11 +316,36 @@ public class ParallelOps {
                     FileChannel.MapMode.READ_WRITE, mmapCollectiveXReadByteOffset,
                     mmapCollectiveXReadByteExtent));
             mmapCollectiveXReadByteBuffer = mmapCollectiveXReadBytes.sliceAsByteBuffer(
-                    mmapCollectiveReadByteBuffer);
+                    mmapCollectiveXReadByteBuffer);
 
             if (isMmapLead){
                 for (int i = 0; i < mmapCollectiveXReadByteExtent; ++i)
                 mmapCollectiveXReadBytes.writeByte(0);
+            }
+        }
+
+        mmapCollectiveXXFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".mmapCollectiveXX.bin";
+        try (FileChannel mmapCollectiveXXFc = FileChannel
+                .open(Paths.get(mmapScratchDir, mmapCollectiveXXFileName),
+                        StandardOpenOption.CREATE, StandardOpenOption.READ,
+                        StandardOpenOption.WRITE)) {
+
+            int chunkSize = 2 * Integer.BYTES +
+                    Program.maxNcent * PWCUtility.PointCount_Largest *
+                            Double.BYTES;
+            int mmapCollectiveXXReadByteExtent = chunkSize * (worldProcsCount);
+
+            long mmapCollectiveXXReadByteOffset = 0L;
+
+            mmapCollectiveXXReadBytes = ByteBufferBytes.wrap(mmapCollectiveXXFc.map(
+                    FileChannel.MapMode.READ_WRITE, mmapCollectiveXXReadByteOffset,
+                    mmapCollectiveXXReadByteExtent));
+            mmapCollectiveXXReadByteBuffer = mmapCollectiveXXReadBytes.sliceAsByteBuffer(
+                    mmapCollectiveXXReadByteBuffer);
+
+            if (isMmapLead){
+                for (int i = 0; i < mmapCollectiveXXReadByteExtent; ++i)
+                    mmapCollectiveXXReadBytes.writeByte(0);
             }
         }
 
@@ -403,8 +432,8 @@ public class ParallelOps {
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         /*packet.copyTo(offset, mmapCollectiveXReadBytes);*/
-        mmapCollectiveReadBytes.writeInt(offset, worldProcRank);
-        mmapCollectiveReadBytes.writeInt(offset+Integer.BYTES, 53);
+        mmapCollectiveXXReadBytes.writeInt(offset, worldProcRank);
+        mmapCollectiveXXReadBytes.writeInt(offset+Integer.BYTES, 53);
         worldProcsComm.barrier();
 
         // TODO - debugs
@@ -413,7 +442,7 @@ public class ParallelOps {
             for (int i = 0; i < mmapProcsCount; ++i){
 //                p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
 //                System.out.println("*** p.getNumberOfPoints " + p.getNumberOfPoints());
-                System.out.println(" ** r " + mmapCollectiveReadBytes.readInt(i*packet.getExtent()) + " v " + mmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
+                System.out.println(" ** r " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()) + " v " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
             }
         }
 
