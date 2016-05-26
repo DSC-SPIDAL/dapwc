@@ -113,6 +113,19 @@ public abstract class MPIPacket
                 }
             }
 
+            public void copyFrom(int offset, int length, ByteBuffer buffer){
+                buffer.position(offset);
+                this.buffer.putInt(firstPointOffset, buffer.getInt(
+                        offset + firstPointOffset));
+                this.buffer.putInt(numberOfPointsOffset, buffer.getInt(
+                        offset + numberOfPointsOffset));
+                for (int i = 0; i < length; ++i) {
+                    this.buffer.putDouble(
+                            mArrayOffset + i * Double.BYTES, buffer.getDouble(
+                                    offset + mArrayOffset + i * Double.BYTES));
+                }
+            }
+
             @Override
             public void Clear() {
                 setFirstPoint(0);
@@ -149,6 +162,10 @@ public abstract class MPIPacket
     }
 
     public void copyFrom(int offset, int length,  Bytes from){
+        throw new UnsupportedOperationException();
+    }
+
+    public void copyFrom(int offset, int length,  ByteBuffer from){
         throw new UnsupportedOperationException();
     }
 

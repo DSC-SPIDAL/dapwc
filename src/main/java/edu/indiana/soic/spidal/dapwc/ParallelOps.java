@@ -441,7 +441,7 @@ public class ParallelOps {
         if (worldProcRank == 176) {
             for (int i = 0; i < mmapProcsCount; ++i) {
                 packets[i].copyFrom(i *
-                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
+                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);
 
 
                 System.out.println("++++ number of points for " + i + " " +
