@@ -830,11 +830,11 @@ public class Dist
                 }
                 fromafar = fromafarAll[idx];
                 // TODO - debugs
-                if (ParallelOps.worldProcRank == 176) {
+                /*if (ParallelOps.worldProcRank == 176) {
                     for (int i = 0; i < ParallelOps.worldProcsCount; ++i) {
                         System.out.println(" number of points for " + i + " " + fromafarAll[i].getNumberOfPoints());
                     }
-                }
+                }*/
             }
             /********************TODO - End Test code to replace pipeline *********/
 
