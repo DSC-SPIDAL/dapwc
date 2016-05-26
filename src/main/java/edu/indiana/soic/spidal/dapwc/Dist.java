@@ -806,14 +806,14 @@ public class Dist
 		}
 
         /********************TODO - Test code to replace pipeline *********/
-        for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
+       /* for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
             for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
             {
                 double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex];
                 int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
                 myown.setMArrayDoubleAt(bigindex, tmp);
             }
-        }
+        }*/
 
         ParallelOps.allGather(myown, fromafarAll);
         /********************TODO - END Test code to replace pipeline *********/
