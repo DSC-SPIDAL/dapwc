@@ -439,9 +439,6 @@ public class ParallelOps {
         ZmmapCollectiveReadBytes.writeInt(offset+Integer.BYTES, 53);
 
         worldProcsComm.barrier();
-        if (worldProcRank == 176){
-            System.out.println("@@ r " + ZmmapCollectiveReadByteBuffer.getInt(offset) + " v " + ZmmapCollectiveReadByteBuffer.getInt(offset+Integer.BYTES));
-        }
 
         // TODO - debugs
         if (worldProcRank == 176) {
@@ -450,12 +447,8 @@ public class ParallelOps {
 /*                packets[i].copyFrom(i *
                         packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadByteBuffer);*/
 
-
-                /*System.out.println("++++ number of points for " + i + " " +
-                        packets[i].getNumberOfPoints() + " frombuff " +
-                        ZmmapCollectiveReadByteBuffer.getInt(
-                                i * packet.getExtent() + Integer.BYTES) +
-                        " i was sending " + packet.getNumberOfPoints());*/
+                System.out.println("++++ r " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent())
+                        + " v " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
             }
         }
         worldProcsComm.barrier();

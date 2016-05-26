@@ -806,7 +806,7 @@ public class Dist
 		}
 
         /********************TODO - Test code to replace pipeline *********/
-        /*for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
+        for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
             for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
             {
                 double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex];
@@ -815,7 +815,7 @@ public class Dist
             }
         }
 
-        ParallelOps.allGather(myown, fromafarAll);*/
+        ParallelOps.allGather(myown, fromafarAll);
         /********************TODO - END Test code to replace pipeline *********/
 
 		//	First communicationloop is local; then we have MPI_Size transfers of data in  a ring through processes
