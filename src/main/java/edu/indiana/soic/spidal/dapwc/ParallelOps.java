@@ -435,21 +435,23 @@ public class ParallelOps {
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         packet.copyTo(offset, ZmmapCollectiveReadBytes);
-        // TODO - debugs
-        /*if (worldProcRank == 176){
-            packets[0].copyFrom(0, packet.getArrayLength(), mmapCollectiveXXReadBytes);
-            System.out.println("----- number of points for me " + packets[0].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
-        }*/
-
         worldProcsComm.barrier();
 
         // TODO - debugs
-        for (int i = 0; i < mmapProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
-            if (worldProcRank == 176){
-                System.out.println("++++ number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + ZmmapCollectiveReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
+        if (worldProcRank == 176) {
+            for (int i = 0; i < mmapProcsCount; ++i) {
+                packets[i].copyFrom(i *
+                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
+
+
+                System.out.println("++++ number of points for " + i + " " +
+                        packets[i].getNumberOfPoints() + " frombuff " +
+                        ZmmapCollectiveReadBytes.readInt(
+                                i * packet.getExtent() + Integer.BYTES) +
+                        " i was sending " + packet.getNumberOfPoints());
             }
         }
+        worldProcsComm.barrier();
 
       /*  try {
             Thread.sleep(1000);
@@ -458,10 +460,10 @@ public class ParallelOps {
         }
 */
 
-        /*if(isMmapLead){
+        if(isMmapLead){
             cgProcComm.allGather(ZmmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
-        worldProcsComm.barrier();*/
+        worldProcsComm.barrier();
 
         /*for (int i = 0; i < worldProcsCount; ++i){
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
