@@ -380,26 +380,23 @@ public class ParallelOps {
                         StandardOpenOption.CREATE, StandardOpenOption.READ,
                         StandardOpenOption.WRITE)) {
 
-            // See SharedMemoryCommunicatioNotes for more info on the number 1000
-            int mmapAllReduceChunkSizeInBytes = Math.max(Program.maxNcent, 1000)*Double.BYTES;
-            int mmapCollectiveReadByteExtent = Math.max(
-                    mmapProcsCount * mmapAllReduceChunkSizeInBytes,
-                    (Math.max(
-                            Program.maxNcent * Double.BYTES,
-                            globalColCount*Integer.BYTES)));
+            int chunkSize = 2 * Integer.BYTES +
+                    Program.maxNcent * PWCUtility.PointCount_Largest *
+                            Double.BYTES;
+            int ZmmapCollectiveReadByteExtent = chunkSize * (worldProcsCount);
 
             long mmapCollectiveReadByteOffset = 0L;
 
             ZmmapCollectiveReadBytes = ByteBufferBytes.wrap(ZmmapCollectiveFc.map(
                     FileChannel.MapMode.READ_WRITE, mmapCollectiveReadByteOffset,
-                    mmapCollectiveReadByteExtent));
+                    ZmmapCollectiveReadByteExtent));
             ZmmapCollectiveReadByteBuffer = ZmmapCollectiveReadBytes.sliceAsByteBuffer(
                     ZmmapCollectiveReadByteBuffer);
 
             ZmmapCollectiveReadBytes.position(0);
 
             if (isMmapLead){
-                for (int i = 0; i < mmapCollectiveReadByteExtent; ++i)
+                for (int i = 0; i < ZmmapCollectiveReadByteExtent; ++i)
                     ZmmapCollectiveReadBytes.writeByte(0);
             }
         }
