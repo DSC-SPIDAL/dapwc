@@ -101,8 +101,6 @@ public class FindCenters
             }
             PWCUtility.StartSubTimer(PWCUtility.MPIBROADCASTTiming);
             // Note - MPI Call - Broadcast - int[]
-            // TODO - changing to mmap call
-            /*PWCUtility.mpiOps.broadcast(SequenceLengths, 0);*/
             ParallelOps.broadcast(SequenceLengths, 0);
             PWCUtility.StopSubTimer(PWCUtility.MPIBROADCASTTiming);
         } else {
@@ -475,8 +473,6 @@ public class FindCenters
                     }
                     if (CenterIndex1 == 0) {
                         // Note - MPI Call - Broadcast - double[]
-                        // TODO - changing to mmap call
-                        /*PWCUtility.mpiOps.broadcast(TopMeanDistance, owner);*/
                         ParallelOps.broadcast(TopMeanDistance, owner);
                     }
                     PWCUtility.StopSubTimer(PWCUtility.MPIBROADCASTTiming);
@@ -589,8 +585,6 @@ public class FindCenters
                                 PWCUtility.mpiOps.broadcast(TopMeanDistance[CenterIndex1], owner);
                         if (CenterIndex1 == 0) {
                             // Note - MPI Call - Broadcast - double[]
-                            // TODO - changing to mmap call
-                            /*PWCUtility.mpiOps.broadcast(TopMeanDistance, owner);*/
                             ParallelOps.broadcast(TopMeanDistance, owner);
                         }
                         PWCUtility.StopSubTimer(PWCUtility.MPIBROADCASTTiming);
@@ -711,8 +705,6 @@ public class FindCenters
                                 PWCUtility.mpiOps.broadcast(TopMeanDistance[CenterIndex1], owner);
                         if (CenterIndex1 == 0) {
                             // Note - MPI Call - Broadcast - double[]
-                            // TODO - changing to mmap call
-                            /*PWCUtility.mpiOps.broadcast(TopMDSCoGDistance, owner);*/
                             ParallelOps.broadcast(TopMDSCoGDistance, owner);
                         }
                         PWCUtility.StopSubTimer(PWCUtility.MPIBROADCASTTiming);
@@ -967,8 +959,6 @@ public class FindCenters
                             Num_MeanMethod = PWCUtility.mpiOps.broadcast(Num_MeanMethod, owner);
                             if (CenterIndex1 == 0) {
                                 // Note - MPI Call - Broadcast - double[]
-                                // TODO - changing to mmap call
-                                /*PWCUtility.mpiOps.broadcast(TopBucketDistance, owner);*/
                                 ParallelOps.broadcast(TopBucketDistance, owner);
                             }
                             // Note - MPI Call - Broadcast - double

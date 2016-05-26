@@ -590,8 +590,6 @@ public class Program
 		{
 			PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming);
             // Note - MPI Call - Allreduce - int - sum
-            // TODO - changing to mmap all reduce call
-			/*PWCUtility.mpiOps.allReduce(LocalOccupationCounts, MPI.SUM);*/
 			ParallelOps.allReduceSum(LocalOccupationCounts);
 			PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming);
 		}
@@ -661,10 +659,7 @@ public class Program
 			PWCUtility.mpiOps.send(tosend, 0, MPItag);
 		}
         // Note - MPI call - Broadcast - int[]
-        // TODO - changing to mmap broadcast call
-		/*PWCUtility.mpiOps.broadcast(Program.ClusterAssignments, 0);*/
         ParallelOps.broadcast(Program.ClusterAssignments, 0);
-		/*PWCUtility.mpiOps.barrier();*/
         if (!PWCUtility.timingCompleted){ // If PWCUtility.EndTiming() has been called then no need to reset the precise timer
             /* Restart Timer - requires reset and start */
             PWCUtility.PreciseTimer.reset();
