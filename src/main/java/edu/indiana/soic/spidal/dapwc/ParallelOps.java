@@ -405,6 +405,15 @@ public class ParallelOps {
         packet.copyTo(offset, mmapCollectiveXReadBytes);
         worldProcsComm.barrier();
 
+        // TODO - debugs
+        if (worldProcRank == 30){
+            MPIPacket p = MPIPacket.newDoublePacket(packet.getArrayLength());
+            for (int i = 0; i < mmapProcsCount; ++i){
+                p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
+                System.out.println("*** p.getNumberOfPoints " + p.getNumberOfPoints());
+            }
+        }
+
         if(isMmapLead){
             cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
