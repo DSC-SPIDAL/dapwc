@@ -385,7 +385,7 @@ public class ParallelOps {
         return fullXArray;
     }
 
-    public static Iterator<MPISecPacket> allGather(MPISecPacket packet) throws MPIException {
+    public static void allGather(MPISecPacket packet, MPISecPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         packet.copyTo(offset, mmapCollectiveXReadBytes);
         worldProcsComm.barrier();
@@ -395,27 +395,9 @@ public class ParallelOps {
         }
         worldProcsComm.barrier();
 
-        return new Iterator<MPISecPacket>() {
-            int idx = 0;
-            int extent = packet.getExtent();
-            int length = packet.getArrayLength();
-            @Override
-            public boolean hasNext() {
-                mmapCollectiveXReadBytes.position(idx*extent);
-                return mmapCollectiveXReadBytes.remaining() > extent;
-            }
-
-            @Override
-            public MPISecPacket next() {
-                // TODO - debugs - if everything else works, check if this mapping will work with ByteBuffer and not Bytes
-//                packet.mapAt(idx*extent, length, mmapCollectiveXReadByteBuffer);
-                MPISecPacket p = new MPISecPacket(length);
-                p.copyFrom(idx*extent, mmapCollectiveXReadByteBuffer);
-                ++idx;
-                return p;
-//                return packet;
-            }
-        };
+        for (int i = 0; i < worldProcsCount; ++i){
+            packets[i].copyFrom(i*packet.getExtent(), packet.getExtent(), mmapCollectiveXReadBytes);
+        }
     }
 
 

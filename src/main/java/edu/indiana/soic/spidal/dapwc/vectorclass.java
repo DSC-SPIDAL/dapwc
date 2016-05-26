@@ -447,16 +447,7 @@ public class vectorclass
                 if (myownMandB.getNumberOfPoints() > 46){
 //                    System.out.println("++++++Error before allgather " + myownMandB.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
                 }
-                Iterator<MPISecPacket> iterator = ParallelOps.allGather(myownMandB);
-                int count = 0;
-                while (count < ParallelOps.worldProcsCount && iterator.hasNext()){
-                    MPISecPacket next = iterator.next();
-                    if (next.getNumberOfPoints() > 46){
-//                        System.out.println("*********Error in allgather at " + count + " numpoints" + next.getNumberOfPoints() + " rank " + ParallelOps.worldProcRank);
-                    }
-                    MPISecPacket.memberCopy(next, MandBRepository[count]);
-                    ++count;
-                }
+                ParallelOps.allGather(myownMandB, MandBRepository);
             }
             double[] farAxarrays = ParallelOps.allGather(myownAxarray);
 
