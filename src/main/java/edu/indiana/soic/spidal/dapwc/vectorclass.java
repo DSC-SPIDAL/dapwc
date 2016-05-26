@@ -435,6 +435,8 @@ public class vectorclass
                     }
 
                     fromafarMandB = MandBRepository[idx];
+                    System.out.println("-- Rank: " + ParallelOps.worldProcRank + " idx " + idx + " packets[idx].numpoints " + MandBRepository[idx].getNumberOfPoints());
+                    ParallelOps.worldProcsComm.barrier();
                     System.arraycopy(farAxarrays, idx*myownAxarray.length, fromafarAxarray, 0, myownAxarray.length);
                 }
 
