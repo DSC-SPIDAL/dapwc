@@ -434,7 +434,7 @@ public class ParallelOps {
 
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, ZmmapCollectiveReadBytes);
+        packet.copyTo(offset, mmapCollectiveReadBytes);
         worldProcsComm.barrier();
 
         // TODO - debugs
@@ -454,7 +454,7 @@ public class ParallelOps {
         worldProcsComm.barrier();*/
 
         if(isMmapLead){
-            cgProcComm.allGather(ZmmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+            cgProcComm.allGather(mmapCollectiveReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
@@ -462,12 +462,12 @@ public class ParallelOps {
         if (worldProcRank == 176) {
             for (int i = 0; i < worldProcsCount; ++i) {
                 packets[i].copyFrom(i *
-                        packet.getExtent(), packet.getArrayLength(), ZmmapCollectiveReadBytes);
+                        packet.getExtent(), packet.getArrayLength(), mmapCollectiveReadBytes);
 
 
                 System.out.println("++++ number of points for " + i + " " +
                         packets[i].getNumberOfPoints() + " frombuff " +
-                        ZmmapCollectiveReadBytes.readInt(
+                        mmapCollectiveReadBytes.readInt(
                                 i * packet.getExtent() + Integer.BYTES) +
                         " i was sending " + packet.getNumberOfPoints());
             }
