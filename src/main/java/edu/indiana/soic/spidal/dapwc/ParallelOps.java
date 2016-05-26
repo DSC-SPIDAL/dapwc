@@ -422,17 +422,6 @@ public class ParallelOps {
         packet.copyTo(offset, mmapCollectiveXReadBytes);
         worldProcsComm.barrier();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // TODO - debugs
-        if (worldProcRank == 176){
-            System.out.println("@@ r " + mmapCollectiveXReadByteBuffer.getInt(offset) + " v " + mmapCollectiveXReadByteBuffer.getInt(offset+Integer.BYTES));
-        }
-        worldProcsComm.barrier();
-
         if(isMmapLead){
             cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
