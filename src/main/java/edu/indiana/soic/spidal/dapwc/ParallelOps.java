@@ -446,7 +446,7 @@ public class ParallelOps {
 
                 System.out.println("++++ number of points for " + i + " " +
                         packets[i].getNumberOfPoints() + " frombuff " +
-                        ZmmapCollectiveReadBytes.readInt(
+                        ZmmapCollectiveReadByteBuffer.getInt(
                                 i * packet.getExtent() + Integer.BYTES) +
                         " i was sending " + packet.getNumberOfPoints());
             }
