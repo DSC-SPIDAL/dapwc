@@ -467,6 +467,7 @@ public class ParallelOps {
                 System.out.println("**** number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
             }*/
         }
+        worldProcsComm.barrier();
     }
 
     private static void copyToBuffer(double[] array, Bytes to, long size, long offset) {
