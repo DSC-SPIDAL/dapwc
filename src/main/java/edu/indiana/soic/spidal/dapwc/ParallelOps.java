@@ -437,10 +437,11 @@ public class ParallelOps {
         /*packet.copyTo(offset, ZmmapCollectiveReadBytes);*/
         ZmmapCollectiveReadBytes.writeInt(offset, worldProcRank);
         ZmmapCollectiveReadBytes.writeInt(offset+Integer.BYTES, 53);
+
+        worldProcsComm.barrier();
         if (worldProcRank == 176){
             System.out.println("@@ r " + ZmmapCollectiveReadByteBuffer.getInt(offset) + " v " + ZmmapCollectiveReadByteBuffer.getInt(offset+Integer.BYTES));
         }
-        worldProcsComm.barrier();
 
         // TODO - debugs
         if (worldProcRank == 176) {
