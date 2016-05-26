@@ -443,7 +443,7 @@ public class ParallelOps {
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXXReadBytes);
             // TODO - debugs
             if (worldProcRank == 176){
-                System.out.println("**** number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
+                System.out.println("**** number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
             }
         }
     }
