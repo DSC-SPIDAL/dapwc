@@ -3,6 +3,7 @@ package edu.indiana.soic.spidal.dapwc;
 import edu.indiana.soic.spidal.common.*;
 import edu.indiana.soic.spidal.common.Range;
 import edu.indiana.soic.spidal.common.RangePartitioner;
+import edu.indiana.soic.spidal.mpi.MPIReducePlusIndex;
 import mpi.Intracomm;
 import mpi.MPI;
 import mpi.MPIException;
@@ -78,10 +79,8 @@ public class ParallelOps {
     public static LongBuffer threadsAndMPIBuffer;
     public static LongBuffer mpiOnlyBuffer;
 
-    public static String fullXFname;
-    public static Bytes fullXBytes;
-    public static ByteBuffer fullXByteBuffer;
     public static double[] fullXArray;
+    public static MPIReducePlusIndex mpiReducePlusIndex;
 
     public static Bytes mmapCollPackReadBytes;
     public static ByteBuffer mmapCollPackReadByteBuffer;
@@ -92,10 +91,6 @@ public class ParallelOps {
     public static Bytes mmapCollectiveReadBytes;
     public static ByteBuffer mmapCollectiveReadByteBuffer;
     public static Bytes mmapCollectiveWriteBytes;
-
-    public static String ZmmapCollectiveFileName;
-    public static Bytes ZmmapCollectiveReadBytes;
-    public static ByteBuffer ZmmapCollectiveReadByteBuffer;
 
     public static MPISecPacket tmpMPISecPacket;
 
@@ -328,8 +323,7 @@ public class ParallelOps {
             mmapCollPackWriteByteBuffer = mmapCollPackWriteBytes.sliceAsByteBuffer(
                     mmapCollPackWriteByteBuffer);
 
-            int fullXArrayLength = Program.maxNcent * PWCUtility.PointCount_Largest * worldProcsCount;
-            fullXArray = new double[fullXArrayLength];
+
         }
 
         /* Allocate memory maps for collective communications like AllReduce and Broadcast */
@@ -364,6 +358,10 @@ public class ParallelOps {
                     mmapCollectiveReadBytes.writeByte(i,0);
             }
         }
+
+        int fullXArrayLength = Program.maxNcent * PWCUtility.PointCount_Largest * worldProcsCount;
+        fullXArray = new double[fullXArrayLength];
+        mpiReducePlusIndex = new MPIReducePlusIndex();
     }
 
     public static double[] allGather(double[] array) throws MPIException{
@@ -406,6 +404,44 @@ public class ParallelOps {
         for (int i = 0; i < worldProcsCount; ++i){
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollPackReadBytes);
         }
+    }
+
+    public static MPIReducePlusIndex allReduceWithLoc(int idx, double val, MPIReducePlusIndex.Op reduceOp) throws MPIException {
+        int extent = Integer.BYTES+Double.BYTES;
+        mmapCollectiveWriteBytes.writeInt(extent*mmapProcRank, idx);
+        mmapCollectiveWriteBytes.writeDouble(extent*mmapProcRank+Integer.BYTES, val);
+        worldProcsComm.barrier();
+        if (ParallelOps.isMmapLead){
+            int bestIdx = -1;
+            double bestVal = reduceOp == MPIReducePlusIndex.Op.MAX_WITH_INDEX ? Double.MIN_VALUE : Double.MAX_VALUE;
+            for (int i = 0; i < mmapProcsCount; ++i){
+                idx = mmapCollectiveReadBytes.readInt(i*extent);
+                val = mmapCollectiveReadBytes.readInt(i*extent+Integer.BYTES);
+                if (reduceOp == MPIReducePlusIndex.Op.MAX_WITH_INDEX) {
+                    if (val > bestVal){
+                        bestVal = val;
+                        bestIdx = idx;
+                    }
+                } else if (reduceOp == MPIReducePlusIndex.Op.MIN_WITH_INDEX){
+                    if (val < bestVal){
+                        bestVal = val;
+                        bestIdx = idx;
+                    }
+                }
+            }
+            mmapCollectiveWriteBytes.writeInt(0, bestIdx);
+            mmapCollectiveWriteBytes.writeDouble(Integer.BYTES, bestVal);
+
+            if (reduceOp == MPIReducePlusIndex.Op.MAX_WITH_INDEX) {
+                cgProcComm.allReduce(mmapCollectiveReadByteBuffer, extent, MPI.BYTE, MPIReducePlusIndex.getMaxWithIndex());
+            } else if (reduceOp == MPIReducePlusIndex.Op.MIN_WITH_INDEX){
+                cgProcComm.allReduce(mmapCollectiveReadByteBuffer, extent, MPI.BYTE, MPIReducePlusIndex.getMinWithIndex());
+            }
+        }
+        worldProcsComm.barrier();
+        mpiReducePlusIndex.idx = mmapCollectiveReadBytes.readInt(0);
+        mpiReducePlusIndex.val = mmapCollectiveReadBytes.readDouble(Integer.BYTES);
+        return mpiReducePlusIndex;
     }
 
 

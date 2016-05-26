@@ -106,11 +106,11 @@ public class MpiOps {
     }
 
 
-    public MPIReducePlusIndex allReduce(MPIReducePlusIndex value, MPIReducePlusIndex.Op reduceOp) throws MPIException {
+   /* public MPIReducePlusIndex allReduce(MPIReducePlusIndex value, MPIReducePlusIndex.Op reduceOp) throws MPIException {
         return allReduce(value, reduceOp, comm);
-    }
+    }*/
 
-    public MPIReducePlusIndex allReduce(MPIReducePlusIndex value, MPIReducePlusIndex.Op reduceOp, Intracomm comm) throws MPIException {
+    /*public MPIReducePlusIndex allReduce(MPIReducePlusIndex value, MPIReducePlusIndex.Op reduceOp, Intracomm comm) throws MPIException {
 
         ByteBuffer buffer = value.getBuffer();
         if (reduceOp == MPIReducePlusIndex.Op.MAX_WITH_INDEX) {
@@ -119,7 +119,7 @@ public class MpiOps {
             comm.allReduce(buffer, MPIReducePlusIndex.extent, MPI.BYTE, MPIReducePlusIndex.getMinWithIndex());
         }
         return value;
-    }
+    }*/
 
     /* AllGather */
     /*public int[] allGather(int value) throws MPIException {

@@ -11,27 +11,10 @@ public class MPIReducePlusIndex
     private static final int indexOffset = 0;
     private static final int valueOffset = 4;
     static final int extent = 12;
-    private ByteBuffer buffer;
 
-    public MPIReducePlusIndex(int index, double value)
-    {
-        buffer = MPI.newByteBuffer(extent);
-        buffer.putInt(index).putDouble(value);
-    }
+    public int idx;
+    public double val;
 
-    public MPIReducePlusIndex(){}
-
-    public int getIndex() {
-        return buffer.getInt(0);
-    }
-
-    public double getValue() {
-        return buffer.getDouble(4);
-    }
-
-    public ByteBuffer getBuffer() {
-        return buffer;
-    }
 
     private static final String MPI_USER_FUNCTION_MIN_WITH_INDEX_INVALID_DATA_TYPE = "MPI User Function - MinWithIndex: Invalid data type";
     private static final String MPI_USER_FUNCTION_MAX_WITH_INDEX_INVALID_DATA_TYPE = "MPI User Function - MaxWithIndex: Invalid data type";

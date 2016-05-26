@@ -1038,11 +1038,13 @@ public class GlobalReductions {
                 if (PWCUtility.MPI_Size > 1) {
                     PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                     // Note - MPI Call - Allreduce - MPIReducePlusIndex - min with index
-                    MPIReducePlusIndex result = PWCUtility.mpiOps
+                    /*MPIReducePlusIndex result = PWCUtility.mpiOps
                                                           .allReduce(new MPIReducePlusIndex(localindex, localvalue),
-                                                                     MPIReducePlusIndex.Op.MIN_WITH_INDEX);
-                    localvalue = result.getValue();
-                    localindex = result.getIndex();
+                                                                     MPIReducePlusIndex.Op.MIN_WITH_INDEX);*/
+                    MPIReducePlusIndex result = ParallelOps.allReduceWithLoc(localindex, localvalue,
+                                    MPIReducePlusIndex.Op.MIN_WITH_INDEX);
+                    localvalue = result.val;
+                    localindex = result.idx;
                     PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
                 }
 
