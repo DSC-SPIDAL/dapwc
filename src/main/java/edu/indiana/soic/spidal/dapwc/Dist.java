@@ -829,6 +829,12 @@ public class Dist
                     idx += ParallelOps.worldProcsCount;
                 }
                 fromafar = fromafarAll[idx];
+                // TODO - debugs
+                if (ParallelOps.worldProcRank == 176) {
+                    for (int i = 0; i < ParallelOps.worldProcsCount; ++i) {
+                        System.out.println(" number of points for " + i + " " + fromafarAll[i].getNumberOfPoints());
+                    }
+                }
             }
             /********************TODO - End Test code to replace pipeline *********/
 
@@ -883,8 +889,9 @@ public class Dist
                             Arrays.fill(localBalpha_k_[ProcessPointIndex], 0, localNcent, 0.0);
                             betatotal = PWCUtility.PointCount_Process;
                             betastart = PWCUtility.PointStart_Process;
+                            // TODO - debugs
                             if (betatotal != fromafar.getNumberOfPoints()){
-                                System.out.println("**** Rank " + ParallelOps.worldProcRank + " error betatoal " + betatotal + " != numberofpoints " + fromafar.getNumberOfPoints());
+//                                System.out.println("**** Rank " + ParallelOps.worldProcRank + " error betatoal " + betatotal + " != numberofpoints " + fromafar.getNumberOfPoints());
                             }
                             /*for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
                             {
