@@ -433,10 +433,10 @@ public class ParallelOps {
         int offset = packet.getExtent() * mmapProcRank;
         packet.copyTo(offset, mmapCollectiveXXReadBytes);
         // TODO - debugs
-        if (worldProcRank == 176){
+        /*if (worldProcRank == 176){
             packets[0].copyFrom(0, packet.getArrayLength(), mmapCollectiveXXReadBytes);
             System.out.println("----- number of points for me " + packets[0].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
-        }
+        }*/
 
         worldProcsComm.barrier();
 
