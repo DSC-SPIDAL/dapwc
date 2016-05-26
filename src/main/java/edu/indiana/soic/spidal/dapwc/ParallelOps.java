@@ -331,10 +331,18 @@ public class ParallelOps {
                         StandardOpenOption.WRITE)) {
 
             // See SharedMemoryCommunicatioNotes for more info on the number 1000
-            int chunkSize = 2 * Integer.BYTES +
+           /* int chunkSize = 2 * Integer.BYTES +
                     Program.maxNcent * PWCUtility.PointCount_Largest *
                             Double.BYTES;
-            int mmapCollectiveYReadByteExtent = chunkSize * (worldProcsCount);
+            int mmapCollectiveYReadByteExtent = chunkSize * (worldProcsCount);*/
+
+            // TODO - debugs. with mmapCollectReadBytes things work, so why it doesn't work here. Let's see if using the same size works
+            int mmapAllReduceChunkSizeInBytes = Math.max(Program.maxNcent, 1000)*Double.BYTES;
+            int mmapCollectiveYReadByteExtent = Math.max(
+                    mmapProcsCount * mmapAllReduceChunkSizeInBytes,
+                    (Math.max(
+                            Program.maxNcent * Double.BYTES,
+                            globalColCount*Integer.BYTES)));
 
             long mmapCollectiveYReadByteOffset = 0L;
 
