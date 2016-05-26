@@ -314,7 +314,7 @@ public class ParallelOps {
 
             if (isMmapLead){
                 for (int i = 0; i < mmapCollectiveXReadByteExtent; ++i)
-                mmapCollectiveReadBytes.writeByte(0);
+                mmapCollectiveXReadBytes.writeByte(0);
             }
         }
 
