@@ -328,31 +328,6 @@ public class ParallelOps {
             mmapCollPackWriteByteBuffer = mmapCollPackWriteBytes.sliceAsByteBuffer(
 
                     mmapCollPackWriteByteBuffer);
-
-            // TODO - this might not be necessary
-            if (isMmapLead){
-                for (int i = 0; i < mmapCollPackReadByteExtent; ++i) {
-                    mmapCollPackReadBytes.writeByte(i, 0);
-                }
-                for (int i = 0; i < mmapCollPackWriteByteExtent; ++i) {
-                    mmapCollPackWriteBytes.writeByte(i, 0);
-                }
-            }
-        }
-
-        fullXFname = machineName + ".mmapId." + mmapIdLocalToNode +".fullX.bin";
-        try (FileChannel fullXFc = FileChannel.open(Paths.get(mmapScratchDir,fullXFname),
-                     StandardOpenOption.CREATE,StandardOpenOption.WRITE,StandardOpenOption.READ)) {
-
-            int fullXByteExtent = Program.maxNcent * PWCUtility.PointCount_Largest * Double.BYTES * worldProcsCount;
-            fullXArray = new double[fullXByteExtent / Double.BYTES];
-            fullXBytes = ByteBufferBytes.wrap(fullXFc.map(FileChannel.MapMode.READ_WRITE, 0L, fullXByteExtent));
-            fullXByteBuffer = fullXBytes.sliceAsByteBuffer(fullXByteBuffer);
-
-            if (isMmapLead){
-                for (int i = 0; i < fullXByteExtent; ++i)
-                    fullXBytes.writeByte(i,0);
-            }
         }
 
         /* Allocate memory maps for collective communications like AllReduce and Broadcast */
@@ -387,37 +362,6 @@ public class ParallelOps {
                     mmapCollectiveReadBytes.writeByte(i,0);
             }
         }
-
-
-        ZmmapCollectiveFileName = machineName + ".mmapId." + mmapIdLocalToNode + ".ZmmapCollective.bin";
-        try (FileChannel ZmmapCollectiveFc = FileChannel
-                .open(Paths.get(mmapScratchDir, ZmmapCollectiveFileName),
-                        StandardOpenOption.CREATE, StandardOpenOption.READ,
-                        StandardOpenOption.WRITE)) {
-
-            int chunkSize = 2 * Integer.BYTES +
-                    Program.maxNcent * PWCUtility.PointCount_Largest *
-                            Double.BYTES;
-            int ZmmapCollectiveReadByteExtent = chunkSize * (worldProcsCount);
-
-            long mmapCollectiveReadByteOffset = 0L;
-
-            ZmmapCollectiveReadBytes = ByteBufferBytes.wrap(ZmmapCollectiveFc.map(
-                    FileChannel.MapMode.READ_WRITE, mmapCollectiveReadByteOffset,
-                    ZmmapCollectiveReadByteExtent));
-            ZmmapCollectiveReadByteBuffer = ZmmapCollectiveReadBytes.sliceAsByteBuffer(
-                    ZmmapCollectiveReadByteBuffer);
-
-            ZmmapCollectiveReadBytes.position(0);
-
-            /*if (isMmapLead){
-                for (int i = 0; i < ZmmapCollectiveReadByteExtent; ++i)
-                    ZmmapCollectiveReadBytes.writeByte(i,0);
-            }*/
-        }
-
-        // functional barrier
-        worldProcsComm.barrier();
     }
 
     public static double[] allGather(double[] array) throws MPIException{

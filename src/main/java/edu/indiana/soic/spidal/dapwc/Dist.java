@@ -805,7 +805,6 @@ public class Dist
 			toprocess = 0;
 		}
 
-        /********************TODO - Test code to replace pipeline *********/
         for (int ProcessPointIndex = 0; ProcessPointIndex < PWCUtility.PointCount_Process; ++ProcessPointIndex) {
             for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
             {
@@ -814,14 +813,11 @@ public class Dist
                 myown.setMArrayDoubleAt(bigindex, tmp);
             }
         }
-
         ParallelOps.allGather(myown, fromafarAll);
-        /********************TODO - END Test code to replace pipeline *********/
 
 		//	First communicationloop is local; then we have MPI_Size transfers of data in  a ring through processes
 		for (int MPICommunicationSteps = 0; MPICommunicationSteps < PWCUtility.MPI_Size; MPICommunicationSteps++)
 		{
-            /********************TODO - Test code to replace pipeline *********/
             if (MPICommunicationSteps > 0)
             {
                 int idx = ParallelOps.worldProcRank - MPICommunicationSteps;
@@ -829,49 +825,7 @@ public class Dist
                     idx += ParallelOps.worldProcsCount;
                 }
                 fromafar = fromafarAll[idx];
-                // TODO - debugs
-                /*if (ParallelOps.worldProcRank == 176) {
-                    for (int i = 0; i < ParallelOps.worldProcsCount; ++i) {
-                        System.out.println(" number of points for " + i + " " + fromafarAll[i].getNumberOfPoints());
-                    }
-                }*/
             }
-            /********************TODO - End Test code to replace pipeline *********/
-
-
-            /*if (MPICommunicationSteps == 1)
-			{
-				toafar.setFirstPoint(PWCUtility.PointStart_Process);
-				toafar.setNumberOfPoints(PWCUtility.PointCount_Process);
-				if (PWCUtility.PointCount_Process < PWCUtility.PointCount_Largest)
-				{
-					for (int countC = 0; countC < localNcent; countC++)
-					{
-						int bigindex = PWCUtility.PointCount_Process * localNcent + countC;
-						toafar.setMArrayDoubleAt(bigindex, myown.getMArrayDoubleAt(bigindex));
-					}
-				}
-			}
-			if (MPICommunicationSteps > 1)
-			{
-				toafar.setFirstPoint(fromafar.getFirstPoint());
-				toafar.setNumberOfPoints(fromafar.getNumberOfPoints());
-				if (PWCUtility.PointCount_Process < PWCUtility.PointCount_Largest)
-				{
-					for (int countC = 0; countC < localNcent; countC++)
-					{
-						int bigindex = PWCUtility.PointCount_Process * localNcent + countC;
-						toafar.setMArrayDoubleAt(bigindex, fromafar.getMArrayDoubleAt(bigindex));
-					}
-				}
-			}
-			if (MPICommunicationSteps > 0)
-			{
-				PWCUtility.StartSubTimer(PWCUtility.MPISENDRECEIVETiming);
-                // Note - MPI Call - SendRecv - MPIPacket
-                fromafar = PWCUtility.mpiOps.sendReceive(toafar,toprocess,sendtag,fromprocess,receivetag, MPIPacket.Type.Double);
-				PWCUtility.StopSubTimer(PWCUtility.MPISENDRECEIVETiming);
-			}*/
 
             // Note - parallel for
             final int MPICommunicationStepsLoopVar = MPICommunicationSteps;
@@ -889,30 +843,11 @@ public class Dist
                             Arrays.fill(localBalpha_k_[ProcessPointIndex], 0, localNcent, 0.0);
                             betatotal = PWCUtility.PointCount_Process;
                             betastart = PWCUtility.PointStart_Process;
-                            // TODO - debugs
-                            /*if (betatotal != fromafar.getNumberOfPoints()){
-//                                System.out.println("**** Rank " + ParallelOps.worldProcRank + " error betatoal " + betatotal + " != numberofpoints " + fromafar.getNumberOfPoints());
-                            }
-                            for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                            {
-                                double tmp = localMalpha_k_[ProcessPointIndex][ClusterIndex];
-                                int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
-                                myown.setMArrayDoubleAt(bigindex, tmp);
-                                toafar.setMArrayDoubleAt(bigindex, tmp);
-                            }*/
                         }
                         else
                         {
                             betatotal = fromafar.getNumberOfPoints();
                             betastart = fromafar.getFirstPoint();
-                            /*if (MPICommunicationStepsLoopVar != (PWCUtility.MPI_Size - 1))
-                            {
-                                for (int ClusterIndex = 0; ClusterIndex < localNcent; ClusterIndex++)
-                                {
-                                    int bigindex = ProcessPointIndex * localNcent + ClusterIndex;
-                                    toafar.setMArrayDoubleAt(bigindex,fromafar.getMArrayDoubleAt(bigindex));
-                                }
-                            }*/
                         }
                         for (int betalocal = 0; betalocal < betatotal; betalocal++)
                         {
