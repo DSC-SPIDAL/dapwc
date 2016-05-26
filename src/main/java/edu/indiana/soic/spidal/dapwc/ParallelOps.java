@@ -434,6 +434,14 @@ public class ParallelOps {
         packet.copyTo(offset, mmapCollectiveXXReadBytes);
         worldProcsComm.barrier();
 
+        // TODO - debugs
+        for (int i = 0; i < mmapProcsCount; ++i){
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXXReadBytes);
+            if (worldProcRank == 176){
+                System.out.println("++++ number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
+            }
+        }
+
         if(isMmapLead){
             cgProcComm.allGather(mmapCollectiveXXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
@@ -442,9 +450,9 @@ public class ParallelOps {
         for (int i = 0; i < worldProcsCount; ++i){
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXXReadBytes);
             // TODO - debugs
-            if (worldProcRank == 176){
+            /*if (worldProcRank == 176){
                 System.out.println("**** number of points for " + i + " " + packets[i].getNumberOfPoints() + " frombuff " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES) + " i was sending " + packet.getNumberOfPoints());
-            }
+            }*/
         }
     }
 
