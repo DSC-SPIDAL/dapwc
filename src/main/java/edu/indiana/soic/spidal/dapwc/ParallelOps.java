@@ -422,32 +422,16 @@ public class ParallelOps {
 
     public static double[] allGather(double[] array) throws MPIException{
         int offset = array.length*Double.BYTES*mmapProcRank;
-        copyToBuffer(array, fullXBytes, array.length, offset);
+        copyToBuffer(array, mmapCollPackWriteBytes, array.length, offset);
         worldProcsComm.barrier();
         if (isMmapLead){
-            cgProcComm.allGather(fullXByteBuffer, array.length*mmapProcsCount, MPI.DOUBLE);
+            cgProcComm.allGather(mmapCollPackWriteByteBuffer, array.length*mmapProcsCount, MPI.DOUBLE, mmapCollPackReadByteBuffer, array.length*mmapProcsCount, MPI.DOUBLE);
         }
         worldProcsComm.barrier();
-        copyFromBuffer(fullXArray, fullXBytes, array.length*worldProcsCount, 0);
+        copyFromBuffer(fullXArray, mmapCollPackReadBytes, array.length*worldProcsCount, 0);
         return fullXArray;
     }
 
-    /*public static void allGather(MPISecPacket packet, MPISecPacket[] packets) throws MPIException {
-        int offset = packet.getExtent() * mmapProcRank;
-        packet.copyTo(offset, mmapCollPackReadBytes);
-        worldProcsComm.barrier();
-
-        if(isMmapLead){
-            cgProcComm.allGather(mmapCollPackReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
-        }
-        worldProcsComm.barrier();
-
-        for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollPackReadBytes);
-        }
-    }*/
-
-    // TODO - debugs
     public static void allGather(MPISecPacket packet, MPISecPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
         packet.copyTo(offset, mmapCollPackWriteBytes);
@@ -461,14 +445,6 @@ public class ParallelOps {
         for (int i = 0; i < worldProcsCount; ++i){
             packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollPackReadBytes);
         }
-
-        /*cgProcComm.allGather(packet.getBuffer(), packet.getExtent(), MPI
-                .BYTE, mmapCollPackReadByteBuffer, packet.getExtent(), MPI.BYTE);
-        for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength()
-                    , mmapCollPackReadByteBuffer);
-        }*/
-
     }
 
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
