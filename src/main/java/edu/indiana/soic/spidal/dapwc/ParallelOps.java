@@ -431,28 +431,16 @@ public class ParallelOps {
 
     public static void allGather(MPIPacket packet, MPIPacket[] packets) throws MPIException {
         int offset = packet.getExtent() * mmapProcRank;
-        /*packet.copyTo(offset, mmapCollectiveXReadBytes);*/
-        mmapCollectiveXXReadBytes.writeInt(offset, worldProcRank);
-        mmapCollectiveXXReadBytes.writeInt(offset+Integer.BYTES, 53);
+        packet.copyTo(offset, mmapCollectiveXXReadBytes);
         worldProcsComm.barrier();
 
-        // TODO - debugs
-        if (worldProcRank == 54){
-//            MPIPacket p = MPIPacket.newDoublePacket(packet.getArrayLength());
-            for (int i = 0; i < mmapProcsCount; ++i){
-//                p.copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
-//                System.out.println("*** p.getNumberOfPoints " + p.getNumberOfPoints());
-                System.out.println(" ** r " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()) + " v " + mmapCollectiveXXReadBytes.readInt(i*packet.getExtent()+Integer.BYTES));
-            }
-        }
-
         if(isMmapLead){
-            cgProcComm.allGather(mmapCollectiveXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
+            cgProcComm.allGather(mmapCollectiveXXReadByteBuffer, packet.getExtent()*mmapProcsCount, MPI.BYTE);
         }
         worldProcsComm.barrier();
 
         for (int i = 0; i < worldProcsCount; ++i){
-            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXReadBytes);
+            packets[i].copyFrom(i*packet.getExtent(), packet.getArrayLength(), mmapCollectiveXXReadBytes);
         }
     }
 
