@@ -10,89 +10,89 @@ import static edu.rice.hj.Module1.forallChunked;
 
 public class GlobalReductions {
 
-    public static class FindBoolOr {
-        public double[] NumberofPoints;
-        public int NumberofThreads;
-        public boolean[] Orvalue;
-        public double TotalNumberofPoints;
-        public boolean TotalOr;
+//    public static class FindBoolOr {
+//        public double[] NumberofPoints;
+//        public int NumberofThreads;
+//        public boolean[] Orvalue;
+//        public double TotalNumberofPoints;
+//        public boolean TotalOr;
+//
+//        public FindBoolOr(int NumThreads) {
+//            NumberofThreads = NumThreads;
+//
+//            NumberofPoints = new double[NumThreads];
+//            Orvalue = new boolean[NumThreads];
+//
+//            TotalNumberofPoints = 0.0;
+//            TotalOr = false;
+//            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+//                NumberofPoints[ThreadNo] = 0.0;
+//                Orvalue[ThreadNo] = false;
+//            }
+//        }
+//
+//        public final void addAPoint(int ThreadNo, boolean value) {
+//            NumberofPoints[ThreadNo] += 1.0;
+//            Orvalue[ThreadNo] = Orvalue[ThreadNo] || value;
+//        }
+//
+//        public final void sumOverThreadsAndMPI() throws MPIException {
+//            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+//                TotalNumberofPoints += NumberofPoints[ThreadNo];
+//                TotalOr = Orvalue[ThreadNo] || TotalOr;
+//            }
+//            if (PWCUtility.MPI_Size > 1) {
+//                PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
+//                // Note - MPI Call - Allreduce - double - sum
+//                TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
+//                // Note - MPI Call - Allreduce - boolean - or
+//                TotalOr = PWCUtility.mpiOps.allReduce(TotalOr, MPI.LOR);
+//                PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
+//            }
+//        }
+//    } // End FindBoolOr
 
-        public FindBoolOr(int NumThreads) {
-            NumberofThreads = NumThreads;
-
-            NumberofPoints = new double[NumThreads];
-            Orvalue = new boolean[NumThreads];
-
-            TotalNumberofPoints = 0.0;
-            TotalOr = false;
-            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                NumberofPoints[ThreadNo] = 0.0;
-                Orvalue[ThreadNo] = false;
-            }
-        }
-
-        public final void addAPoint(int ThreadNo, boolean value) {
-            NumberofPoints[ThreadNo] += 1.0;
-            Orvalue[ThreadNo] = Orvalue[ThreadNo] || value;
-        }
-
-        public final void sumOverThreadsAndMPI() throws MPIException {
-            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                TotalNumberofPoints += NumberofPoints[ThreadNo];
-                TotalOr = Orvalue[ThreadNo] || TotalOr;
-            }
-            if (PWCUtility.MPI_Size > 1) {
-                PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
-                // Note - MPI Call - Allreduce - double - sum
-                TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
-                // Note - MPI Call - Allreduce - boolean - or
-                TotalOr = PWCUtility.mpiOps.allReduce(TotalOr, MPI.LOR);
-                PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
-            }
-        }
-    } // End FindBoolOr
-
-    public static class FindIntSum {
-        private int[] NumberofPoints;
-        private int NumberofThreads;
-        private int[] Intvalue;
-        public int TotalNumberofPoints;
-        public int TotalInt;
-
-        public FindIntSum(int NumThreads) {
-            NumberofThreads = NumThreads;
-
-            NumberofPoints = new int[NumThreads];
-            Intvalue = new int[NumThreads];
-
-            TotalNumberofPoints = 0;
-            TotalInt = 0;
-            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                NumberofPoints[ThreadNo] = 0;
-                Intvalue[ThreadNo] = 0;
-            }
-        }
-
-        public final void addapoint(int ThreadNo, int value) {
-            NumberofPoints[ThreadNo] += 1;
-            Intvalue[ThreadNo] += value;
-        }
-
-        public final void sumoverthreadsandmpi() throws MPIException {
-            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                TotalNumberofPoints += NumberofPoints[ThreadNo];
-                TotalInt += Intvalue[ThreadNo];
-            }
-            if (PWCUtility.MPI_Size > 1) {
-                PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
-                // Note - MPI Call - Allreduce - int - sum
-                TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
-                // Note - MPI Call - Allreduce - int - sum
-                TotalInt = PWCUtility.mpiOps.allReduce(TotalInt, MPI.SUM);
-                PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
-            }
-        }
-    } // End FindIntSum
+//    public static class FindIntSum {
+//        private int[] NumberofPoints;
+//        private int NumberofThreads;
+//        private int[] Intvalue;
+//        public int TotalNumberofPoints;
+//        public int TotalInt;
+//
+//        public FindIntSum(int NumThreads) {
+//            NumberofThreads = NumThreads;
+//
+//            NumberofPoints = new int[NumThreads];
+//            Intvalue = new int[NumThreads];
+//
+//            TotalNumberofPoints = 0;
+//            TotalInt = 0;
+//            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+//                NumberofPoints[ThreadNo] = 0;
+//                Intvalue[ThreadNo] = 0;
+//            }
+//        }
+//
+//        public final void addapoint(int ThreadNo, int value) {
+//            NumberofPoints[ThreadNo] += 1;
+//            Intvalue[ThreadNo] += value;
+//        }
+//
+//        public final void sumoverthreadsandmpi() throws MPIException {
+//            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+//                TotalNumberofPoints += NumberofPoints[ThreadNo];
+//                TotalInt += Intvalue[ThreadNo];
+//            }
+//            if (PWCUtility.MPI_Size > 1) {
+//                PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
+//                // Note - MPI Call - Allreduce - int - sum
+//                TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
+//                // Note - MPI Call - Allreduce - int - sum
+//                TotalInt = PWCUtility.mpiOps.allReduce(TotalInt, MPI.SUM);
+//                PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
+//            }
+//        }
+//    } // End FindIntSum
 
     public static class FindDoubleArraySum { // Used to do histograms
         // Must call startThread method at start of threads
@@ -306,53 +306,53 @@ public class GlobalReductions {
         }
     } // End FindDoubleSum
 
-    public static class FindDoubleMean {
-        public double[] NumberofPoints;
-        public int NumberofThreads;
-        public double[] mean;
-        public double TotalNumberofPoints;
-        public double Totalmean;
-
-        public FindDoubleMean(int NumThreads) {
-            NumberofThreads = NumThreads;
-
-            NumberofPoints = new double[NumThreads];
-            mean = new double[NumThreads];
-
-            TotalNumberofPoints = 0.0;
-            Totalmean = 0.0;
-            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                NumberofPoints[ThreadNo] = 0.0;
-                mean[ThreadNo] = 0.0;
-            }
-        }
-
-        public final void addapoint(int ThreadNo, double value1) {
-            NumberofPoints[ThreadNo] += 1.0;
-            mean[ThreadNo] += value1;
-        }
-
-        public final void sumoverthreadsandmpi() throws MPIException {
-            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
-                TotalNumberofPoints += NumberofPoints[ThreadNo];
-                Totalmean += mean[ThreadNo];
-            }
-            if (PWCUtility.MPI_Size > 1) {
-                PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
-                // Note - MPI Call - Allreduce - double - sum
-                TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
-                // Note - MPI Call - Allreduce - double - sum
-                Totalmean = PWCUtility.mpiOps.allReduce(Totalmean, MPI.SUM);
-                PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
-            }
-
-            if (TotalNumberofPoints < 0.5) {
-                return;
-            }
-
-            Totalmean = Totalmean / TotalNumberofPoints;
-        }
-    } // End FindDoubleMean
+//    public static class FindDoubleMean {
+//        public double[] NumberofPoints;
+//        public int NumberofThreads;
+//        public double[] mean;
+//        public double TotalNumberofPoints;
+//        public double Totalmean;
+//
+//        public FindDoubleMean(int NumThreads) {
+//            NumberofThreads = NumThreads;
+//
+//            NumberofPoints = new double[NumThreads];
+//            mean = new double[NumThreads];
+//
+//            TotalNumberofPoints = 0.0;
+//            Totalmean = 0.0;
+//            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+//                NumberofPoints[ThreadNo] = 0.0;
+//                mean[ThreadNo] = 0.0;
+//            }
+//        }
+//
+//        public final void addapoint(int ThreadNo, double value1) {
+//            NumberofPoints[ThreadNo] += 1.0;
+//            mean[ThreadNo] += value1;
+//        }
+//
+//        public final void sumoverthreadsandmpi() throws MPIException {
+//            for (int ThreadNo = 0; ThreadNo < NumberofThreads; ThreadNo++) {
+//                TotalNumberofPoints += NumberofPoints[ThreadNo];
+//                Totalmean += mean[ThreadNo];
+//            }
+//            if (PWCUtility.MPI_Size > 1) {
+//                PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
+//                // Note - MPI Call - Allreduce - double - sum
+//                TotalNumberofPoints = PWCUtility.mpiOps.allReduce(TotalNumberofPoints, MPI.SUM);
+//                // Note - MPI Call - Allreduce - double - sum
+//                Totalmean = PWCUtility.mpiOps.allReduce(Totalmean, MPI.SUM);
+//                PWCUtility.StopSubTimer(PWCUtility.MPIREDUCETiming1);
+//            }
+//
+//            if (TotalNumberofPoints < 0.5) {
+//                return;
+//            }
+//
+//            Totalmean = Totalmean / TotalNumberofPoints;
+//        }
+//    } // End FindDoubleMean
 
 
     /*public static class FindVectorIntSum {

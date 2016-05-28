@@ -39,22 +39,22 @@ public class MpiOps {
     }
 
     /* AllReduce */
-    public int allReduce(int value, Op reduceOp) throws MPIException {
+    /*public int allReduce(int value, Op reduceOp) throws MPIException {
         return allReduce(value, reduceOp, comm);
     }
     public int allReduce(int value, Op reduceOp, Intracomm comm) throws MPIException {
         intBuff.put(0,value);
         comm.allReduce(intBuff, 1, MPI.INT, reduceOp);
         return intBuff.get(0);
-    }
+    }*/
 
-    public void allReduce(int [] values, Op reduceOp) throws MPIException{
+    /*public void allReduce(int [] values, Op reduceOp) throws MPIException{
         allReduce(values, reduceOp, comm);
     }
 
     public void allReduce(int [] values, Op reduceOp, Intracomm comm) throws MPIException {
         comm.allReduce(values, values.length, MPI.INT, reduceOp);
-    }
+    }*/
 
     public double allReduce(double value, Op reduceOp) throws MPIException {
         return allReduce(value, reduceOp, comm);
@@ -65,26 +65,26 @@ public class MpiOps {
         return doubleBuff.get(0);
     }
 
-    public void allReduce(double [] values, Op reduceOp) throws MPIException{
+    /*public void allReduce(double [] values, Op reduceOp) throws MPIException{
         allReduce(values, reduceOp, comm);
     }
 
     public void allReduce(double [] values, Op reduceOp, Intracomm comm) throws MPIException {
         comm.allReduce(values, values.length, MPI.DOUBLE, reduceOp);
-    }
+    }*/
 
 
-    public boolean allReduce(boolean value, Op reduceOp) throws MPIException {
+    /*public boolean allReduce(boolean value, Op reduceOp) throws MPIException {
         return allReduce(value, reduceOp, comm);
     }
     public boolean allReduce(boolean value, Op reduceOp, Intracomm comm) throws MPIException {
         booleanBuff[0] = value;
         comm.allReduce(booleanBuff, 1, MPI.BOOLEAN, reduceOp);
         return booleanBuff[0];
-    }
+    }*/
 
 
-    public String allReduce(String value) throws MPIException{
+    /*public String allReduce(String value) throws MPIException{
         return allReduce(value, comm);
     }
 
@@ -103,7 +103,7 @@ public class MpiOps {
         System.arraycopy(value.toCharArray(), 0,recv, displas[rank], length);
         comm.allGatherv(recv, lengths, displas, MPI.CHAR);
         return  new String(recv);
-    }
+    }*/
 
 
    /* public MPIReducePlusIndex allReduce(MPIReducePlusIndex value, MPIReducePlusIndex.Op reduceOp) throws MPIException {
@@ -162,13 +162,13 @@ public class MpiOps {
         return intBuff.get(0);
     }
 
-    public void broadcast(int[] values, int root) throws MPIException {
+    /*public void broadcast(int[] values, int root) throws MPIException {
         broadcast(values, root, comm);
     }
 
     public void broadcast(int[] values, int root, Intracomm comm) throws MPIException {
         comm.bcast(values, values.length, MPI.INT, root);
-    }
+    }*/
 
     public double broadcast(double value, int root) throws MPIException {
         return broadcast(value, root, comm);
@@ -180,13 +180,13 @@ public class MpiOps {
         return doubleBuff.get(0);
     }
 
-    public void broadcast(double[] values, int root) throws MPIException {
+   /* public void broadcast(double[] values, int root) throws MPIException {
         broadcast(values, root, comm);
     }
 
     public void broadcast(double[] values, int root, Intracomm comm) throws MPIException {
         comm.bcast(values, values.length, MPI.DOUBLE, root);
-    }
+    }*/
 
     public boolean broadcast(boolean value, int root) throws MPIException{
         return broadcast(value, root, comm);
@@ -216,7 +216,7 @@ public class MpiOps {
     }*/
 
     /* Sendrecv */
-    public double[] sendReceive(double[] sendValue, int dest, int destTag, int src, int srcTag) throws MPIException {
+    /*public double[] sendReceive(double[] sendValue, int dest, int destTag, int src, int srcTag) throws MPIException {
         return sendReceive(sendValue, dest, destTag, src, srcTag, comm);
     }
 
@@ -258,7 +258,7 @@ public class MpiOps {
         comm.sendRecv(sendValue.getBuffer(), sendExtent, MPI.BYTE, dest, destTag, recvBuff, recvExtent, MPI.BYTE, src,
                 srcTag);
         return (type == MPIPacket.Type.Integer) ? MPIPacket.loadIntegerPacket(recvBuff) : MPIPacket.loadDoublePacket(recvBuff);
-    }
+    }*/
 
 
     /* Send */
