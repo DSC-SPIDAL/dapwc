@@ -20,7 +20,7 @@ public class ClusterExtractorSection {
     public String newclusters_percluster;
     public boolean isBigEndian = false;
     public String runLine;
-
+    public String joins;
     public ClusterExtractorSection(String configurationFilePath){
         Properties p = new Properties();
         try {
@@ -33,6 +33,7 @@ public class ClusterExtractorSection {
             clusters = getProperty(p,"clusters","0");
             newclusters_percluster = getProperty(p,"newclusters","1");
             runLine = getProperty(p,"runLine","");
+            joins = getProperty(p,"joins","");
         } catch (IOException e) {
             e.printStackTrace();
         }

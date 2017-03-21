@@ -26,12 +26,25 @@ public class ClusterExtractor {
     public static void main(String[] args) {
         ClusterExtractorSection section = new ClusterExtractorSection(args[0]);
         HashMap<Integer, List<Integer>> clusterPoints = new HashMap<Integer, List<Integer>>();
+        HashMap<Integer, Integer> joinClusters = new HashMap<Integer, Integer>();
+
         String[] clusters = section.clusters.split(",");
 
         for (String cluster : clusters) {
             int clust = Integer.valueOf(cluster);
             if(!clusterPoints.containsKey(clust)){
                 clusterPoints.put(clust, new ArrayList<Integer>());
+            }
+        }
+
+        String[] joinpatterns = section.joins.split("\\|");
+        for (String joinpattern : joinpatterns) {
+            String[] clus = joinpattern.split("\\+");
+            if(clus.length <= 1) continue;
+            int main = Integer.valueOf(clus[0]);
+            for (int i = 1; i < clus.length; i++) {
+                int other = Integer.valueOf(clus[i]);
+                joinClusters.put(other, main);
             }
         }
 
@@ -46,6 +59,9 @@ public class ClusterExtractor {
                 if(splits.length != 2) break;
 
                 clusterNum = Integer.valueOf(splits[1]);
+                if(joinClusters.containsKey(clusterNum)){
+                    clusterNum = joinClusters.get(clusterNum);
+                }
                 dataPoint = Integer.valueOf(splits[0]);
                 clusterPoints.get(clusterNum).add(dataPoint);
             }
@@ -53,10 +69,13 @@ public class ClusterExtractor {
             e.printStackTrace();
         }
 
-    //reading from dist file and writing to the new cluster files
+        //reading from dist file and writing to the new cluster files
         for (String cluster : clusters) {
             int clusterNum = Integer.valueOf(cluster);
-            Path filePath = Paths.get(section.outDir,cluster + ".bin");
+            if(joinClusters.containsKey(clusterNum)){
+                clusterNum = joinClusters.get(clusterNum);
+            }
+            Path filePath = Paths.get(section.outDir,""+clusterNum + ".bin");
             try {
                 FileChannel fc = (FileChannel) Files
                         .newByteChannel(Paths.get(section.distFile), StandardOpenOption.READ);

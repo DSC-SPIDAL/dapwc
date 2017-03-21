@@ -2,9 +2,7 @@ package edu.indiana.soic.spidal.tools;
 
 import edu.indiana.soic.spidal.configuration.sections.CollateClustersSection;
 
-import java.io.BufferedReader;
-import java.io.IOError;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,7 +27,7 @@ public class CollateClusters {
         String[] joins = section.joinPattern.split("\\|");
         for (String join : joins) {
             String[] splits = join.split(",");
-            if(splits.length < 1) continue;
+            if(splits.length <= 1) continue;
             int clusterNum = Integer.valueOf(splits[0]);
             joinMappings.put(clusterNum,new HashMap<Integer,Integer>());
             for (int i = 1; i < splits.length; i++) {
@@ -95,6 +93,8 @@ public class CollateClusters {
         try{
             BufferedReader original = Files.newBufferedReader(Paths.get(section.pointsDir,section.pointFilePattern));
             HashMap<Integer,BufferedReader> clusterFiles = new HashMap<Integer,BufferedReader>();
+            String outFile = Paths.get(section.outDir,section.outFilePattern).toString();
+            PrintWriter printWriter = new PrintWriter(new FileWriter(outFile));
             for (int i = 0; i < section.numClusters; i++) {
                 if(filenameMappings.containsKey(i)){
                     BufferedReader temp = Files.newBufferedReader(Paths.get(section.clustersDir,section.clusterDirpattern.replace("{0}",""+i),filenameMappings.get(i)));
@@ -122,7 +122,11 @@ public class CollateClusters {
                 }else{
                     newClusterId = finalMappings.get(oriCluster).get(0);
                 }
+                printWriter.println(index + " " + splits[1] + " " + splits[2] + " " + splits[3] + " " + newClusterId + " " + newClusterId);
             }
+            printWriter.flush();
+            printWriter.close();
+            original.close();
         }catch (IOException e){
             e.printStackTrace();
         }
