@@ -3,9 +3,7 @@ package edu.indiana.soic.spidal.tools;
 import edu.indiana.soic.spidal.configuration.sections.ClusterExtractorSection;
 import javafx.collections.transformation.SortedList;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,6 +16,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by pulasthi on 3/19/17.
@@ -29,6 +28,7 @@ public class ClusterExtractor {
         HashMap<Integer, Integer> joinClusters = new HashMap<Integer, Integer>();
 
         String[] clusters = section.clusters.split(",");
+        String[] newclusters = section.newclusters_percluster.split(",");
 
         for (String cluster : clusters) {
             int clust = Integer.valueOf(cluster);
@@ -111,11 +111,29 @@ public class ClusterExtractor {
                     outBuffer.flip();
                     fcout.write(outBuffer);
                 }
-            fcout.close();
+                fcout.close();
+
+                //Generate config files for each cluster
+                Path outClusterPath = Paths.get(section.outDir,"cluster_" + clusterNum + ".txt");
+                Properties template = new Properties();
+                template.load(new FileInputStream("../../../conf/dapwc_config_template.properties"));
+                template.setProperty("DistanceMatrixFile",filePath.toString());
+                template.setProperty("ClusterFile",outClusterPath.toString());
+                template.setProperty("NumberDataPoints",""+clusterPoints.get(clusterNum).size());
+                template.setProperty("MaxNcent",newclusters[clusterNum]);
+
+                Path confFilePath = Paths.get(section.outDir,"config_" + clusterNum + ".properties");
+                template.store(new FileOutputStream(confFilePath.toString()),null);
+
+
             }catch (IOException e){
                 e.printStackTrace();
             }
+
+
+
         }
+
 
 
 
