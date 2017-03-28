@@ -84,6 +84,7 @@ public class ClusterExtractor {
                     file.createNewFile();
                 }else{
                     file.delete();
+                    file.createNewFile();
                 }
                 FileChannel fcout = (FileChannel) Files
                         .newByteChannel(filePath, StandardOpenOption.APPEND);
@@ -128,8 +129,8 @@ public class ClusterExtractor {
 
                 Path confFilePath = Paths.get(section.outDir,"config_" + clusterNum + ".properties");
                 File fileconf = new File(confFilePath.toString());
-                if(!file.exists()){
-                    file.createNewFile();
+                if(!fileconf.exists()){
+                    fileconf.createNewFile();
                 }
 
                 template.store(new FileOutputStream(confFilePath.toString(),false),null);
