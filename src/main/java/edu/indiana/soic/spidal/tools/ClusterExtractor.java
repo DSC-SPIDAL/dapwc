@@ -121,8 +121,9 @@ public class ClusterExtractor {
                 //Generate config files for each cluster
                 Path outClusterPath = Paths.get(section.outDir,"cluster_" + clusterNum + ".txt");
                 Properties template = new Properties();
-                System.out.println(ClusterExtractor.class.getClassLoader().getResource("dapwc_config_template.properties").getPath());
-                template.load(new FileInputStream(ClusterExtractor.class.getClassLoader().getResource("dapwc_config_template.properties").getPath()));
+                InputStream in = ClusterExtractor.class.getResourceAsStream("/dapwc_config_template.properties");
+                System.out.println(in.toString());
+                template.load(in);
                 template.setProperty("DistanceMatrixFile",filePath.toString());
                 template.setProperty("ClusterFile",outClusterPath.toString());
                 template.setProperty("NumberDataPoints",""+clusterPoints.get(clusterNum).size());
