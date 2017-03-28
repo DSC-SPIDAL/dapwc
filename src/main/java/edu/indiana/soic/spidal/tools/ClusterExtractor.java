@@ -26,6 +26,7 @@ public class ClusterExtractor {
         ClusterExtractorSection section = new ClusterExtractorSection(args[0]);
         HashMap<Integer, List<Integer>> clusterPoints = new HashMap<Integer, List<Integer>>();
         HashMap<Integer, Integer> joinClusters = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> newClusterNumMap = new HashMap<Integer, Integer>();
 
         String[] clusters = section.clusters.split(",");
         String[] newclusters = section.newclusters_percluster.split(",");
@@ -70,12 +71,17 @@ public class ClusterExtractor {
         }
 
         //reading from dist file and writing to the new cluster files
+        int newClusterNumbers = 0;
         for (String cluster : clusters) {
             int clusterNum = Integer.valueOf(cluster);
             if(joinClusters.containsKey(clusterNum)){
                 clusterNum = joinClusters.get(clusterNum);
             }
-            Path filePath = Paths.get(section.outDir,""+clusterNum + ".bin");
+            if(!newClusterNumMap.containsKey(clusterNum)){
+                newClusterNumMap.put(clusterNum,newClusterNumbers++);
+            }
+            int newClusterNum = newClusterNumMap.get(clusterNum);
+            Path filePath = Paths.get(section.outDir,""+newClusterNum + ".bin");
             try {
                 FileChannel fc = (FileChannel) Files
                         .newByteChannel(Paths.get(section.distFile), StandardOpenOption.READ);
@@ -119,7 +125,7 @@ public class ClusterExtractor {
                 fcout.close();
 
                 //Generate config files for each cluster
-                Path outClusterPath = Paths.get(section.outDir,"cluster_" + clusterNum + ".txt");
+                Path outClusterPath = Paths.get(section.outDir,"cluster_" + newClusterNum + ".txt");
                 Properties template = new Properties();
                 InputStream in = ClusterExtractor.class.getResourceAsStream("/dapwc_config_template.properties");
                 System.out.println(in.toString());
@@ -127,9 +133,9 @@ public class ClusterExtractor {
                 template.setProperty("DistanceMatrixFile",filePath.toString());
                 template.setProperty("ClusterFile",outClusterPath.toString());
                 template.setProperty("NumberDataPoints",""+clusterPoints.get(clusterNum).size());
-                template.setProperty("MaxNcent",newclusters[clusterNum]);
+                template.setProperty("MaxNcent",newclusters[newClusterNum]);
 
-                Path confFilePath = Paths.get(section.outDir,"config_" + clusterNum + ".properties");
+                Path confFilePath = Paths.get(section.outDir,"config_" + newClusterNum + ".properties");
                 File fileconf = new File(confFilePath.toString());
                 if(!fileconf.exists()){
                     fileconf.createNewFile();
