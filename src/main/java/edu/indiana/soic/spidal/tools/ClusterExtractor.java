@@ -80,7 +80,11 @@ public class ClusterExtractor {
                 FileChannel fc = (FileChannel) Files
                         .newByteChannel(Paths.get(section.distFile), StandardOpenOption.READ);
                 File file = new File(filePath.toString());
-                file.createNewFile();
+                if(!file.exists()) {
+                    file.createNewFile();
+                }else{
+                    file.delete();
+                }
                 FileChannel fcout = (FileChannel) Files
                         .newByteChannel(filePath, StandardOpenOption.APPEND);
                 for (Integer row : clusterPoints.get(clusterNum)) {
@@ -123,7 +127,12 @@ public class ClusterExtractor {
                 template.setProperty("MaxNcent",newclusters[clusterNum]);
 
                 Path confFilePath = Paths.get(section.outDir,"config_" + clusterNum + ".properties");
-                template.store(new FileOutputStream(confFilePath.toString()),null);
+                File fileconf = new File(confFilePath.toString());
+                if(!file.exists()){
+                    file.createNewFile();
+                }
+
+                template.store(new FileOutputStream(confFilePath.toString(),false),null);
 
 
             }catch (IOException e){
