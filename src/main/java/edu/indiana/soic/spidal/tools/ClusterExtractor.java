@@ -128,7 +128,6 @@ public class ClusterExtractor {
                 Path outClusterPath = Paths.get(section.outDir,"cluster_" + newClusterNum + ".txt");
                 Properties template = new Properties();
                 InputStream in = ClusterExtractor.class.getResourceAsStream("/dapwc_config_template.properties");
-                System.out.println(in.toString());
                 template.load(in);
                 template.setProperty("DistanceMatrixFile",filePath.toString());
                 template.setProperty("ClusterFile",outClusterPath.toString());

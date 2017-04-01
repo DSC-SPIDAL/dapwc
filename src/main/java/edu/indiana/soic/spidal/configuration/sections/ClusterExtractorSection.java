@@ -30,7 +30,7 @@ public class ClusterExtractorSection {
             numPoints = Integer.valueOf(getProperty(p,"numPoints","-1"));
             outDir = getProperty(p,"outDir","outfile.bin");
             isBigEndian = Boolean.valueOf(getProperty(p,"isBigEndian","false"));
-            clusters = getProperty(p,"clusters","0");
+            clusters = getProperty(p,"clusters","None");
             newclusters_percluster = getProperty(p,"newclusters","1");
             runLine = getProperty(p,"runLine","");
             joins = getProperty(p,"joins","");
