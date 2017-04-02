@@ -27,6 +27,7 @@ public class ClusterExtractorSimple {
         String[] newclusters = args[4].split(",");
         boolean isBigendian = Boolean.valueOf(args[5]);
         int numPoints = 0;
+        String subclusters = "";
         HashMap<Integer, List<Integer>> clusterPoints = new HashMap<Integer, List<Integer>>();
         HashMap<Integer, Integer> clusterNumMap = new HashMap<Integer, Integer>();
         for (int i = 0; i < clusters.length; i++) {
@@ -66,7 +67,8 @@ public class ClusterExtractorSimple {
 
             if(!clusterNumMap.containsKey(clusterNum)) continue;
 
-            Path filePath = Paths.get(outDir,""+clusterNum + ".bin");
+            subclusters += clusterNum + "," + clusterNumMap.get(clusterNum) + "," + clusterNumMap.get(clusterNum) + "|";
+            Path filePath = Paths.get(outDir,clusterNum + ".bin");
             try {
                 FileChannel fc = (FileChannel) Files
                         .newByteChannel(Paths.get(distFile), StandardOpenOption.READ);
@@ -128,6 +130,8 @@ public class ClusterExtractorSimple {
                 template.store(new FileOutputStream(confFilePath.toString(),false),null);
 
 
+
+
             }catch (IOException e){
                 e.printStackTrace();
             }
@@ -135,6 +139,25 @@ public class ClusterExtractorSimple {
 
 
         }
+
+        //Genereate data for next round collate
+        Properties template = new Properties();
+        template.setProperty("numClusters",""+clusterPoints.size());
+        template.setProperty("subClusters",subclusters);
+
+        Path dataFilePath = Paths.get(outDir,"conf_shared.properties");
+        try{
+            File fileconf = new File(dataFilePath.toString());
+            if(!fileconf.exists()){
+                fileconf.createNewFile();
+            }
+            template.store(new FileOutputStream(dataFilePath.toString(),false),null);
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        //PrintWriter dataout = new PrintWriter(Paths.get(outDir,))
 
 
     }
