@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -46,7 +47,12 @@ public class ClusterExtractorSimple {
                 clusterNum = Integer.valueOf(splits[1]);
 
                 dataPoint = Integer.valueOf(splits[0]);
-                clusterPoints.get(clusterNum).add(dataPoint);
+                if(clusterPoints.containsKey(clusterNum)){
+                    clusterPoints.get(clusterNum).add(dataPoint);
+                }else{
+                    clusterPoints.put(clusterNum, new ArrayList<Integer>());
+                    clusterPoints.get(clusterNum).add(dataPoint);
+                }
             }
         }catch (IOException e){
             e.printStackTrace();
