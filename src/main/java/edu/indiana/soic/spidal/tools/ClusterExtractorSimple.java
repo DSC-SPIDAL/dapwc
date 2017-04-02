@@ -121,7 +121,7 @@ public class ClusterExtractorSimple {
                 template.setProperty("NumberDataPoints",""+clusterPoints.get(clusterNum).size());
                 template.setProperty("MaxNcent",clusterNumMap.get(clusterNum).toString());
 
-                Path confFilePath = Paths.get(outDir,"config_" + clusterNum + ".properties");
+                Path confFilePath = Paths.get(outDir,"config_" + clusterNum + ".prop");
                 File fileconf = new File(confFilePath.toString());
                 if(!fileconf.exists()){
                     fileconf.createNewFile();
