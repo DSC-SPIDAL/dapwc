@@ -143,7 +143,7 @@ public class ClusterExtractorSimple {
         //Genereate data for next round collate
         Properties template = new Properties();
         template.setProperty("numClusters",""+clusterPoints.size());
-        template.setProperty("subClusters",subclusters);
+        template.setProperty("subClusters","\"" + subclusters + "\"");
 
         Path dataFilePath = Paths.get(outDir,"conf_shared.prop");
         try{
