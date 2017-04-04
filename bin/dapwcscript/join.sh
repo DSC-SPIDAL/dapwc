@@ -5,7 +5,7 @@ newFileName=$3
 newplotFile=$4
 joins=$5
 
-cp=/N/u/pswickra/.m2/repository/edu/indiana/soic/spidal/dapwc/1.0-ompi1.8.1/dapwc-1.0-ompi1.8.1.jar
+cp=$HOME/.m2/repository/edu/indiana/soic/spidal/dapwc/1.0-ompi1.8.1/dapwc-1.0-ompi1.8.1.jar
 java -cp $cp edu.indiana.soic.spidal.tools.ClusterJoin $clusterFile $newFileName $joins
 ./create_webplotvix.sh $newFileName $pointsFile $newplotFile
 ### create new web pltoviz ####

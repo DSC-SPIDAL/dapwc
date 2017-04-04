@@ -1,13 +1,14 @@
 #!/bin/bash
 numNodes=$1
 nodesFile=$2
-confFileDAPWC=$3
-confFileDAMDS=$4
+confFileDAPWC=$6
+confFileDAMDS=$7
 
 
-mdstpp=1
-mdsppn=4
-mdsmem=2
+mdstpp=$3
+mdsppn=$4
+mdsmem=$5
+distFile=$8
 roundName=round_
 roundCount=0
 fpwc=pwc
@@ -18,7 +19,7 @@ mdsFolderName=$fmds"_"$mdsName
 doNext = y;
 ################# Run MDS to get points for visualization ####################
 echo "Start Running MDS algorithm on `date`" >> status.txt
-#./run.generic.sh $mdstpp $mdsppn $fmds $mdsName $mdsmem g $numNodes $nodesFile $confFileDAMDS
+./run.generic.sh $mdstpp $mdsppn $fmds $mdsName $mdsmem g $numNodes $nodesFile $confFileDAMDS
 echo "Finised Running MDS algorithm on `date` " >> status.txt
 ################# End MDS Section #########################
 
@@ -26,7 +27,7 @@ echo "Finised Running MDS algorithm on `date` " >> status.txt
 folderName=$fpwc"_"$roundName$roundCount
 mkdir -p $folderName
 echo "Start Running DAPWC initial round algorithm on `date`" >> status.txt
-#./run.dapwc_init.sh $mdstpp $mdsppn $fpwc $roundName$roundCount $mdsmem g $numNodes $nodesFile $confFileDAPWC
+./run.dapwc_init.sh $mdstpp $mdsppn $fpwc $roundName$roundCount $mdsmem g $numNodes $nodesFile $confFileDAPWC
 echo "Start Running DAPWC initial round algorithm on `date`" >> status.txt
 ################# End dapwc Section #########################
 
@@ -70,7 +71,7 @@ mkdir -p $resultsFolderOld
 resultsFolderNew=results_$roundCount
 pwcFolderNew=$fpwc"_"$roundName$roundCount
 
-./extract.sh $PWD/data/bio_scotland_1.bin $PWD/$pwcFolderOld/cluster_joined.txt $commaclusters $commaSubclusters $PWD/$resultsFolderOld
+./extract.sh $distFile $PWD/$pwcFolderOld/cluster_joined.txt $commaclusters $commaSubclusters $PWD/$resultsFolderOld
 
 echo running DAPWC for each cluster
 ./run_all_in_folder.sh $mdstpp $mdsppn $mdsmem $numNodes $nodesFile $PWD/$resultsFolderOld/ $roundCount
