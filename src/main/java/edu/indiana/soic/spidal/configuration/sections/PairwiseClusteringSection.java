@@ -12,6 +12,9 @@ public class PairwiseClusteringSection {
             ClusterFile = getProperty(p,"ClusterFile","cluster.txt");
             DistanceMatrixFile = getProperty(p,"DistanceMatrixFile", "distance.bin");
             AddMdsFile = getProperty(p,"AddMdsFile","mds.txt");
+            CreateDustCluster = Boolean.parseBoolean(getProperty(p,"CreateDustCluster", "false"));
+            DustClusterCutoffMultiplier = Double.parseDouble(getProperty(p,"DustClusterCutoffMultiplier", "3.0"));
+
             ClusterNumberFile = getProperty(p,"ClusterNumberFile","cnums.txt");
             CenterPlotFile = getProperty(p,"CenterPlotFile","cplot.txt");
             LabelFile = getProperty(p,"LabelFile", "labels.txt");
@@ -99,6 +102,8 @@ public class PairwiseClusteringSection {
     public boolean ConvergeIntermediateClusters;
     public int WaitIterations;
     public double EpsiMaxChange;
+    public boolean CreateDustCluster; // create a dust cluster from point that are too far away from the centers
+    public double DustClusterCutoffMultiplier; // cut off scalar for sigma
 
     public double InitialCoolingFactor;
     public double FineCoolingFactor;

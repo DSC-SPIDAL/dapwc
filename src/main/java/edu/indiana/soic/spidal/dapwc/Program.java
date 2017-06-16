@@ -355,28 +355,28 @@ public class Program
 		//  End Timing
 		PWCUtility.EndTiming();
 
-		PWCUtility.SALSAPrint(0, "\n----------------------------- Final Output\n" + PWCUtility.PatternLabel);
-		PWCUtility.SALSAPrint(0, "Labels File: " + config.ClusterFile);
-		PWCUtility.SALSAPrint(0, "Timing Output: " + config.TimingFile);
-		PWCUtility.SALSAPrint(0, "Initial Number of Centers: " + (new Integer(Program.InitialNcent)).toString());
-		PWCUtility.SALSAPrint(0, "Maximum Number of Centers: " + (new Integer(Program.maxNcent)).toString());
-		PWCUtility.SALSAPrint(0, "Actual Number of Centers: " + (new Integer(Dist.RunningPWC.Ncent)).toString());
-		PWCUtility.SALSAPrint(0, "Minimum Number Points in Final Clusters " + (new Integer(Program.minimumclustercount)).toString());
-		PWCUtility.SALSAPrint(0, "Converge Intermediate Clusters " + Program.ConvergeIntermediateClusters);
-		PWCUtility.SALSAPrint(0, "Initial Cooling Factor in Annealing: " + String.format("%1$.4f", Program.InitialCoolingFactor));
-		PWCUtility.SALSAPrint(0, "Refined Cooling Factor in Annealing: " + String.format("%1$.4f", Program.FineCoolingFactor));
-		PWCUtility.SALSAPrint(0, "Converging(Final) Cooling Factor in Annealing: " + String.format("%1$.4f", Program.ConvergingCoolingFactor));
-		PWCUtility.SALSAPrint(0, "Continuous Clustering " + Program.ContinuousClustering);
-		PWCUtility.SALSAPrint(0, "Eigenvalue Methodology: " + (new Integer(Program.Eigenvalue_Methodology)).toString());
-		PWCUtility.SALSAPrint(0, "Do not split Clusters smaller than this: " + (new Double(Program.ToosmalltoSplit)).toString());
-		PWCUtility.SALSAPrint(0, "Pass 1 Eigenvalue Fractional Test: " + (new Double(Program.MinEigtest)).toString());
-		PWCUtility.SALSAPrint(0, "Wait stages between splits: " + (new Integer(Program.Waititerations)).toString());
-		PWCUtility.SALSAPrint(0, "Maximum Number of Simultaneous Cluster Splits " + (new Integer(Program.MaxNumberSplitClusters)).toString());
-		PWCUtility.SALSAPrint(0, "Jiggle and Split Perturbation Vehicle: " + (new Integer(Program.PerturbationVehicle)).toString());
-		PWCUtility.SALSAPrint(0, "Split and Split Perturbation Factor: " + (new Double(Program.SplitPerturbationFactor)).toString());
-		PWCUtility.SALSAPrint(0, "Jiggle Option:" + (new Integer(Program.JiggleOption)).toString());
-		PWCUtility.SALSAPrint(0, (new Integer(Program.JigglePerturbation)).toString() + " Jiggle Perturbation Method");
-		PWCUtility.SALSAPrint(0, (new Double(Program.JigglePerturbationFactor)).toString() + " Jiggle Perturbation Factor");
+//		PWCUtility.SALSAPrint(0, "\n----------------------------- Final Output\n" + PWCUtility.PatternLabel);
+//		PWCUtility.SALSAPrint(0, "Labels File: " + config.ClusterFile);
+//		PWCUtility.SALSAPrint(0, "Timing Output: " + config.TimingFile);
+//		PWCUtility.SALSAPrint(0, "Initial Number of Centers: " + (new Integer(Program.InitialNcent)).toString());
+//		PWCUtility.SALSAPrint(0, "Maximum Number of Centers: " + (new Integer(Program.maxNcent)).toString());
+//		PWCUtility.SALSAPrint(0, "Actual Number of Centers: " + (new Integer(Dist.RunningPWC.Ncent)).toString());
+//		PWCUtility.SALSAPrint(0, "Minimum Number Points in Final Clusters " + (new Integer(Program.minimumclustercount)).toString());
+//		PWCUtility.SALSAPrint(0, "Converge Intermediate Clusters " + Program.ConvergeIntermediateClusters);
+//		PWCUtility.SALSAPrint(0, "Initial Cooling Factor in Annealing: " + String.format("%1$.4f", Program.InitialCoolingFactor));
+//		PWCUtility.SALSAPrint(0, "Refined Cooling Factor in Annealing: " + String.format("%1$.4f", Program.FineCoolingFactor));
+//		PWCUtility.SALSAPrint(0, "Converging(Final) Cooling Factor in Annealing: " + String.format("%1$.4f", Program.ConvergingCoolingFactor));
+//		PWCUtility.SALSAPrint(0, "Continuous Clustering " + Program.ContinuousClustering);
+//		PWCUtility.SALSAPrint(0, "Eigenvalue Methodology: " + (new Integer(Program.Eigenvalue_Methodology)).toString());
+//		PWCUtility.SALSAPrint(0, "Do not split Clusters smaller than this: " + (new Double(Program.ToosmalltoSplit)).toString());
+//		PWCUtility.SALSAPrint(0, "Pass 1 Eigenvalue Fractional Test: " + (new Double(Program.MinEigtest)).toString());
+//		PWCUtility.SALSAPrint(0, "Wait stages between splits: " + (new Integer(Program.Waititerations)).toString());
+//		PWCUtility.SALSAPrint(0, "Maximum Number of Simultaneous Cluster Splits " + (new Integer(Program.MaxNumberSplitClusters)).toString());
+//		PWCUtility.SALSAPrint(0, "Jiggle and Split Perturbation Vehicle: " + (new Integer(Program.PerturbationVehicle)).toString());
+//		PWCUtility.SALSAPrint(0, "Split and Split Perturbation Factor: " + (new Double(Program.SplitPerturbationFactor)).toString());
+//		PWCUtility.SALSAPrint(0, "Jiggle Option:" + (new Integer(Program.JiggleOption)).toString());
+//		PWCUtility.SALSAPrint(0, (new Integer(Program.JigglePerturbation)).toString() + " Jiggle Perturbation Method");
+//		PWCUtility.SALSAPrint(0, (new Double(Program.JigglePerturbationFactor)).toString() + " Jiggle Perturbation Factor");
 
 		// Calculate Cluster Statistics
 		int[] counts = new int[Dist.RunningPWC.Ncent];
@@ -385,14 +385,16 @@ public class Program
 		{
 			// Note Program.ClusterAssignments 
 			Program.OutputClusterLabels(counts);
-			if (ClusterCountOutput == 2)
+			if (ClusterCountOutput == 2 || config.CreateDustCluster)
 			{
 				String file = "CenterFile-M" + (new Integer(Program.maxNcent)).toString() + "-C" + (new Integer(Dist.RunningPWC.Ncent)).toString() + ".txt";
 				String directory1 = (new File(config.ClusterFile)).getParent();
 				String CenterFileName = Paths.get(directory1, file).toString();
 				String place = (new File(config.DistanceMatrixFile)).getParent();
-				String MDSFileName = Paths.get(place, PWCUtility.addMDSfile).toString();
+//				String MDSFileName = Paths.get(place, PWCUtility.addMDSfile).toString();
+				String MDSFileName = Paths.get(PWCUtility.addMDSfile).toString();
 				String FullLabelFileName = PWCUtility.Labelfile;
+				PWCUtility.SALSAPrint(0, "Center Details  " + MDSFileName + " center file " + CenterFileName);
 				FindCenters.FindGroupCenters(Program.ClusterAssignments, Dist.RunningPWC.Ncent, 0, CenterFileName, MDSFileName, FullLabelFileName);
 			}
 
