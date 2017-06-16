@@ -267,6 +267,7 @@ public class FindCenters
 
             // calculate sigma using ecludian distance for each group
             double groupSigma[] = new double[NumberofGroups];
+            int clustercounts[] = new int[NumberofGroups];
 
             for (int pointIndex = 0; pointIndex < GroupIndex.length; pointIndex++) {
                 int group = GroupIndex[pointIndex];
@@ -276,11 +277,12 @@ public class FindCenters
                 double tmp2 = MDSvalues[pointIndex][2] - FindGroupMDSCoG[group][2].Totalmean;;
                 double distance =  Math.sqrt(tmp0 * tmp0 + tmp1 * tmp1 + tmp2 * tmp2);
                 groupSigma[group] += distance;
+                clustercounts[group]++;
             }
 
 
             for(int group = 0; group < NumberofGroups; group++) {
-                groupSigma[group] /= PWCUtility.PointCount_Global;
+                groupSigma[group] /= clustercounts[group];
                 double cutOff = groupSigma[group] * Program.config.DustClusterCutoffMultiplier;
                 PWCUtility.SALSAPrint(0, "Cut Off Value for group " + group + " is  (" + FindGroupMDSCoG[group][0].Totalmean + "," + FindGroupMDSCoG[group][1].Totalmean + "," + FindGroupMDSCoG[group][2].Totalmean + ")");
                 PWCUtility.SALSAPrint(0, "Mean for group " + group + " is " + cutOff);
