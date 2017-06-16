@@ -1291,7 +1291,7 @@ public class FindCenters
             for (int pointIndex = 0; pointIndex < PWCUtility.PointCount_Global; pointIndex++) {
                 int curGroup = GroupIndex[pointIndex];
                 if(dustPoints.contains(pointIndex)){
-                    writer.println(pointIndex + " " + MDSvalues[pointIndex][0] + " " + MDSvalues[pointIndex][1] + " " + MDSvalues[pointIndex][2] + " " + dustClusterIndex + " " + dustClusterIndex);
+                    writer.println(pointIndex + " " + MDSvalues[pointIndex][0] + " " + MDSvalues[pointIndex][1] + " " + MDSvalues[pointIndex][2] + " " + dustClusterIndex + " " + "Dust");
                 }else{
                     writer.println(pointIndex + " " + MDSvalues[pointIndex][0] + " " + MDSvalues[pointIndex][1] + " " + MDSvalues[pointIndex][2] + " " + curGroup + " " + curGroup);
                 }
