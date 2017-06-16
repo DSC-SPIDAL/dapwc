@@ -282,7 +282,8 @@ public class FindCenters
                 groupSigma[group] /= PWCUtility.PointCount_Global;
 
                 double cutOff = groupSigma[group]*Program.config.DustClusterCutoffMultiplier;
-                PWCUtility.SALSAPrint(0,"Cut Off Value for group " + group + " is " + cutOff);
+                PWCUtility.SALSAPrint(0,"Cut Off Value for group " + group + " is  (" + FindGroupMDSCoG[group][0].Totalmean + "," + FindGroupMDSCoG[group][1].Totalmean + "," + FindGroupMDSCoG[group][2].Totalmean + ")");
+                PWCUtility.SALSAPrint(0,"Mean for group " + group + " is " + cutOff);
                 for (int pointIndex = 0; pointIndex < PWCUtility.PointCount_Global; pointIndex++) {
                     double tmp0 = MDSvalues[pointIndex][0] - FindGroupMDSCoG[group][0].Totalmean;
                     double tmp1 = MDSvalues[pointIndex][1] - FindGroupMDSCoG[group][1].Totalmean;;
