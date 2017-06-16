@@ -300,8 +300,6 @@ public class FindCenters
                 }
             }
 
-        }
-
             System.out.println("Length of group 1 dust: " + dustPoints.size());
 //            System.out.println("Length of group 2 dust: " + dustPoints[1].size());
             String file = "clusterFileWithDust-M" + (new Integer(Program.maxNcent)).toString() + "-C" + (new Integer(Dist.RunningPWC.Ncent)).toString() + ".txt";
