@@ -268,33 +268,39 @@ public class FindCenters
             // calculate sigma using ecludian distance for each group
             double groupSigma[] = new double[NumberofGroups];
 
+            for (int pointIndex = 0; pointIndex < GroupIndex.length; pointIndex++) {
+                int group = GroupIndex[pointIndex];
 
-            for(int group = 0; group < NumberofGroups; group++){
+                double tmp0 = MDSvalues[pointIndex][0] - FindGroupMDSCoG[group][0].Totalmean;
+                double tmp1 = MDSvalues[pointIndex][1] - FindGroupMDSCoG[group][1].Totalmean;;
+                double tmp2 = MDSvalues[pointIndex][2] - FindGroupMDSCoG[group][2].Totalmean;;
+                double distance =  Math.sqrt(tmp0 * tmp0 + tmp1 * tmp1 + tmp2 * tmp2);
+                groupSigma[group] += distance;
+            }
 
-                for (int pointIndex = 0; pointIndex < PWCUtility.PointCount_Global; pointIndex++) {
-                    double tmp0 = MDSvalues[pointIndex][0] - FindGroupMDSCoG[group][0].Totalmean;
-                    double tmp1 = MDSvalues[pointIndex][1] - FindGroupMDSCoG[group][1].Totalmean;;
-                    double tmp2 = MDSvalues[pointIndex][2] - FindGroupMDSCoG[group][2].Totalmean;;
-                    double distance =  Math.sqrt(tmp0 * tmp0 + tmp1 * tmp1 + tmp2 * tmp2);
-                    groupSigma[group] += distance;
-                }
 
+            for(int group = 0; group < NumberofGroups; group++) {
                 groupSigma[group] /= PWCUtility.PointCount_Global;
+                double cutOff = groupSigma[group] * Program.config.DustClusterCutoffMultiplier;
+                PWCUtility.SALSAPrint(0, "Cut Off Value for group " + group + " is  (" + FindGroupMDSCoG[group][0].Totalmean + "," + FindGroupMDSCoG[group][1].Totalmean + "," + FindGroupMDSCoG[group][2].Totalmean + ")");
+                PWCUtility.SALSAPrint(0, "Mean for group " + group + " is " + cutOff);
+            }
 
-                double cutOff = groupSigma[group]*Program.config.DustClusterCutoffMultiplier;
-                PWCUtility.SALSAPrint(0,"Cut Off Value for group " + group + " is  (" + FindGroupMDSCoG[group][0].Totalmean + "," + FindGroupMDSCoG[group][1].Totalmean + "," + FindGroupMDSCoG[group][2].Totalmean + ")");
-                PWCUtility.SALSAPrint(0,"Mean for group " + group + " is " + cutOff);
-                for (int pointIndex = 0; pointIndex < PWCUtility.PointCount_Global; pointIndex++) {
-                    double tmp0 = MDSvalues[pointIndex][0] - FindGroupMDSCoG[group][0].Totalmean;
-                    double tmp1 = MDSvalues[pointIndex][1] - FindGroupMDSCoG[group][1].Totalmean;;
-                    double tmp2 = MDSvalues[pointIndex][2] - FindGroupMDSCoG[group][2].Totalmean;;
-                    double distance =  Math.sqrt(tmp0 * tmp0 + tmp1 * tmp1 + tmp2 * tmp2);
+            for (int pointIndex = 0; pointIndex < GroupIndex.length; pointIndex++) {
+                int group = GroupIndex[pointIndex];
+                double cutOff = groupSigma[group] * Program.config.DustClusterCutoffMultiplier;
 
-                    if(distance > cutOff){
-                        dustPoints.add(pointIndex);
-                    }
+                double tmp0 = MDSvalues[pointIndex][0] - FindGroupMDSCoG[group][0].Totalmean;
+                double tmp1 = MDSvalues[pointIndex][1] - FindGroupMDSCoG[group][1].Totalmean;;
+                double tmp2 = MDSvalues[pointIndex][2] - FindGroupMDSCoG[group][2].Totalmean;;
+                double distance =  Math.sqrt(tmp0 * tmp0 + tmp1 * tmp1 + tmp2 * tmp2);
+
+                if(distance > cutOff){
+                    dustPoints.add(pointIndex);
                 }
             }
+
+        }
 
             System.out.println("Length of group 1 dust: " + dustPoints.size());
 //            System.out.println("Length of group 2 dust: " + dustPoints[1].size());
