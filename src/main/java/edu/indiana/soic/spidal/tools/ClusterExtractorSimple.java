@@ -26,6 +26,11 @@ public class ClusterExtractorSimple {
         String[] clusters = args[3].split(",");
         String[] newclusters = args[4].split(",");
         boolean isBigendian = Boolean.valueOf(args[5]);
+        // MDS file is optional and will be used only if specified
+        String mdsFile = "";
+        double[][] mdsPoints = new double[0][];
+        boolean writeMDS = false;
+
         int numPoints = 0;
         String subclusters = "";
         HashMap<Integer, List<Integer>> clusterPoints = new HashMap<Integer, List<Integer>>();
@@ -59,6 +64,28 @@ public class ClusterExtractorSimple {
             e.printStackTrace();
         }
 
+        if(args.length == 7){
+            mdsFile = args[6];
+            mdsPoints = new double[numPoints][3];
+            writeMDS = true;
+
+            try {
+                BufferedReader points = Files.newBufferedReader(Paths.get(mdsFile));
+
+                String line;
+                int count = 0;
+                while ((line = points.readLine()) != null){
+                    String pointssplit[] = line.split("\\s+");
+                    mdsPoints[count][0] = Double.parseDouble(pointssplit[1]);
+                    mdsPoints[count][1] = Double.parseDouble(pointssplit[2]);
+                    mdsPoints[count][2] = Double.parseDouble(pointssplit[3]);
+                    count++;
+                }
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
         //reading from dist file and writing to the new cluster files
         int newClusterNumbers = 0;
         for (String cluster : clusters) {
@@ -69,19 +96,38 @@ public class ClusterExtractorSimple {
 
             subclusters += clusterNum + "," + clusterNumMap.get(clusterNum) + "," + clusterNumMap.get(clusterNum) + "|";
             Path filePath = Paths.get(outDir,clusterNum + ".bin");
+            Path filePathMDS = Paths.get(outDir,clusterNum + "_mds.txt");
             try {
                 FileChannel fc = (FileChannel) Files
                         .newByteChannel(Paths.get(distFile), StandardOpenOption.READ);
                 File file = new File(filePath.toString());
+                File fileMDS;
+                PrintWriter outMDS = null;
+
+                if(writeMDS){
+                    fileMDS = new File(filePathMDS.toString());
+                    if(!file.exists()) {
+                        fileMDS.createNewFile();
+                    }else{
+                        fileMDS.delete();
+                        fileMDS.createNewFile();
+                    }
+                    outMDS = new PrintWriter(fileMDS);
+
+                }
+
                 if(!file.exists()) {
                     file.createNewFile();
                 }else{
                     file.delete();
                     file.createNewFile();
                 }
+
                 FileChannel fcout = (FileChannel) Files
                         .newByteChannel(filePath, StandardOpenOption.APPEND);
+                int tempcount = 0;
                 for (Integer row : clusterPoints.get(clusterNum)) {
+                    if(writeMDS) outMDS.println(tempcount + "\t" + mdsPoints[row][0] + "\t" + mdsPoints[row][1] + "\t" + mdsPoints[row][2] + "\t" + "1");
                     long offset = row*numPoints*2;
                     ByteBuffer byteBufferRow = ByteBuffer.allocate(numPoints*2);
                     if(isBigendian){
@@ -108,7 +154,10 @@ public class ClusterExtractorSimple {
                     }
                     outBuffer.flip();
                     fcout.write(outBuffer);
+                    tempcount++;
                 }
+                outMDS.flush();
+                outMDS.close();
                 fcout.close();
 
                 //Generate config files for each cluster
