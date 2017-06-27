@@ -12,6 +12,8 @@ import java.util.HashSet;
  * Created by pulasthi on 3/31/17.
  */
 public class ClusterJoin {
+    static final int dustClusterId = 100000; // this needs to be same with the value in ClusterOutlierExtractor
+
     public static void main(String[] args) {
         String inputFileName = args[0];
         String outFileName = args[1];
@@ -58,8 +60,14 @@ public class ClusterJoin {
             String line;
             while ((line = br.readLine()) != null){
                 String splits[] = line.split("\\s+");
-                int newCluster = newClusterNumMap.get(Integer.valueOf(splits[1]));
-                pr.println(splits[0] + "\t" + newCluster);
+                int cluster = Integer.valueOf(splits[1]);
+                if(cluster == dustClusterId){
+                    pr.println(splits[0] + "\t" + dustClusterId);
+                }else{
+                    int newCluster = newClusterNumMap.get(Integer.valueOf(splits[1]));
+                    pr.println(splits[0] + "\t" + newCluster);
+                }
+
             }
             pr.flush();
             pr.close();
