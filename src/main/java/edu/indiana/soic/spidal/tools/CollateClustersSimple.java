@@ -12,6 +12,7 @@ import java.util.HashMap;
  * Created by pulasthi on 3/19/17.
  */
 public class CollateClustersSimple {
+    static final int dustClusterId = 100000; // this needs to be same with the value in ClusterOutlierExtractor
     public static void main(String[] args) {
         String pointsFile = args[0];
         String clusterDirPattern = args[1];
@@ -94,19 +95,26 @@ public class CollateClustersSimple {
                 int oriCluster = Integer.valueOf(splits[4]);
                 int newClusterId;
                 String line;
-                if(filenameMappings.containsKey(oriCluster)){
-                    line = clusterFiles.get(oriCluster).readLine();
-                    String[] data = line.split("\\s+");
-                    int subClusterNum = Integer.valueOf(data[1]);
-                    newClusterId = finalMappings.get(oriCluster).get(subClusterNum);
+                if(oriCluster != dustClusterId ) {
+                    if (filenameMappings.containsKey(oriCluster)) {
+                        line = clusterFiles.get(oriCluster).readLine();
+                        String[] data = line.split("\\s+");
+                        int subClusterNum = Integer.valueOf(data[1]);
+                        newClusterId = finalMappings.get(oriCluster).get(subClusterNum);
 
-                    clusterFilesplots.get(oriCluster).println(clusterFilesplotsCount.get(oriCluster) + " " + splits[1] + " " + splits[2] + " " + splits[3] + " " + newClusterId + " " + newClusterId);
-                    clusterFilesplotsCount.put(oriCluster, clusterFilesplotsCount.get(oriCluster) + 1);
+                        clusterFilesplots.get(oriCluster).println(clusterFilesplotsCount.get(oriCluster) + " " + splits[1] + " " + splits[2] + " " + splits[3] + " " + newClusterId + " " + newClusterId);
+                        clusterFilesplotsCount.put(oriCluster, clusterFilesplotsCount.get(oriCluster) + 1);
+                    } else {
+                        newClusterId = finalMappings.get(oriCluster).get(0);
+                    }
+
+                    printWriter.println(index + " " + splits[1] + " " + splits[2] + " " + splits[3] + " " + newClusterId + " " + newClusterId);
+                    printWriterout.println(index + "\t" + newClusterId);
                 }else{
-                    newClusterId = finalMappings.get(oriCluster).get(0);
+                    printWriter.println(index + " " + splits[1] + " " + splits[2] + " " + splits[3] + " " + dustClusterId + " " + "Dust");
+                    printWriterout.println(index + "\t" + dustClusterId);
                 }
-                printWriter.println(index + " " + splits[1] + " " + splits[2] + " " + splits[3] + " " + newClusterId + " " + newClusterId);
-                printWriterout.println(index + "\t" + newClusterId);
+
             }
             printWriter.flush();
             printWriter.close();
