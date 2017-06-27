@@ -10,6 +10,8 @@ import java.nio.file.Paths;
  * Created by pulasthi on 3/31/17.
  */
 public class CreatePlotSimple {
+    static final int dustClusterId = 100000; // this needs to be same with the value in ClusterOutlierExtractor
+
     public static void main(String[] args) {
         String pointsFile = args[0];
         String clusterFile = args[1];
@@ -26,7 +28,11 @@ public class CreatePlotSimple {
                 lineclus = cluster.readLine();
                 String pointssplit[] = line.split("\\s+");
                 String clustersplit[] = lineclus.split("\\s+");
-                out.println(pointssplit[0] + " " + pointssplit[1] + " " + pointssplit[2] + " " + pointssplit[3] + " " + clustersplit[1] + " " + clustersplit[1]);
+                if(Integer.valueOf(clustersplit[1]) == dustClusterId){
+                    out.println(pointssplit[0] + " " + pointssplit[1] + " " + pointssplit[2] + " " + pointssplit[3] + " " + clustersplit[1] + " " + "Dust");
+                }else{
+                    out.println(pointssplit[0] + " " + pointssplit[1] + " " + pointssplit[2] + " " + pointssplit[3] + " " + clustersplit[1] + " " + clustersplit[1]);
+                }
             }
 
             out.flush();
