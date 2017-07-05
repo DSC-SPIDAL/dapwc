@@ -128,7 +128,10 @@ public class ClusterExtractorSimple {
                 int tempcount = 0;
                 for (Integer row : clusterPoints.get(clusterNum)) {
                     if(writeMDS) outMDS.println(tempcount + "\t" + mdsPoints[row][0] + "\t" + mdsPoints[row][1] + "\t" + mdsPoints[row][2] + "\t" + "1");
-                    long offset = row*numPoints*2;
+                    System.out.println("Row :" + row );
+                    System.out.println("numPoints :" + numPoints );
+                    long offset = row.longValue()*(long)numPoints*2;
+                    System.out.println("Offset :" + offset );
                     ByteBuffer byteBufferRow = ByteBuffer.allocate(numPoints*2);
                     if(isBigendian){
                         byteBufferRow.order(ByteOrder.BIG_ENDIAN);
