@@ -156,8 +156,10 @@ public class ClusterExtractorSimple {
                     fcout.write(outBuffer);
                     tempcount++;
                 }
-                if(writeMDS) outMDS.flush();
-                outMDS.close();
+                if(writeMDS){
+                    outMDS.flush();
+                    outMDS.close();
+                }
                 fcout.close();
 
                 //Generate config files for each cluster
