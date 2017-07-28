@@ -156,7 +156,7 @@ public class ClusterExtractorSimple {
                     fcout.write(outBuffer);
                     tempcount++;
                 }
-                outMDS.flush();
+                if(writeMDS) outMDS.flush();
                 outMDS.close();
                 fcout.close();
 
