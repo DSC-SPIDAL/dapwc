@@ -47,6 +47,7 @@ public class BlockMergerSection {
 
     private static HashSet<Integer> getHashSet(String ranks){
         HashSet<Integer> set = new HashSet<Integer>();
+        if(ranks.equals("")) return set;
         String[] skips = ranks.split(",");
         for (String skip : skips) {
             set.add(Integer.valueOf(skip));
