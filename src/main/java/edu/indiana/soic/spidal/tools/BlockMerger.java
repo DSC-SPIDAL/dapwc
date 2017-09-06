@@ -48,6 +48,7 @@ public class BlockMerger {
                         fileName = getBlockName(section.nameFormat,i,j);
                         path = Paths.get(section.blockDir,fileName);
                         if(!Files.exists(path)){
+                            System.out.println("Unable to find file" + fileName);
                             throw new IOException("Unable to find file" + i + "," + j);
                         }
                         fc = (FileChannel)Files.newByteChannel(path,StandardOpenOption.READ);
