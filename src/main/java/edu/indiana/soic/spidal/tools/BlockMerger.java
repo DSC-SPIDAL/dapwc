@@ -25,6 +25,7 @@ public class BlockMerger {
         try {
             FileChannel fc;
             Buffer buffer;
+            FileChannel out = new FileOutputStream(section.outFile).getChannel();
             for (int i = 0; i < section.blockCount; i++) {
                 ArrayList<short[]> columns =  new ArrayList<short[]>();
                 if(section.skipRanks.contains(i)){
@@ -60,20 +61,15 @@ public class BlockMerger {
                         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
                     }
 
-
-                    buffer = byteBuffer.asShortBuffer();
-                    short[] shortArray = new short[(int)fc.size()/2];
-                    ((ShortBuffer)buffer).get(shortArray);
-
-                    columns.add(shortArray);
+                    fc.read(byteBuffer);
+                    byteBuffer.flip();
+                    out.write(byteBuffer);
                 }
 
                 System.out.printf("Done row %d",i);
                 System.out.println("Writing column blocks for row: " + i + " ... ");
-
             }
-
-            FileChannel out = new FileOutputStream(section.outFile).getChannel();
+            out.close();
 
         }catch (IOException e) {
             e.printStackTrace();
