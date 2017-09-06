@@ -25,7 +25,7 @@ public class BlockMergerSection {
             blockDir = getProperty(p,"blockDir","/home/blockDir");
             nameFormat = getProperty(p,"nameFormat","{1}-{2}.bin");
             blockCount = Integer.valueOf(getProperty(p,"blockCount","1"));
-            outFile = getProperty(p,"outDir","/home/outfile.bin");
+            outFile = getProperty(p,"outFile","/home/outfile.bin");
             String skipRanksStr = getProperty(p,"skipRanks","");
             skipRanks = getHashSet(skipRanksStr);
             isBigEndian = Boolean.valueOf(getProperty(p,"isBigEndian","false"));
