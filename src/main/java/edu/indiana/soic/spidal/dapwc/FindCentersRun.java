@@ -60,6 +60,8 @@ public class FindCentersRun {
 
         // Initial Processing Complete
         PWCUtility.mpiOps.barrier(); // Make certain all processes have processed original data before writing updated
+        //  read data into memory
+        PWCParallelism.ReadDataFromFile(Program.config.DistanceMatrixFile);
         Program.ClusterAssignments = new int[PWCUtility.PointCount_Global]; // Set whenever clusters output
         readClusterAssignments(Program.config.AddDapwcFile);
         String file = "CenterFile-M" + (new Integer(Program.maxNcent)).toString() + "-C" + (new Integer(Program.maxNcent)).toString() + ".txt";
