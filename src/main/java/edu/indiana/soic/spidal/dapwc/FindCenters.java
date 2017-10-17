@@ -313,6 +313,8 @@ public class FindCenters
                     }
                     if (PWCUtility.addMDS > 0) {
                         double MDSmeandistance = getMDSDistancefromPoint(GlobalPointIndex1, GroupMDSCoG[group1]);
+                        System.out.println("Line 315  MDSmeandistance " +  MDSmeandistance);
+
                         FindGroupMDSCenters_CoG[group1].addAPoint(threadIndex, GlobalPointIndex1, MDSmeandistance);
                         if (Countlinks > 0) {
                             FindGroupMDSCenters_mean[group1]
@@ -344,6 +346,7 @@ public class FindCenters
             if (PWCUtility.addMDS > 0) {
                 FindGroupMDSCenters_CoG[group].sumOverThreadsAndMPI();
                 FindGroupMDSCenters_mean[group].sumOverThreadsAndMPI();
+                System.out.println("Line 347  FindGroupMDSCenters_CoG[group] " +  FindGroupMDSCenters_CoG[group]);
             }
 
             for (int CenterIndex = 0; CenterIndex < PWCUtility.NumberofCenters; CenterIndex++) {
