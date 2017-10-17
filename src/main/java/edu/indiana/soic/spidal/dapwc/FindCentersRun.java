@@ -66,7 +66,7 @@ public class FindCentersRun {
         String directory1 = (new File(Program.config.ClusterFile)).getParent();
         String CenterFileName = Paths.get(directory1, file).toString();
         String place = (new File(Program.config.DistanceMatrixFile)).getParent();
-        String MDSFileName = Paths.get(place, PWCUtility.addMDSfile).toString();
+        String MDSFileName =PWCUtility.addMDSfile;
         String FullLabelFileName = PWCUtility.Labelfile;
         FindCenters.FindGroupCenters(Program.ClusterAssignments, Program.maxNcent, 0, CenterFileName, MDSFileName, FullLabelFileName);
     }
@@ -88,7 +88,7 @@ public class FindCentersRun {
                                 Program.config.NumberDataPoints);
             }
         }catch (IOException e){
-            PWCUtility.printAndThrowRuntimeException("Error While reading PWC results file" + e.getMessage());
+            PWCUtility.printAndThrowRuntimeException("Error While reading PWC results file " + e.getMessage());
         }
     }
 
