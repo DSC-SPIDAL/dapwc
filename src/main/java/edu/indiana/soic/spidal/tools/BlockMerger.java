@@ -45,7 +45,7 @@ public class BlockMerger {
                         fc = (FileChannel)Files.newByteChannel(path,StandardOpenOption.READ);
                     }else{
                         // If direct block (i,j) does not exist then transpose (j,i) must exist.
-                        fileName = getBlockName(section.nameFormat,i,j);
+                        fileName = getBlockName(section.nameFormat,j,i);
                         path = Paths.get(section.blockDir,fileName);
                         if(!Files.exists(path)){
                             System.out.println("Unable to find file" + fileName);

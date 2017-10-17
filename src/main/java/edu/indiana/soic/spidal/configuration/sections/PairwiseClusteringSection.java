@@ -12,6 +12,7 @@ public class PairwiseClusteringSection {
             ClusterFile = getProperty(p,"ClusterFile","cluster.txt");
             DistanceMatrixFile = getProperty(p,"DistanceMatrixFile", "distance.bin");
             AddMdsFile = getProperty(p,"AddMdsFile","mds.txt");
+            AddDapwcFile = getProperty(p,"AddDapwcFile","mds.txt");
             ClusterNumberFile = getProperty(p,"ClusterNumberFile","cnums.txt");
             CenterPlotFile = getProperty(p,"CenterPlotFile","cplot.txt");
             LabelFile = getProperty(p,"LabelFile", "labels.txt");
@@ -80,6 +81,7 @@ public class PairwiseClusteringSection {
     public String ClusterFile;
     public String DistanceMatrixFile;
     public String AddMdsFile;
+    public String AddDapwcFile;
     public String ClusterNumberFile;
     public String CenterPlotFile;
     public String LabelFile;
@@ -149,6 +151,14 @@ public class PairwiseClusteringSection {
 
     public void setAddMdsFile(String addMdsFile) {
         AddMdsFile = addMdsFile;
+    }
+
+    public String getAddDapwcFile() {
+        return AddDapwcFile;
+    }
+
+    public void setAddDapwcFile(String addDapwcFile) {
+        AddDapwcFile = addDapwcFile;
     }
 
     public String getClusterNumberFile() {
