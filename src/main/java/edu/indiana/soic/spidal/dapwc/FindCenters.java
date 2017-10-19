@@ -208,11 +208,11 @@ public class FindCenters
                     for (int index = beginpoint; index < indexlen + beginpoint; index++) {
                         int GlobalPointIndex1 = index + PWCUtility.PointStart_Process;
                         int group1 = GroupIndex[GlobalPointIndex1] - StartPosition;
-                        if ((group1 < 0) || (group1 >= NumberofGroups)) {
-                            PWCUtility.printAndThrowRuntimeException(
-                                    " Illegal group number " + (new Integer(group1)).toString() + " Point " +
-                                            (new Integer(GlobalPointIndex1)).toString());
-                        }
+//                        if ((group1 < 0) || (group1 >= NumberofGroups)) {
+//                            PWCUtility.printAndThrowRuntimeException(
+//                                    " Illegal group number " + (new Integer(group1)).toString() + " Point " +
+//                                            (new Integer(GlobalPointIndex1)).toString());
+//                        }
                         if (GroupCount[group1] <= 0) {
                             continue;
                         }
@@ -222,11 +222,11 @@ public class FindCenters
                                 continue;
                             }
                             int group2 = GroupIndex[GlobalPointIndex2] - StartPosition;
-                            if ((group2 < 0) || (group2 >= NumberofGroups)) {
-                                PWCUtility.printAndThrowRuntimeException(
-                                        " Illegal group number " + (new Integer(group2)).toString() + " Point " +
-                                                (new Integer(GlobalPointIndex2)).toString());
-                            }
+//                            if ((group2 < 0) || (group2 >= NumberofGroups)) {
+//                                PWCUtility.printAndThrowRuntimeException(
+//                                        " Illegal group number " + (new Integer(group2)).toString() + " Point " +
+//                                                (new Integer(GlobalPointIndex2)).toString());
+//                            }
                             if (group1 != group2) {
                                 continue;
                             }
@@ -625,11 +625,11 @@ public class FindCenters
                 TopMDSCoGDistance[0] = 0.0;
                 for (int CenterIndex1 = 0; CenterIndex1 < PWCUtility.NumberofCenters; CenterIndex1++) {
                     int GlobalPointIndex1 = GroupIndexfromMDSCoG[group][CenterIndex1];
-                    if (GlobalPointIndex1 < 0) {
-                        PWCUtility.printAndThrowRuntimeException(
-                                "MDS CoG Group-1 " + (new Integer(group)).toString() + " Center " +
-                                        (new Integer(CenterIndex1)).toString() + " Undefined");
-                    }
+//                    if (GlobalPointIndex1 < 0) {
+//                        PWCUtility.printAndThrowRuntimeException(
+//                                "MDS CoG Group-1 " + (new Integer(group)).toString() + " Center " +
+//                                        (new Integer(CenterIndex1)).toString() + " Undefined");
+//                    }
 
                     // Add into Global Rating List
                     int useposition = countindicesfound;
