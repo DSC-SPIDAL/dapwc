@@ -65,7 +65,7 @@ public class FindCentersRun {
         Program.ClusterAssignments = new int[PWCUtility.PointCount_Global]; // Set whenever clusters output
         readClusterAssignments(Program.config.AddDapwcFile);
         String file = "CenterFile-M" + (new Integer(Program.maxNcent)).toString() + "-C" + (new Integer(Program.maxNcent)).toString() + ".txt";
-        String directory1 = (new File(Program.config.ClusterFile)).getParent();
+        String directory1 = (new File(Program.config.AddDapwcFile)).getParent();
         String CenterFileName = Paths.get(directory1, file).toString();
         String place = (new File(Program.config.DistanceMatrixFile)).getParent();
         String MDSFileName =PWCUtility.addMDSfile;

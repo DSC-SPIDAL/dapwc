@@ -663,11 +663,11 @@ public class FindCenters
                         int procLocalRow = GlobalPointIndex1 - PWCUtility.PointStart_Process;
                         for (int CenterIndex2 = 0; CenterIndex2 < PWCUtility.NumberofCenters; CenterIndex2++) {
                             int GlobalPointIndex2 = GroupIndexfromMDSCoG[group][CenterIndex2];
-                            if (GlobalPointIndex2 < 0) {
-                                PWCUtility.printAndThrowRuntimeException(
-                                        "MDS CoG Group-2 " + (new Integer(group)).toString() + " Center " +
-                                                (new Integer(CenterIndex2)).toString() + " Undefined");
-                            }
+//                            if (GlobalPointIndex2 < 0) {
+//                                PWCUtility.printAndThrowRuntimeException(
+//                                        "MDS CoG Group-2 " + (new Integer(group)).toString() + " Center " +
+//                                                (new Integer(CenterIndex2)).toString() + " Undefined");
+//                            }
                             double tmp;
                             if (CenterIndex1 != CenterIndex2) {
                                 tmp = getMDSDistanceValue(GlobalPointIndex1, GlobalPointIndex2);
