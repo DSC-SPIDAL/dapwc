@@ -6,6 +6,7 @@ import edu.rice.hj.api.SuspendableException;
 import mpi.MPIException;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -1204,6 +1205,9 @@ public class FindCenters
 
         Path filePath = Paths.get(file);
         OpenOption mode = append ? StandardOpenOption.APPEND : StandardOpenOption.CREATE;
+        if(!(filePath.toFile().exists())){
+            mode = StandardOpenOption.CREATE;
+        }
         try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(filePath, Charset.defaultCharset(), mode),
                                                   true)) {
             for (int i = 0; i < dataPoints; i++) {
