@@ -70,7 +70,7 @@ public class PWCUtility
 	public static int DebugPrintOption = 2; // Control Printing (= 0 None, ==1 Summary, = 2 Full)
 
 	//  Center Finding Parameters
-	public static int NumberofCenters = 8; // Number of centers to be found with each method
+	public static int NumberofCenters = 2; // Number of centers to be found with each method
 	public static double[] BucketFractions = new double[] {0.15, 0.4, 0.75}; // Fractions to be used in Bucket method -- centers are those with most neighbors in a radius determined by BucketFraction
 	public static int NumberofBuckets = BucketFractions.length; // Number of Buckets
 	public static int addMDS = 1; // Specify MDS versions of center finding; = 0 ignore Currently all nonzero values treated in same way

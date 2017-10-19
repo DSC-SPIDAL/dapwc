@@ -71,6 +71,9 @@ public class FindCentersRun {
         String MDSFileName =PWCUtility.addMDSfile;
         String FullLabelFileName = PWCUtility.Labelfile;
         FindCenters.FindGroupCenters(Program.ClusterAssignments, Program.maxNcent, 0, CenterFileName, MDSFileName, FullLabelFileName);
+
+        PWCParallelism.TearDownParallelism(); //  Finalize MPI
+
     }
 
     private static void readClusterAssignments(String addDapwcFile) {

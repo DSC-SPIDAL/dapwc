@@ -346,7 +346,7 @@ public class FindCenters
                 FindGroupMDSCenters_CoG[group].sumOverThreadsAndMPI();
                 FindGroupMDSCenters_mean[group].sumOverThreadsAndMPI();
             }
-
+            if(PWCUtility.MPI_Rank == 0) System.out.println(group + " Line 347  FindGroupMDSCenters_mean[group]OrderedIndexValue[0] " +  FindGroupMDSCenters_mean[group].OrderedIndexValue[0]  + "value :" + FindGroupMDSCenters_mean[group].OrderedMinValue[0]);
             for (int CenterIndex = 0; CenterIndex < PWCUtility.NumberofCenters; CenterIndex++) {
                 GroupSmallestfromMinMeans[group][CenterIndex] =
                         FindGroupOriginalDataCenters_mean[group].OrderedMinValue[CenterIndex];
