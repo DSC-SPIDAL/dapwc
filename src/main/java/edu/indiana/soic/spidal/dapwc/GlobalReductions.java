@@ -1036,6 +1036,11 @@ public class GlobalReductions {
                 }
                 int oldlocalindex = localindex;
                 if (PWCUtility.MPI_Size > 1) {
+                    // make sure that 1 node does not make the results -1
+                    if(localindex < 0){
+                        localindex = Integer.MAX_VALUE;
+                        localvalue = Integer.MAX_VALUE;
+                    }
                     PWCUtility.StartSubTimer(PWCUtility.MPIREDUCETiming1);
                     // Note - MPI Call - Allreduce - MPIReducePlusIndex - min with index
                     MPIReducePlusIndex result = PWCUtility.mpiOps
