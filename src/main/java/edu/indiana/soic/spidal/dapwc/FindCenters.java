@@ -345,7 +345,6 @@ public class FindCenters
             if (PWCUtility.addMDS > 0) {
                 FindGroupMDSCenters_CoG[group].sumOverThreadsAndMPI();
                 FindGroupMDSCenters_mean[group].sumOverThreadsAndMPI();
-                if(PWCUtility.MPI_Rank == 0) System.out.println(group + " Line 347  FindGroupMDSCenters_CoG[group]OrderedIndexValue[0] " +  FindGroupMDSCenters_CoG[group].OrderedIndexValue[0]);
             }
 
             for (int CenterIndex = 0; CenterIndex < PWCUtility.NumberofCenters; CenterIndex++) {
