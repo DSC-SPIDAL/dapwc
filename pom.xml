@@ -35,7 +35,7 @@
         <dependency>
             <groupId>ompi</groupId>
             <artifactId>ompijavabinding</artifactId>
-            <version>1.10.1</version>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
     <repositories>
