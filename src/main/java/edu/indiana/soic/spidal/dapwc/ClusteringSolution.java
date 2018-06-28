@@ -111,6 +111,7 @@ package edu.indiana.soic.spidal.dapwc;
 
 // Calculate Pairwise Algorithm
 
+import edu.rice.hj.api.HjSuspendingProcedure;
 import edu.rice.hj.api.SuspendableException;
 
 import static edu.rice.hj.Module1.forallChunked;
@@ -177,8 +178,10 @@ public class ClusteringSolution
         // Note - parallel for
         try {
             forallChunked(0, PWCUtility.ThreadCount - 1, (threadIndex) -> {
+                System.out.println("InitForAllChunked");
                 int indexlen = PWCUtility.PointsperThread[threadIndex];
                 int beginpoint = PWCUtility.StartPointperThread[threadIndex] - PWCUtility.PointStart_Process;
+                System.out.println("Indexlen & BeginPoint : " + indexlen + ", " + beginpoint);
                 for (int ProcessPointIndex = beginpoint; ProcessPointIndex < indexlen + beginpoint; ProcessPointIndex++) {
                     Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
                     Old_Epsilonalpha_k_[ProcessPointIndex] = new double[MaximumNumberClusters];
